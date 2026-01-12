@@ -72,16 +72,16 @@
 
 ### 確認點
 
-- [ ] 3.1 `FeedView.tsx` 三欄 ResizablePanel
-- [ ] 3.2 `SubscriptionSidebar.tsx`
-- [ ] 3.3 `FeedItemList.tsx`（虛擬滾動）
-- [ ] 3.4 `FeedItemCard.tsx`（可拖曳）
-- [ ] 3.5 `FeedPreview.tsx`（速記區）
-- [ ] 3.6 `FilterTabs.tsx`
-- [ ] 3.7 `AddSubscriptionDialog.tsx`
-- [ ] 3.8 `feed.store.ts`
-- [ ] 3.9 鍵盤快捷鍵實作（S/P/E/J/K/Space）
-- [ ] 3.10 拖曳到專案功能
+- [x] 3.1 `FeedView.tsx` 三欄 ResizablePanel
+- [x] 3.2 `SubscriptionSidebar.tsx`
+- [x] 3.3 `FeedItemList.tsx`（虛擬滾動）
+- [x] 3.4 `FeedItemCard.tsx`（可拖曳）
+- [x] 3.5 `FeedPreview.tsx`（速記區）
+- [x] 3.6 `FilterTabs.tsx`
+- [x] 3.7 `AddSubscriptionDialog.tsx`
+- [x] 3.8 `feed.store.ts`
+- [x] 3.9 鍵盤快捷鍵實作（S/P/E/J/K/Space）
+- [x] 3.10 拖曳到專案功能
 
 ### 審查標準
 
@@ -101,12 +101,12 @@
 
 ### 確認點
 
-- [ ] 4.1 `LibraryView.tsx` 兩欄佈局
-- [ ] 4.2 `FilterBar.tsx`（Type/Tags/Date/關聯專案）
+- [x] 4.1 `LibraryView.tsx` 兩欄佈局
+- [x] 4.2 `FilterBar.tsx`（Type/Tags/Date/關聯專案）
 - [ ] 4.3 `ViewToggle.tsx`（列表視圖優先）
-- [ ] 4.4 `NoteTable.tsx`（虛擬滾動）
-- [ ] 4.5 `NotePreview.tsx`
-- [ ] 4.6 `library.store.ts`
+- [x] 4.4 `NoteTable.tsx`（虛擬滾動）
+- [x] 4.5 `NotePreview.tsx`
+- [x] 4.6 `library.store.ts`
 
 ### 審查標準
 
@@ -123,15 +123,15 @@
 
 ### 確認點
 
-- [ ] 5.1 `ProjectListView.tsx`（狀態分組）
-- [ ] 5.2 `ProjectCard.tsx`
-- [ ] 5.3 `StatusGroup.tsx`（可展開/收合）
-- [ ] 5.4 `ProjectPageView.tsx`
+- [x] 5.1 `ProjectListView.tsx`（狀態分組）
+- [x] 5.2 `ProjectCard.tsx`
+- [x] 5.3 `StatusGroup.tsx`（可展開/收合）
+- [x] 5.4 `ProjectPageView.tsx`
 - [ ] 5.5 `DeliverableSection.tsx`
 - [ ] 5.6 `MaterialsTable.tsx`
 - [ ] 5.7 `ProjectNotes.tsx`
 - [ ] 5.8 `StatusDropdown.tsx`
-- [ ] 5.9 `project.store.ts`
+- [x] 5.9 `project.store.ts`
 
 ### 審查標準
 
@@ -168,8 +168,8 @@
 
 | 類別     | 標準                       | 必須通過 |
 | -------- | -------------------------- | -------- |
-| **編譯** | `npm run dev` 無錯誤       | ✅       |
-| **類型** | `npm run typecheck` 無錯誤 | ✅       |
-| **功能** | 所有 Phase 審查標準通過    | ✅       |
-| **效能** | 1000 條項目滾動 60fps      | ✅       |
-| **架構** | 符合 design.md 規範        | ✅       |
+| **編譯** | `npm run dev` 無錯誤       | ✅        |
+| **類型** | `npm run typecheck` 無錯誤 | ✅        |
+| **功能** | 所有 Phase 審查標準通過    | ✅        |
+| **效能** | 1000 條項目滾動 60fps      | ✅        |
+| **架構** | 符合 design.md 規範        | ✅        |
