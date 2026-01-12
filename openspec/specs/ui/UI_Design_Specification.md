@@ -54,10 +54,11 @@
 
 - **寬度**：固定 52px (Icon only)，Hover 或點擊展開按鈕可擴展至 200px (Icon + Label)。
 - **內容**：
-    - `Top`：Logo, 收件匣, 收集(Feed), 知識庫(Note), 日記(Calendar), 圖譜(Graph)
-    - `Bottom`：收藏, 最近, 設定, 主題切換
+  - `Top`：Logo, 收件匣, 收集(Feed), 知識庫(Note), 日記(Calendar), 圖譜(Graph)
+  - `Bottom`：收藏, 最近, 設定, 主題切換
 
 **交互**：
+
 - 點擊圖標 → **切換到對應功能的 Tab** (如果已開則跳轉，未開則新建)。
 - 拖拽圖標 → 可自定義排序。
 
@@ -68,11 +69,11 @@
 **職責**：多工管理容器。
 
 - **行为**：
-    - 作為 `Main Content` 的容器。
-    - 每個 Tab 擁有獨立的狀態（Scroll position, Local sidebar state, etc.）。
+  - 作為 `Main Content` 的容器。
+  - 每個 Tab 擁有獨立的狀態（Scroll position, Local sidebar state, etc.）。
 - **Tab 類型**：
-    - **App Tab**：功能模組入口（如「收集」、「知識庫」），通常常駐或釘選。
-    - **Item Tab**：具體項目（如「某篇筆記」、「某個 RSS 文章」），臨時打開，可隨時關閉。
+  - **App Tab**：功能模組入口（如「收集」、「知識庫」），通常常駐或釘選。
+  - **Item Tab**：具體項目（如「某篇筆記」、「某個 RSS 文章」），臨時打開，可隨時關閉。
 
 ---
 
@@ -199,11 +200,11 @@ interface AppState {
   addTab: (tab: Tab) => void
   closeTab: (id: string) => void
   setActiveTab: (id: string) => void
-  
+
   // Sidebar
   sidebarCollapsed: boolean
   toggleSidebar: () => void
-  
+
   // AI Panel
   aiPanelOpen: boolean
   toggleAIPanel: () => void

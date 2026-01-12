@@ -1,1 +1,1 @@
-export * from './LibraryView';
+export * from './LibraryView'

@@ -29,7 +29,7 @@ export function initNoteIPC(): void {
         query += ` LIMIT ${filter.limit}`
       }
       const notes = db.prepare(query).all() as any[]
-      return notes.map(note => ({
+      return notes.map((note) => ({
         ...note,
         tags: JSON.parse(note.tags || '[]'),
         aliases: JSON.parse(note.aliases || '[]')

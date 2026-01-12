@@ -3,6 +3,7 @@
 ## Why
 
 為了讓渲染進程（React）能夠與主進程（SQLite）進行資料交互，我們需要建立一個安全的 IPC 橋接機制。這將允許：
+
 - 用戶在 UI 上新增或移除 RSS 訂閱源
 - 從資料庫載入訂閱列表和文章
 - 更新文章的閱讀狀態（已讀/未讀）
@@ -18,7 +19,7 @@
 ## Impact
 
 - **Affected specs**: `feed`, `core`
-- **Affected code**: 
+- **Affected code**:
   - `electron/preload.ts`
   - `electron/main.ts`
   - `electron/ipc/`

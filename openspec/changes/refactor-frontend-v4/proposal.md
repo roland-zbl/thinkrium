@@ -18,7 +18,7 @@
 
 ## Impact
 
-- Affected specs: 
+- Affected specs:
   - `ui/spec.md` - 佈局、導航、Tab、拖曳、快捷鍵、預覽、刷新
   - `core/spec.md` - Design Tokens、分層、模塊邊界、狀態管理
   - `dashboard/spec.md` - ★ NEW - Dashboard 完整規格
@@ -31,11 +31,13 @@
 ## Scope Definition
 
 ### In Scope (Phase 1 - 原型)
+
 - 四大模塊 UI 骨架與基本交互
 - Mock 資料開發
 - 導航系統、預覽機制、Tab 系統
 
 ### Out of Scope (Phase 2+)
+
 - Editor 完整功能
 - 日曆視圖、標籤雲視圖
 - 空狀態美化、Loading Skeleton

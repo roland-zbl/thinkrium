@@ -18,11 +18,13 @@
 **文件**: `electron/database.ts`
 
 **變更**:
+
 1. 在 `runMigrations()` 中添加 `002_notes_schema` migration
 2. Schema 內容見 `openspec/specs/note/spec.md` 的「資料庫 Schema」章節
 3. 包含 `notes`, `note_links`, `notes_fts`, `settings` 四個表
 
 **驗證**:
+
 ```javascript
 // 在 DevTools Console 執行
 await window.api.db.exec("SELECT name FROM sqlite_master WHERE type='table'")
@@ -36,10 +38,12 @@ await window.api.db.exec("SELECT name FROM sqlite_master WHERE type='table'")
 **目標**: 實作用戶設定的讀寫和目錄選擇
 
 **新增文件**:
+
 - `electron/ipc/settings.ipc.ts` - IPC 處理器
 - `src/preload/index.ts` - 暴露 settings API
 
 **IPC 接口**:
+
 ```typescript
 ipcMain.handle('settings:get', (_, key: string) => { ... })
 ipcMain.handle('settings:set', (_, key: string, value: string) => { ... })
@@ -50,6 +54,7 @@ ipcMain.handle('settings:selectDirectory', () => {
 ```
 
 **驗證**:
+
 ```javascript
 // 設定存儲路徑
 const dir = await window.api.settings.selectDirectory()
@@ -66,6 +71,7 @@ console.log(savedDir === dir) // true
 **目標**: 實作筆記保存的核心邏輯
 
 **新增文件**:
+
 - `electron/services/note.service.ts`
 - `electron/ipc/note.ipc.ts`
 
@@ -77,11 +83,13 @@ console.log(savedDir === dir) // true
 4. **saveNote(input)**: 整合流程
 
 **依賴安裝**:
+
 ```bash
 npm install turndown @types/turndown
 ```
 
 **驗證**:
+
 ```javascript
 const note = await window.api.note.save({
   title: '測試筆記',
@@ -98,10 +106,12 @@ const note = await window.api.note.save({
 **目標**: 實作保存筆記的對話框
 
 **新增文件**:
+
 - `src/renderer/src/modules/note/components/SaveNoteModal.tsx`
 - `src/renderer/src/modules/note/types.ts`
 
 **UI 結構**:
+
 ```
 ┌─────────────────────────────────────────┐
 │  保存到筆記                        [X]  │
@@ -125,6 +135,7 @@ const note = await window.api.note.save({
 ```
 
 **狀態管理**:
+
 - title: string (預填文章標題)
 - content: string (HTML 轉 Markdown 後的內容)
 - personalNote: string (個人筆記)
@@ -141,12 +152,14 @@ const note = await window.api.note.save({
 **修改文件**: `src/renderer/src/modules/feed/components/FeedDetailView.tsx`
 
 **變更**:
+
 1. 導入 SaveNoteModal
 2. 添加 `showSaveModal` state
 3. 將按鈕 onClick 設為 `setShowSaveModal(true)`
 4. 渲染 SaveNoteModal，傳入當前文章數據
 
 **驗證**:
+
 1. 打開文章詳情頁
 2. 點擊「保存到筆記」按鈕
 3. Modal 應正確顯示並預填文章標題

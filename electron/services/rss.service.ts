@@ -10,12 +10,14 @@ const parser: Parser<CustomFeed, CustomItem> = new Parser({
   timeout: 20000,
   headers: {
     // 完整模擬真實瀏覽器請求
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    Accept:
+      'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
     'Accept-Language': 'zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7',
     'Accept-Encoding': 'gzip, deflate, br',
     'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache',
+    Pragma: 'no-cache',
     'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
     'Sec-Ch-Ua-Mobile': '?0',
     'Sec-Ch-Ua-Platform': '"Windows"',
@@ -36,18 +38,22 @@ const parser: Parser<CustomFeed, CustomItem> = new Parser({
 /**
  * 驗證 RSS 訂閱源是否有效
  */
-export async function validateFeed(url: string): Promise<{ valid: boolean; title?: string; error?: string }> {
+export async function validateFeed(
+  url: string
+): Promise<{ valid: boolean; title?: string; error?: string }> {
   console.log(`[RSS Service] Validating: ${url}`)
   try {
     const feed = await parser.parseURL(url)
-    console.log(`[RSS Service] Validation success: ${feed.title}, items: ${feed.items?.length || 0}`)
+    console.log(
+      `[RSS Service] Validation success: ${feed.title}, items: ${feed.items?.length || 0}`
+    )
     return {
       valid: true,
       title: feed.title
     }
   } catch (error: any) {
     console.error('[RSS Service] Validation error:', error.message)
-    
+
     // 提供更友善的錯誤訊息
     let friendlyError = error.message || '無法解析該訂閱源'
     if (error.message?.includes('403')) {
@@ -59,7 +65,7 @@ export async function validateFeed(url: string): Promise<{ valid: boolean; title
     } else if (error.message?.includes('timeout')) {
       friendlyError = '連線逾時。伺服器回應太慢，請稍後再試。'
     }
-    
+
     return {
       valid: false,
       error: friendlyError
@@ -76,22 +82,24 @@ export async function fetchFeed(url: string): Promise<ParsedFeed> {
   try {
     const feed = await parser.parseURL(url)
     console.log(`[RSS Service] Fetched ${feed.items?.length || 0} items from ${feed.title}`)
-    
+
     return {
       title: feed.title,
-      items: feed.items.map(item => {
+      items: feed.items.map((item) => {
         // 優先抓取完整內容
-        const fullContent = 
-          item.contentEncoded || 
+        const fullContent =
+          item.contentEncoded ||
           item['content:encoded'] ||
-          item.content || 
+          item.content ||
           item.description ||
-          item.contentSnippet || 
+          item.contentSnippet ||
           ''
-        
+
         // 記錄內容長度以便調試
-        console.log(`[RSS Service] Item "${item.title?.substring(0, 30)}..." content length: ${fullContent.length}`)
-        
+        console.log(
+          `[RSS Service] Item "${item.title?.substring(0, 30)}..." content length: ${fullContent.length}`
+        )
+
         return {
           guid: item.guid || item.link || item.id,
           title: item.title,

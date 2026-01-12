@@ -1,225 +1,230 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Knowledge Base Feed Prototype</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        /* Fallback if Google Fonts fail */
-        body { font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif; }
+      /* Fallback if Google Fonts fail */
+      body {
+        font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
+      }
     </style>
-</head>
-<body class="dark-theme">
+  </head>
+  <body class="dark-theme">
     <div class="app-layout">
-        <!-- Sidebar (Navigation) -->
-        <nav class="sidebar">
-            <div class="sidebar-top">
-                <div class="nav-item logo" title="Home">
-                    <span class="icon">📱</span>
-                </div>
-                <div class="nav-divider"></div>
-                <div class="nav-item active" title="Feed (Cmd+1)">
-                    <span class="icon">📰</span>
-                    <span class="label">Feed</span>
-                </div>
-                <div class="nav-item" title="Notes (Cmd+2)">
-                    <span class="icon">📝</span>
-                    <span class="label">筆記</span>
-                </div>
-                <div class="nav-item" title="Calendar (Cmd+3)">
-                    <span class="icon">📅</span>
-                    <span class="label">日曆</span>
-                </div>
-                <div class="nav-item" title="Canvas (Cmd+4)">
-                    <span class="icon">🎨</span>
-                    <span class="label">白板</span>
-                </div>
-                <div class="nav-divider"></div>
-                <div class="nav-item" title="Recent">
-                    <span class="icon">⭐</span>
-                    <span class="label">最近</span>
-                </div>
-                <div class="nav-item" title="Bookmarks">
-                    <span class="icon">🔖</span>
-                    <span class="label">書籤</span>
-                </div>
+      <!-- Sidebar (Navigation) -->
+      <nav class="sidebar">
+        <div class="sidebar-top">
+          <div class="nav-item logo" title="Home">
+            <span class="icon">📱</span>
+          </div>
+          <div class="nav-divider"></div>
+          <div class="nav-item active" title="Feed (Cmd+1)">
+            <span class="icon">📰</span>
+            <span class="label">Feed</span>
+          </div>
+          <div class="nav-item" title="Notes (Cmd+2)">
+            <span class="icon">📝</span>
+            <span class="label">筆記</span>
+          </div>
+          <div class="nav-item" title="Calendar (Cmd+3)">
+            <span class="icon">📅</span>
+            <span class="label">日曆</span>
+          </div>
+          <div class="nav-item" title="Canvas (Cmd+4)">
+            <span class="icon">🎨</span>
+            <span class="label">白板</span>
+          </div>
+          <div class="nav-divider"></div>
+          <div class="nav-item" title="Recent">
+            <span class="icon">⭐</span>
+            <span class="label">最近</span>
+          </div>
+          <div class="nav-item" title="Bookmarks">
+            <span class="icon">🔖</span>
+            <span class="label">書籤</span>
+          </div>
+        </div>
+        <div class="sidebar-bottom">
+          <div class="nav-item" title="Settings (Cmd+,)">
+            <span class="icon">⚙️</span>
+            <span class="label">設定</span>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- Feed Header -->
+        <header class="feed-header">
+          <div class="header-left">
+            <h1>📰 Feed</h1>
+          </div>
+          <div class="header-right">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" placeholder="搜尋..." aria-label="Search" />
             </div>
-            <div class="sidebar-bottom">
-                <div class="nav-item" title="Settings (Cmd+,)">
-                    <span class="icon">⚙️</span>
-                    <span class="label">設定</span>
-                </div>
+            <button class="icon-btn" title="Settings">⚙️</button>
+            <button class="text-btn">✓ 全部已讀</button>
+          </div>
+        </header>
+
+        <!-- Feed Container -->
+        <div class="feed-container">
+          <!-- Feed Sidebar (Filters) -->
+          <aside class="feed-filters">
+            <div class="filter-pills">
+              <button class="pill active">全部</button>
+              <button class="pill">推薦🔥</button>
+              <button class="pill">未讀</button>
+              <button class="pill">已保存⭐</button>
             </div>
-        </nav>
 
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <!-- Feed Header -->
-            <header class="feed-header">
-                <div class="header-left">
-                    <h1>📰 Feed</h1>
-                </div>
-                <div class="header-right">
-                    <div class="search-box">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" placeholder="搜尋..." aria-label="Search">
-                    </div>
-                    <button class="icon-btn" title="Settings">⚙️</button>
-                    <button class="text-btn">✓ 全部已讀</button>
-                </div>
-            </header>
+            <div class="sub-section">
+              <h3 class="section-title">📂 遊戲媒體</h3>
+              <ul class="sub-list">
+                <li class="sub-item active">GameLook</li>
+                <li class="sub-item">觸樂</li>
+              </ul>
+            </div>
 
-            <!-- Feed Container -->
-            <div class="feed-container">
-                <!-- Feed Sidebar (Filters) -->
-                <aside class="feed-filters">
-                    <div class="filter-pills">
-                        <button class="pill active">全部</button>
-                        <button class="pill">推薦🔥</button>
-                        <button class="pill">未讀</button>
-                        <button class="pill">已保存⭐</button>
-                    </div>
+            <div class="sub-section">
+              <h3 class="section-title">📂 開發者</h3>
+              <ul class="sub-list">
+                <li class="sub-item">GMTK</li>
+              </ul>
+            </div>
 
-                    <div class="sub-section">
-                        <h3 class="section-title">📂 遊戲媒體</h3>
-                        <ul class="sub-list">
-                            <li class="sub-item active">GameLook</li>
-                            <li class="sub-item">觸樂</li>
-                        </ul>
-                    </div>
+            <div class="divider"></div>
 
-                    <div class="sub-section">
-                        <h3 class="section-title">📂 開發者</h3>
-                        <ul class="sub-list">
-                            <li class="sub-item">GMTK</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="divider"></div>
+            <div class="sub-section">
+              <h3 class="section-title">興趣主題</h3>
+              <ul class="sub-list">
+                <li class="sub-item checkbox checked"><span class="check-box">☑</span> 遊戲產業</li>
+                <li class="sub-item checkbox checked"><span class="check-box">☑</span> AI技術</li>
+              </ul>
+            </div>
 
-                    <div class="sub-section">
-                        <h3 class="section-title">興趣主題</h3>
-                        <ul class="sub-list">
-                            <li class="sub-item checkbox checked">
-                                <span class="check-box">☑</span> 遊戲產業
-                            </li>
-                            <li class="sub-item checkbox checked">
-                                <span class="check-box">☑</span> AI技術
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <div class="divider"></div>
-                    
-                    <div class="sub-section">
-                         <h3 class="section-title">屏蔽規則</h3>
-                         <ul class="sub-list">
-                             <li class="sub-item block-rule">× 模型</li>
-                             <li class="sub-item block-rule">× 手辦</li>
-                         </ul>
-                    </div>
-                </aside>
+            <div class="divider"></div>
 
-                <!-- Feed List (Content) -->
-                <div class="feed-list-area">
-                    <!-- Interest Group Header -->
-                    <!-- <div class="list-header">
+            <div class="sub-section">
+              <h3 class="section-title">屏蔽規則</h3>
+              <ul class="sub-list">
+                <li class="sub-item block-rule">× 模型</li>
+                <li class="sub-item block-rule">× 手辦</li>
+              </ul>
+            </div>
+          </aside>
+
+          <!-- Feed List (Content) -->
+          <div class="feed-list-area">
+            <!-- Interest Group Header -->
+            <!-- <div class="list-header">
                         <span>今天</span>
                     </div> -->
 
-                    <!-- Feed Card 1 (Highlight) -->
-                    <article class="feed-card unread recommend">
-                        <div class="card-meta-top">
-                             <div class="source-wrapper">
-                                <span class="fire-icon">🔥</span>
-                                <span class="source-name">GameLook</span>
-                                <span class="dot">·</span>
-                                <span class="time">5分鐘前</span>
-                             </div>
-                        </div>
-                        <div class="card-content">
-                            <h2 class="card-title">AI 遊戲開發的 2024 年度回顧</h2>
-                            <p class="card-excerpt">從程序生成到智能NPC，AI正在重塑遊戲開發的每個環節，本文深入探討了技術邊界與倫理挑戰...</p>
-                        </div>
-                        <div class="card-footer">
-                            <div class="tags-area">
-                                <span class="tag">遊戲產業</span>
-                                <span class="tag">AI技術</span>
-                                <span class="score" title="Interest Score">0.89</span>
-                            </div>
-                            <div class="actions-area">
-                                <button class="action-btn" title="Save">💾 保存</button>
-                                <button class="action-btn" title="Read Later">📖 稍後讀</button>
-                                <button class="action-btn" title="Mark Read">👁 已讀</button>
-                            </div>
-                        </div>
-                    </article>
+            <!-- Feed Card 1 (Highlight) -->
+            <article class="feed-card unread recommend">
+              <div class="card-meta-top">
+                <div class="source-wrapper">
+                  <span class="fire-icon">🔥</span>
+                  <span class="source-name">GameLook</span>
+                  <span class="dot">·</span>
+                  <span class="time">5分鐘前</span>
+                </div>
+              </div>
+              <div class="card-content">
+                <h2 class="card-title">AI 遊戲開發的 2024 年度回顧</h2>
+                <p class="card-excerpt">
+                  從程序生成到智能NPC，AI正在重塑遊戲開發的每個環節，本文深入探討了技術邊界與倫理挑戰...
+                </p>
+              </div>
+              <div class="card-footer">
+                <div class="tags-area">
+                  <span class="tag">遊戲產業</span>
+                  <span class="tag">AI技術</span>
+                  <span class="score" title="Interest Score">0.89</span>
+                </div>
+                <div class="actions-area">
+                  <button class="action-btn" title="Save">💾 保存</button>
+                  <button class="action-btn" title="Read Later">📖 稍後讀</button>
+                  <button class="action-btn" title="Mark Read">👁 已讀</button>
+                </div>
+              </div>
+            </article>
 
-                    <!-- Feed Card 2 -->
-                    <article class="feed-card unread">
-                        <div class="card-meta-top">
-                             <div class="source-wrapper">
-                                <span class="source-name">觸樂</span>
-                                <span class="dot">·</span>
-                                <span class="time">2小時前</span>
-                             </div>
-                        </div>
-                        <div class="card-content">
-                            <h2 class="card-title">獨立遊戲發行的困境與機遇</h2>
-                            <p class="card-excerpt">在中小型團隊面臨獲客成本上升的今天，如何尋找新的流量窪地？</p>
-                        </div>
-                        <div class="card-footer">
-                            <div class="tags-area">
-                                <span class="tag">獨立遊戲</span>
-                                <span class="score">0.75</span>
-                            </div>
-                            <div class="actions-area">
-                                <button class="action-btn">💾 保存</button>
-                                <button class="action-btn">📖 稍後讀</button>
-                                <button class="action-btn">👁 已讀</button>
-                            </div>
-                        </div>
-                    </article>
-                    
-                    <!-- Feed Card 3 (Low Priority) -->
-                    <div class="feed-group-low-priority">
-                        <div class="group-header">
-                            <span>📦 低優先（32條）</span>
-                            <button class="toggle-btn">[展開]</button>
-                        </div>
-                    </div>
+            <!-- Feed Card 2 -->
+            <article class="feed-card unread">
+              <div class="card-meta-top">
+                <div class="source-wrapper">
+                  <span class="source-name">觸樂</span>
+                  <span class="dot">·</span>
+                  <span class="time">2小時前</span>
                 </div>
-            </div>
-        </main>
+              </div>
+              <div class="card-content">
+                <h2 class="card-title">獨立遊戲發行的困境與機遇</h2>
+                <p class="card-excerpt">
+                  在中小型團隊面臨獲客成本上升的今天，如何尋找新的流量窪地？
+                </p>
+              </div>
+              <div class="card-footer">
+                <div class="tags-area">
+                  <span class="tag">獨立遊戲</span>
+                  <span class="score">0.75</span>
+                </div>
+                <div class="actions-area">
+                  <button class="action-btn">💾 保存</button>
+                  <button class="action-btn">📖 稍後讀</button>
+                  <button class="action-btn">👁 已讀</button>
+                </div>
+              </div>
+            </article>
 
-        <!-- Auxiliary Panel (Right) -->
-        <aside class="aux-panel">
-            <div class="aux-section">
-                <div class="aux-header">
-                    <h3>大綱</h3>
-                </div>
-                <div class="aux-content empty-state">
-                    <p>無選中內容</p>
-                </div>
+            <!-- Feed Card 3 (Low Priority) -->
+            <div class="feed-group-low-priority">
+              <div class="group-header">
+                <span>📦 低優先（32條）</span>
+                <button class="toggle-btn">[展開]</button>
+              </div>
             </div>
-            <div class="aux-divider"></div>
-            <div class="aux-section">
-                 <div class="aux-header">
-                    <h3>AI 助手</h3>
-                </div>
-                <div class="aux-content ai-ready">
-                    <div class="ai-status">
-                        <div class="status-dot"></div>
-                        <span>準備就緒</span>
-                    </div>
-                </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Auxiliary Panel (Right) -->
+      <aside class="aux-panel">
+        <div class="aux-section">
+          <div class="aux-header">
+            <h3>大綱</h3>
+          </div>
+          <div class="aux-content empty-state">
+            <p>無選中內容</p>
+          </div>
+        </div>
+        <div class="aux-divider"></div>
+        <div class="aux-section">
+          <div class="aux-header">
+            <h3>AI 助手</h3>
+          </div>
+          <div class="aux-content ai-ready">
+            <div class="ai-status">
+              <div class="status-dot"></div>
+              <span>準備就緒</span>
             </div>
-        </aside>
+          </div>
+        </div>
+      </aside>
     </div>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>

@@ -22,7 +22,9 @@ export class NoteService {
    */
   async getRootDir(): Promise<string | null> {
     const db = getDatabase()
-    const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('notes.rootDir') as { value: string } | undefined
+    const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('notes.rootDir') as
+      | { value: string }
+      | undefined
     return row ? row.value : null
   }
 
@@ -52,8 +54,12 @@ export class NoteService {
     // 使用 UUID 作為圖片資料夾名稱，避免中文和特殊字符造成路徑問題
     const attachmentsPath = join('attachments', id)
     const absoluteAttachmentsPath = join(rootDir, attachmentsPath)
-    
-    const processedHtml = await this.localizeImages(input.content, absoluteAttachmentsPath, attachmentsPath)
+
+    const processedHtml = await this.localizeImages(
+      input.content,
+      absoluteAttachmentsPath,
+      attachmentsPath
+    )
     const markdownContent = this.turndown.turndown(processedHtml)
 
     // 3. 生成 Markdown 文件內容
@@ -88,7 +94,8 @@ export class NoteService {
       updated_at: now
     }
 
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO notes (
         id, title, file_path, source_url, source_type, source_item_id, 
         content_text, tags, aliases, created_at, updated_at
@@ -96,7 +103,8 @@ export class NoteService {
         @id, @title, @file_path, @source_url, @source_type, @source_item_id, 
         @content_text, @tags, @aliases, @created_at, @updated_at
       )
-    `).run({
+    `
+    ).run({
       ...note,
       tags: JSON.stringify(note.tags),
       aliases: JSON.stringify(note.aliases)
@@ -119,27 +127,29 @@ export class NoteService {
     // 1. 如果內容有更新，寫入新內容到 Markdown 文件
     if (updates.content) {
       const absoluteNotePath = join(rootDir, existing.file_path)
-      
+
       // 注意：這裡簡化了處理，實際應該保留原有的 YAML frontmatter
       // 為了保持簡單，我們先讀取舊文件，提取 frontmatter，再寫入新內容
       const oldFileContent = await require('fs/promises').readFile(absoluteNotePath, 'utf-8')
       const frontmatterMatch = oldFileContent.match(/^---([\s\S]+?)---/)
       const frontmatter = frontmatterMatch ? frontmatterMatch[0] : ''
-      
+
       const newFileContent = `${frontmatter}\n\n${updates.content}`
       await writeFile(absoluteNotePath, newFileContent, 'utf-8')
     }
 
     // 2. 更新資料庫
     const now = new Date().toISOString()
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE notes SET 
         title = COALESCE(@title, title),
         tags = COALESCE(@tags, tags),
         content_text = COALESCE(@content_text, content_text),
         updated_at = @updated_at
       WHERE id = @id
-    `).run({
+    `
+    ).run({
       id,
       title: updates.title || null,
       tags: updates.tags ? JSON.stringify(updates.tags) : null,
@@ -185,14 +195,18 @@ export class NoteService {
   /**
    * 將 HTML 中的圖片下載並存儲到本地
    */
-  private async localizeImages(html: string, absoluteDestDir: string, relativeDestDir: string): Promise<string> {
+  private async localizeImages(
+    html: string,
+    absoluteDestDir: string,
+    relativeDestDir: string
+  ): Promise<string> {
     const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi
     let match
     let processedHtml = html
 
     // 如果有圖片，確保 attachments 目錄存在
     const imagesToDownload: { url: string; fileName: string }[] = []
-    
+
     while ((match = imgRegex.exec(html)) !== null) {
       const url = match[1]
       const ext = this.getFileExtension(url) || '.jpg'
@@ -211,7 +225,7 @@ export class NoteService {
           const buffer = await response.arrayBuffer()
           const filePath = join(absoluteDestDir, item.fileName)
           await writeFile(filePath, Buffer.from(buffer))
-          
+
           // 替換 HTML 中的 URL 為相對路徑
           const relativePath = join(relativeDestDir, item.fileName).replace(/\\/g, '/')
           processedHtml = processedHtml.replace(item.url, relativePath)
@@ -237,12 +251,11 @@ export class NoteService {
       `aliases: [${(frontmatter.aliases || []).map((a: string) => `"${a}"`).join(', ')}]`,
       '---'
     ]
-    
+
     const yaml = yamlLines.join('\n')
-    
+
     return `${yaml}\n\n## 原文內容\n\n${content}\n\n${personalNote ? `## 個人筆記\n\n${personalNote}` : ''}`
   }
-
 
   private sanitizeFileName(name: string): string {
     return name.replace(/[\\/:"*?<>|]/g, '_').substring(0, 100)

@@ -7,12 +7,14 @@
 ## Phase 0: 環境準備
 
 ### 確認點
-- [ ] 0.1 新依賴安裝完成
-- [ ] 0.2 舊目錄已備份/刪除
-- [ ] 0.3 新目錄結構已建立
-- [ ] 0.4 Mock 資料檔案已創建
+
+- [x] 0.1 新依賴安裝完成
+- [x] 0.2 舊目錄已備份/刪除
+- [x] 0.3 新目錄結構已建立
+- [x] 0.4 Mock 資料檔案已創建
 
 ### 審查標準
+
 | 項目      | 標準                      | 驗證方式 |
 | --------- | ------------------------- | -------- |
 | 編譯成功  | `npm run dev` 無錯誤      | CLI 輸出 |
@@ -24,14 +26,16 @@
 ## Phase 1: Layout 重建
 
 ### 確認點
-- [ ] 1.1 `AppShell.tsx` 重寫（display:none 策略）
-- [ ] 1.2 `Sidebar.tsx` 重寫（4 主入口 + 展開專案列表）
-- [ ] 1.3 `MainContent.tsx` 新增
-- [ ] 1.4 `AuxPanel.tsx` 新增
-- [ ] 1.5 `TabBar.tsx` 精簡（只放 Editor/ProjectPage）
-- [ ] 1.6 `app.store.ts` 全域狀態建立
+
+- [x] 1.1 `AppShell.tsx` 重寫（display:none 策略）
+- [x] 1.2 `Sidebar.tsx` 重寫（4 主入口 + 展開專案列表）
+- [x] 1.3 `MainContent.tsx` 新增
+- [x] 1.4 `AuxPanel.tsx` 新增
+- [x] 1.5 `TabBar.tsx` 精簡（只放 Editor/ProjectPage）
+- [x] 1.6 `app.store.ts` 全域狀態建立
 
 ### 審查標準
+
 | 項目         | 標準                                       | 驗證方式       |
 | ------------ | ------------------------------------------ | -------------- |
 | Sidebar 導航 | 顯示 Dashboard/Feed/Library/Project 4 入口 | 視覺確認       |
@@ -45,14 +49,16 @@
 ## Phase 2: Dashboard 模塊
 
 ### 確認點
-- [ ] 2.1 `DashboardView.tsx` 2x2 Grid 佈局
-- [ ] 2.2 `TodayFocusWidget.tsx`（日記+最緊急專案）
-- [ ] 2.3 `ActiveProjectsWidget.tsx`
-- [ ] 2.4 `NewItemsWidget.tsx`
-- [ ] 2.5 `RecentCompletedWidget.tsx`
-- [ ] 2.6 Mock 資料連接
+
+- [x] 2.1 `DashboardView.tsx` 2x2 Grid 佈局
+- [x] 2.2 `TodayFocusWidget.tsx`（日記+最緊急專案）
+- [x] 2.3 `ActiveProjectsWidget.tsx`
+- [x] 2.4 `NewItemsWidget.tsx`
+- [x] 2.5 `RecentCompletedWidget.tsx`
+- [x] 2.6 Mock 資料連接
 
 ### 審查標準
+
 | 項目        | 標準                      | 驗證方式       |
 | ----------- | ------------------------- | -------------- |
 | Grid 佈局   | 4 個 Widget 正確排列      | 視覺確認       |
@@ -65,6 +71,7 @@
 ## Phase 3: Feed 模塊
 
 ### 確認點
+
 - [ ] 3.1 `FeedView.tsx` 三欄 ResizablePanel
 - [ ] 3.2 `SubscriptionSidebar.tsx`
 - [ ] 3.3 `FeedItemList.tsx`（虛擬滾動）
@@ -77,6 +84,7 @@
 - [ ] 3.10 拖曳到專案功能
 
 ### 審查標準
+
 | 項目     | 標準                     | 驗證方式 |
 | -------- | ------------------------ | -------- |
 | 三欄佈局 | 200px / flex / 400px     | 視覺確認 |
@@ -92,6 +100,7 @@
 ## Phase 4: Library 模塊
 
 ### 確認點
+
 - [ ] 4.1 `LibraryView.tsx` 兩欄佈局
 - [ ] 4.2 `FilterBar.tsx`（Type/Tags/Date/關聯專案）
 - [ ] 4.3 `ViewToggle.tsx`（列表視圖優先）
@@ -100,6 +109,7 @@
 - [ ] 4.6 `library.store.ts`
 
 ### 審查標準
+
 | 項目      | 標準                | 驗證方式 |
 | --------- | ------------------- | -------- |
 | 過濾器    | 4 個下拉可用        | 交互測試 |
@@ -112,6 +122,7 @@
 ## Phase 5: Project 模塊
 
 ### 確認點
+
 - [ ] 5.1 `ProjectListView.tsx`（狀態分組）
 - [ ] 5.2 `ProjectCard.tsx`
 - [ ] 5.3 `StatusGroup.tsx`（可展開/收合）
@@ -123,6 +134,7 @@
 - [ ] 5.9 `project.store.ts`
 
 ### 審查標準
+
 | 項目     | 標準                      | 驗證方式 |
 | -------- | ------------------------- | -------- |
 | 狀態分組 | 進行中/待啟動/已完成 三組 | 視覺確認 |
@@ -135,12 +147,14 @@
 ## Phase 6: 整合與驗證
 
 ### 確認點
+
 - [ ] 6.1 全域快捷鍵測試（Ctrl+1~4）
 - [ ] 6.2 Tab 關閉邏輯（含未保存確認）
 - [ ] 6.3 資料刷新按鈕功能
 - [ ] 6.4 跨模塊流程測試
 
 ### 審查標準
+
 | 項目     | 標準                       | 驗證方式 |
 | -------- | -------------------------- | -------- |
 | 快捷鍵   | Ctrl+1~4 切換視圖          | 交互測試 |
@@ -154,8 +168,8 @@
 
 | 類別     | 標準                       | 必須通過 |
 | -------- | -------------------------- | -------- |
-| **編譯** | `npm run dev` 無錯誤       | ✅        |
-| **類型** | `npm run typecheck` 無錯誤 | ✅        |
-| **功能** | 所有 Phase 審查標準通過    | ✅        |
-| **效能** | 1000 條項目滾動 60fps      | ✅        |
-| **架構** | 符合 design.md 規範        | ✅        |
+| **編譯** | `npm run dev` 無錯誤       | ✅       |
+| **類型** | `npm run typecheck` 無錯誤 | ✅       |
+| **功能** | 所有 Phase 審查標準通過    | ✅       |
+| **效能** | 1000 條項目滾動 60fps      | ✅       |
+| **架構** | 符合 design.md 規範        | ✅       |

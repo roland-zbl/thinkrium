@@ -7,7 +7,7 @@ import { session } from 'electron'
 export function setupAntiHotlinkBypass(): void {
   // 需要處理的圖片域名和對應的 Referer
   const domainRefererMap: Record<string, string> = {
-    'img.gamelook.com.cn': 'http://www.gamelook.com.cn/',
+    'img.gamelook.com.cn': 'http://www.gamelook.com.cn/'
     // 可以在這裡添加更多網站的配置
   }
 
@@ -21,7 +21,7 @@ export function setupAntiHotlinkBypass(): void {
       try {
         const url = new URL(details.url)
         const hostname = url.hostname
-        
+
         // 檢查是否是需要處理的域名
         if (domainRefererMap[hostname]) {
           // 設置正確的 Referer
@@ -31,10 +31,10 @@ export function setupAntiHotlinkBypass(): void {
       } catch (e) {
         // 忽略無效的 URL
       }
-      
+
       callback({ requestHeaders: details.requestHeaders })
     }
   )
-  
+
   console.log('[Anti-Hotlink] Bypass configured for:', Object.keys(domainRefererMap).join(', '))
 }

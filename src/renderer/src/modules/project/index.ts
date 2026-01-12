@@ -1,2 +1,2 @@
-export * from './ProjectListView';
-export * from './ProjectPageView';
+export * from './ProjectListView'
+export * from './ProjectPageView'

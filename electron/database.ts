@@ -11,61 +11,71 @@ let db: Database.Database | null = null
  * - 執行 schema migration
  */
 export function initDatabase(): Database.Database {
-    if (db) {
-        return db
-    }
-
-    // 資料庫文件路徑
-    const userDataPath = app.getPath('userData')
-    const dbPath = join(userDataPath, 'knowledge-base.db')
-    
-    console.log('[Database] Initializing database at:', dbPath)
-
-    // 確保目錄存在
-    if (!existsSync(userDataPath)) {
-        mkdirSync(userDataPath, { recursive: true })
-    }
-
-    // 創建或打開資料庫
-    db = new Database(dbPath)
-    
-    // 啟用 WAL 模式以提升效能
-    db.pragma('journal_mode = WAL')
-    
-    // 啟用外鍵約束
-    db.pragma('foreign_keys = ON')
-
-    // 執行 schema migration
-    runMigrations(db)
-
-    // 開發階段：插入種子數據
-    seedTestData(db)
-
-    console.log('[Database] Database initialized successfully')
+  if (db) {
     return db
+  }
+
+  // 資料庫文件路徑
+  const userDataPath = app.getPath('userData')
+  const dbPath = join(userDataPath, 'knowledge-base.db')
+
+  console.log('[Database] Initializing database at:', dbPath)
+
+  // 確保目錄存在
+  if (!existsSync(userDataPath)) {
+    mkdirSync(userDataPath, { recursive: true })
+  }
+
+  // 創建或打開資料庫
+  db = new Database(dbPath)
+
+  // 啟用 WAL 模式以提升效能
+  db.pragma('journal_mode = WAL')
+
+  // 啟用外鍵約束
+  db.pragma('foreign_keys = ON')
+
+  // 執行 schema migration
+  runMigrations(db)
+
+  // 開發階段：插入種子數據
+  seedTestData(db)
+
+  console.log('[Database] Database initialized successfully')
+  return db
 }
 
 /**
  * 插入測試數據 (Seed Data)
  */
 function seedTestData(database: Database.Database): void {
-    const feedCount = database.prepare('SELECT COUNT(*) as count FROM feeds').get() as { count: number }
-    if (feedCount.count === 0) {
-        console.log('[Database] Seeding test data...')
-        
-        const feedId = 'seed-feed-1'
-        database.prepare(`
+  const feedCount = database.prepare('SELECT COUNT(*) as count FROM feeds').get() as {
+    count: number
+  }
+  if (feedCount.count === 0) {
+    console.log('[Database] Seeding test data...')
+
+    const feedId = 'seed-feed-1'
+    database
+      .prepare(
+        `
             INSERT INTO feeds (id, type, url, title)
             VALUES (?, 'rss', 'https://example.com/feed', '開發測試頻道')
-        `).run(feedId)
+        `
+      )
+      .run(feedId)
 
-        database.prepare(`
+    database
+      .prepare(
+        `
             INSERT INTO feed_items (id, feed_id, guid, title, content, published_at, status)
             VALUES (?, ?, ?, 'IPC 通訊測試成功', '看到這段文字代表從渲染進程透過 IPC 向主進程 SQLite 資料庫請求資料成功！這是一個重大的里程碑。', CURRENT_TIMESTAMP, 'unread')
-        `).run('seed-item-1', feedId, 'guid-seed-1')
-        
-        console.log('[Database] Seed data inserted.')
-    }
+        `
+      )
+      .run('seed-item-1', feedId, 'guid-seed-1')
+
+    console.log('[Database] Seed data inserted.')
+  }
 }
 
 /**
@@ -73,31 +83,31 @@ function seedTestData(database: Database.Database): void {
  * 若尚未初始化則拋出錯誤
  */
 export function getDatabase(): Database.Database {
-    if (!db) {
-        throw new Error('Database not initialized. Call initDatabase() first.')
-    }
-    return db
+  if (!db) {
+    throw new Error('Database not initialized. Call initDatabase() first.')
+  }
+  return db
 }
 
 /**
  * 關閉資料庫連接
  */
 export function closeDatabase(): void {
-    if (db) {
-        console.log('[Database] Closing database connection')
-        db.close()
-        db = null
-    }
+  if (db) {
+    console.log('[Database] Closing database connection')
+    db.close()
+    db = null
+  }
 }
 
 /**
  * 執行資料庫 migration
  */
 function runMigrations(database: Database.Database): void {
-    console.log('[Database] Running migrations...')
-    
-    // 建立 migrations 資料表（如果不存在）
-    database.exec(`
+  console.log('[Database] Running migrations...')
+
+  // 建立 migrations 資料表（如果不存在）
+  database.exec(`
         CREATE TABLE IF NOT EXISTS _migrations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
@@ -105,50 +115,48 @@ function runMigrations(database: Database.Database): void {
         )
     `)
 
-    // 檢查並執行 001_initial_schema
-    const migrationName = '001_initial_schema'
-    const existing = database
-        .prepare('SELECT id FROM _migrations WHERE name = ?')
-        .get(migrationName)
+  // 檢查並執行 001_initial_schema
+  const migrationName = '001_initial_schema'
+  const existing = database.prepare('SELECT id FROM _migrations WHERE name = ?').get(migrationName)
 
-    if (!existing) {
-        console.log(`[Database] Applying migration: ${migrationName}`)
-        
-        // 內嵌的初始 schema
-        const schema = getInitialSchema()
-        database.exec(schema)
-        
-        // 記錄 migration
-        database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationName)
-        console.log(`[Database] Migration ${migrationName} applied successfully`)
-    } else {
-        console.log(`[Database] Migration ${migrationName} already applied`)
-    }
+  if (!existing) {
+    console.log(`[Database] Applying migration: ${migrationName}`)
 
-    // 檢查並執行 002_notes_schema
-    const migrationNoteName = '002_notes_schema'
-    const existingNote = database
-        .prepare('SELECT id FROM _migrations WHERE name = ?')
-        .get(migrationNoteName)
+    // 內嵌的初始 schema
+    const schema = getInitialSchema()
+    database.exec(schema)
 
-    if (!existingNote) {
-        console.log(`[Database] Applying migration: ${migrationNoteName}`)
-        
-        const schema = getNoteSchema()
-        database.exec(schema)
-        
-        database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationNoteName)
-        console.log(`[Database] Migration ${migrationNoteName} applied successfully`)
-    } else {
-        console.log(`[Database] Migration ${migrationNoteName} already applied`)
-    }
+    // 記錄 migration
+    database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationName)
+    console.log(`[Database] Migration ${migrationName} applied successfully`)
+  } else {
+    console.log(`[Database] Migration ${migrationName} already applied`)
+  }
+
+  // 檢查並執行 002_notes_schema
+  const migrationNoteName = '002_notes_schema'
+  const existingNote = database
+    .prepare('SELECT id FROM _migrations WHERE name = ?')
+    .get(migrationNoteName)
+
+  if (!existingNote) {
+    console.log(`[Database] Applying migration: ${migrationNoteName}`)
+
+    const schema = getNoteSchema()
+    database.exec(schema)
+
+    database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationNoteName)
+    console.log(`[Database] Migration ${migrationNoteName} applied successfully`)
+  } else {
+    console.log(`[Database] Migration ${migrationNoteName} already applied`)
+  }
 }
 
 /**
  * 獲取初始 schema SQL
  */
 function getInitialSchema(): string {
-    return `
+  return `
         -- 訂閱源表
         CREATE TABLE IF NOT EXISTS feeds (
             id TEXT PRIMARY KEY,
@@ -189,7 +197,7 @@ function getInitialSchema(): string {
  * 獲取 Note 模組的 schema SQL
  */
 function getNoteSchema(): string {
-    return `
+  return `
         -- 筆記索引表
         CREATE TABLE IF NOT EXISTS notes (
             id TEXT PRIMARY KEY,

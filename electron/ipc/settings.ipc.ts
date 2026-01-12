@@ -9,17 +9,21 @@ export function initSettingsIPC(): void {
 
   // 獲取設定
   ipcMain.handle('settings:get', (_, key: string): string | null => {
-    const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as { value: string } | undefined
+    const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
+      | { value: string }
+      | undefined
     return row ? row.value : null
   })
 
   // 保存設定
   ipcMain.handle('settings:set', (_, key: string, value: string): void => {
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO settings (key, value)
       VALUES (?, ?)
       ON CONFLICT(key) DO UPDATE SET value = excluded.value
-    `).run(key, value)
+    `
+    ).run(key, value)
   })
 
   // 選擇目錄

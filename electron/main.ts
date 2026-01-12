@@ -25,7 +25,7 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
-      webSecurity: false  // 允許跨域資源載入（開發階段）
+      webSecurity: false // 允許跨域資源載入（開發階段）
     }
   })
 
@@ -51,7 +51,7 @@ function createWindow(): void {
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     console.log('Loading URL:', process.env['ELECTRON_RENDERER_URL'])
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']).catch(err => {
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']).catch((err) => {
       console.error('Failed to load URL, falling back to file:', err)
       mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
     })
@@ -66,25 +66,25 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   console.log('App ready')
-  
+
   // 設置使用系統代理（讓圖片請求能通過用戶的代理程式）
   const { session } = await import('electron')
   await session.defaultSession.setProxy({ mode: 'system' })
   console.log('System proxy enabled')
-  
+
   // 設置防盜鏈繞過（修改圖片請求的 Referer）
   setupAntiHotlinkBypass()
   console.log('Anti-hotlink bypass enabled')
-  
+
   // 初始化資料庫
   try {
     initDatabase()
     console.log('Database initialized')
-    
+
     // 初始化 Feed IPC
     initFeedIPC()
     console.log('Feed IPC initialized')
-    
+
     // 初始化 Settings IPC
     initSettingsIPC()
     console.log('Settings IPC initialized')
@@ -95,7 +95,7 @@ app.whenReady().then(async () => {
   } catch (error) {
     console.error('Failed to initialize database:', error)
   }
-  
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 

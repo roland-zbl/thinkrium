@@ -5,6 +5,7 @@
 根據 Phase 1 開發計劃 Task 3，需要在 Electron 主進程中設置 SQLite 資料庫，作為 Feed 內容和訂閱源的持久化存儲。
 
 目前應用程式使用模擬數據，需要建立真正的資料庫層以支援：
+
 - 訂閱源的新增、刪除和列表查詢
 - Feed 內容項目的存儲和檢索
 - 閱讀狀態追蹤
@@ -19,7 +20,7 @@
 ## Impact
 
 - **Affected specs**: `core`, `feed`
-- **Affected code**: 
+- **Affected code**:
   - `electron/database.ts` (新增)
   - `electron/migrations/` (新增目錄)
   - `electron/main.ts`

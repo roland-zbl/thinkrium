@@ -21,7 +21,7 @@
 ## Impact
 
 - **Affected specs**: `ui`
-- **Affected code**: 
+- **Affected code**:
   - `src/components/layout/` (新增目錄)
   - `src/App.tsx`
   - `src/index.css`

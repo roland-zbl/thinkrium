@@ -65,27 +65,31 @@ export function initFeedIPC(): void {
 
   // 標記為已讀
   ipcMain.handle('feed:items:mark-read', (_, itemId: string): void => {
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE feed_items 
       SET status = 'read', read_at = CURRENT_TIMESTAMP 
       WHERE id = ?
-    `).run(itemId)
+    `
+    ).run(itemId)
   })
 
   // 批量新增文章（供抓取服務使用）
-  ipcMain.handle('feed:items:bulk-add', (_, items: Omit<FeedItem, 'status' | 'read_at' | 'fetched_at'>[]): void => {
-    const insert = db.prepare(`
+  ipcMain.handle(
+    'feed:items:bulk-add',
+    (_, items: Omit<FeedItem, 'status' | 'read_at' | 'fetched_at'>[]): void => {
+      const insert = db.prepare(`
       INSERT OR IGNORE INTO feed_items (id, feed_id, guid, title, url, content, author, published_at)
       VALUES (@id, @feed_id, @guid, @title, @url, @content, @author, @published_at)
     `)
 
-    const transaction = db.transaction((items) => {
-      for (const item of items) insert.run(item)
-    })
+      const transaction = db.transaction((items) => {
+        for (const item of items) insert.run(item)
+      })
 
-
-    transaction(items)
-  })
+      transaction(items)
+    }
+  )
 
   // --- RSS 抓取服務 ---
 
@@ -102,7 +106,7 @@ export function initFeedIPC(): void {
     console.log(`[IPC] Fetching feed: ${feed.title} (${feed.url})`)
     const result = await fetchFeed(feed.url)
 
-    const items = result.items.map(item => ({
+    const items = result.items.map((item) => ({
       id: randomUUID(),
       feed_id: feedId,
       guid: item.guid,
