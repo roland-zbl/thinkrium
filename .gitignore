@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+out/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.idea/
+*.swp
+*.swo
+
+# Eslint
+.eslintcache
+
+# Logs
+*.log
+*.log.*
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Temporary files
+*.tmp
+*.temp
+typecheck_*.txt
+build_check.txt
