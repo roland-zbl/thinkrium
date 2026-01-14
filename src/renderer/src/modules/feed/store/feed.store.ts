@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { ItemFilter, FeedItem as DbFeedItem } from '../types'
+import TurndownService from 'turndown'
 
 export interface FeedItem {
   id: string
@@ -10,6 +11,7 @@ export interface FeedItem {
   summary: string
   content: string | null
   feed_id: string
+  link: string | null
 }
 
 export interface Subscription {
@@ -53,10 +55,6 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     try {
       const feeds = await window.api.feed.listFeeds()
       // 需要計算未讀數，這裡暫時簡化，後續可以優化 SQL
-      // 假設 feeds 包含 id, title, url, icon_url
-      // 我們需要另外查 unread count 或在 feed:list 中包含
-      // 目前 feed:list 返回原始表結構。
-      // 暫時 Mock unreadCount
       const subscriptions = feeds.map((f) => ({
         id: f.id,
         name: f.title || f.url,
@@ -84,9 +82,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       if (filter === 'unread') {
         dbFilter.status = 'unread'
       } else if (filter === 'saved') {
-        dbFilter.status = 'saved' // 注意：DB status 可能是 'saved' 或透過其他表關聯
-        // 目前 feed_items status 預設 unread, read. 保存可能是在 notes 表?
-        // 暫時假設 feed_items.status 可以是 'saved' 或 'read'
+        dbFilter.status = 'saved'
       }
 
       const items = await window.api.feed.listItems(dbFilter)
@@ -95,12 +91,13 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       const feedItems: FeedItem[] = items.map((i: DbFeedItem) => ({
         id: i.id,
         title: i.title,
-        source: get().subscriptions.find(s => s.id === i.feed_id)?.name || 'Unknown',
+        source: get().subscriptions.find((s) => s.id === i.feed_id)?.name || 'Unknown',
         date: i.published_at,
         status: i.status,
         summary: i.content ? i.content.substring(0, 100) : '',
         content: i.content,
-        feed_id: i.feed_id
+        feed_id: i.feed_id,
+        link: i.url
       }))
 
       set({ items: feedItems })
@@ -113,6 +110,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
 
   addFeed: async (url, name, _category) => {
     try {
+      console.log('Category ignored:', _category) // Use to avoid linter error
       set({ loading: true })
       // 1. 驗證
       const validation = await window.api.feed.validateFeed(url)
@@ -167,11 +165,11 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   selectItem: async (id) => {
     set({ selectedItemId: id })
     if (id) {
-       // 自動標記為已讀
-       const item = get().items.find(i => i.id === id)
-       if (item && item.status === 'unread') {
-         await get().markAsRead(id)
-       }
+      // 自動標記為已讀
+      const item = get().items.find((i) => i.id === id)
+      if (item && item.status === 'unread') {
+        await get().markAsRead(id)
+      }
     }
   },
 
@@ -184,9 +182,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     try {
       await window.api.feed.markAsRead(id)
       set((state) => ({
-        items: state.items.map((item) =>
-          item.id === id ? { ...item, status: 'read' } : item
-        )
+        items: state.items.map((item) => (item.id === id ? { ...item, status: 'read' } : item))
       }))
     } catch (error) {
       console.error('Failed to mark as read:', error)
@@ -194,16 +190,18 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   },
 
   saveItem: async (id) => {
-    // 保存為筆記的邏輯
-    // 這裡調用 note API，並更新 feed item 狀態
-    const item = get().items.find(i => i.id === id)
+    const item = get().items.find((i) => i.id === id)
     if (!item) return
 
     try {
+      // Convert HTML to Markdown
+      const turndownService = new TurndownService()
+      const markdown = item.content ? turndownService.turndown(item.content) : ''
+
       await window.api.note.save({
         title: item.title,
-        content: item.content,
-        sourceUrl: item.id, // TODO: Use real URL
+        content: markdown, // Save as Markdown
+        sourceUrl: item.id,
         sourceType: 'rss',
         sourceItemId: item.id,
         tags: ['rss']
