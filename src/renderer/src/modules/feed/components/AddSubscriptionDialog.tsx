@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { X } from 'lucide-react'
+import { X, AlertCircle } from 'lucide-react'
 import { tokens } from '../../../styles/tokens'
+import { useFeedStore } from '../store/feed.store'
 
 interface Props {
   isOpen: boolean
@@ -14,11 +15,24 @@ export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { addFeed } = useFeedStore()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // 實作邏輯：呼叫 feedAPI 並更新 Store
-    console.log('Adding subscription:', { url, name, category })
-    onClose()
+    setError(null)
+    setLoading(true)
+
+    try {
+      await addFeed(url, name || undefined, category)
+      onClose()
+    } catch (err: any) {
+      console.error('Failed to add subscription:', err)
+      setError(err.message || '新增訂閱失敗')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -80,19 +94,28 @@ export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
             </select>
           </div>
 
+          {error && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-red-500 text-sm">
+              <AlertCircle size={16} />
+              <span>{error}</span>
+            </div>
+          )}
+
           <div className="pt-4 flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 text-sm font-medium hover:bg-accent rounded-lg transition-colors border border-border text-muted-foreground hover:text-foreground"
+              disabled={loading}
+              className="flex-1 py-2 text-sm font-medium hover:bg-accent rounded-lg transition-colors border border-border text-muted-foreground hover:text-foreground disabled:opacity-50"
             >
               取消
             </button>
             <button
               type="submit"
-              className="flex-1 py-2 text-sm font-bold bg-primary hover:bg-primary/80 text-white rounded-lg transition-colors"
+              disabled={loading}
+              className="flex-1 py-2 text-sm font-bold bg-primary hover:bg-primary/80 text-white rounded-lg transition-colors disabled:opacity-50"
             >
-              確認新增
+              {loading ? '驗證中...' : '確認新增'}
             </button>
           </div>
         </form>

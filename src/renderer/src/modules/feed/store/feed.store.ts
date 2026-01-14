@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { mockFeedItems, mockSubscriptions } from '../../../mocks'
 
 export interface FeedItem {
   id: string
@@ -9,6 +8,7 @@ export interface FeedItem {
   status: 'unread' | 'read' | 'saved'
   summary: string
   content: string
+  feed_id: string
 }
 
 export interface Subscription {
@@ -16,6 +16,8 @@ export interface Subscription {
   name: string
   category: string
   unreadCount: number
+  url: string
+  icon_url?: string
 }
 
 interface FeedState {
@@ -24,33 +26,193 @@ interface FeedState {
   selectedItemId: string | null
   activeSubscriptionId: string | null // null means 'All'
   filter: 'all' | 'unread' | 'saved'
+  loading: boolean
 
   // Actions
+  fetchSubscriptions: () => Promise<void>
+  fetchItems: () => Promise<void>
+  addFeed: (url: string, name?: string, category?: string) => Promise<void>
+  removeFeed: (id: string) => Promise<void>
   setFilter: (filter: 'all' | 'unread' | 'saved') => void
   selectItem: (id: string | null) => void
   setActiveSubscription: (id: string | null) => void
-  markAsRead: (id: string) => void
-  saveItem: (id: string) => void
+  markAsRead: (id: string) => Promise<void>
+  saveItem: (id: string) => Promise<void>
 }
 
-export const useFeedStore = create<FeedState>((set) => ({
-  items: mockFeedItems as FeedItem[],
-  subscriptions: mockSubscriptions,
+export const useFeedStore = create<FeedState>((set, get) => ({
+  items: [],
+  subscriptions: [],
   selectedItemId: null,
   activeSubscriptionId: null,
   filter: 'all',
+  loading: false,
 
-  setFilter: (filter) => set({ filter }),
-  selectItem: (id) => set({ selectedItemId: id }),
-  setActiveSubscription: (id) => set({ activeSubscriptionId: id, selectedItemId: null }),
-  markAsRead: (id) =>
-    set((state) => ({
-      items: state.items.map((item) =>
-        item.id === id ? { ...item, status: item.status === 'unread' ? 'read' : item.status } : item
-      )
-    })),
-  saveItem: (id) =>
-    set((state) => ({
-      items: state.items.map((item) => (item.id === id ? { ...item, status: 'saved' } : item))
-    }))
+  fetchSubscriptions: async () => {
+    try {
+      const feeds = await window.api.feed.listFeeds()
+      // 需要計算未讀數，這裡暫時簡化，後續可以優化 SQL
+      // 假設 feeds 包含 id, title, url, icon_url
+      // 我們需要另外查 unread count 或在 feed:list 中包含
+      // 目前 feed:list 返回原始表結構。
+      // 暫時 Mock unreadCount
+      const subscriptions = feeds.map((f) => ({
+        id: f.id,
+        name: f.title || f.url,
+        category: '未分類', // TODO: DB schema 需支援分類
+        unreadCount: 0, // TODO: 實作未讀數統計
+        url: f.url,
+        icon_url: f.icon_url
+      }))
+      set({ subscriptions })
+    } catch (error) {
+      console.error('Failed to fetch subscriptions:', error)
+    }
+  },
+
+  fetchItems: async () => {
+    const { activeSubscriptionId, filter } = get()
+    set({ loading: true })
+    try {
+      const dbFilter: any = {
+        limit: 100 // 限制載入數量，避免卡頓
+      }
+      if (activeSubscriptionId) {
+        dbFilter.feedId = activeSubscriptionId
+      }
+      if (filter === 'unread') {
+        dbFilter.status = 'unread'
+      } else if (filter === 'saved') {
+        dbFilter.status = 'saved' // 注意：DB status 可能是 'saved' 或透過其他表關聯
+        // 目前 feed_items status 預設 unread, read. 保存可能是在 notes 表?
+        // 暫時假設 feed_items.status 可以是 'saved' 或 'read'
+      }
+
+      const items = await window.api.feed.listItems(dbFilter)
+
+      // 轉換 DB 格式到 Store 格式
+      const feedItems: FeedItem[] = items.map((i: any) => ({
+        id: i.id,
+        title: i.title,
+        source: get().subscriptions.find(s => s.id === i.feed_id)?.name || 'Unknown',
+        date: i.published_at,
+        status: i.status,
+        summary: i.content ? i.content.substring(0, 100) : '',
+        content: i.content,
+        feed_id: i.feed_id
+      }))
+
+      set({ items: feedItems })
+    } catch (error) {
+      console.error('Failed to fetch items:', error)
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  addFeed: async (url, name, _category) => {
+    try {
+      set({ loading: true })
+      // 1. 驗證
+      const validation = await window.api.feed.validateFeed(url)
+      if (!validation.valid) {
+        throw new Error(validation.error || '無效的 RSS 源')
+      }
+
+      // 2. 新增
+      const id = crypto.randomUUID()
+      await window.api.feed.addFeed({
+        id,
+        url,
+        title: name || validation.title || url,
+        type: 'rss',
+        icon_url: null, // TODO: Fetch icon
+        last_fetched: null,
+        fetch_interval: 30
+      })
+
+      // 3. 立即抓取
+      await window.api.feed.fetchFeed(id)
+
+      // 4. 更新列表
+      await get().fetchSubscriptions()
+      await get().fetchItems()
+    } catch (error) {
+      console.error('Failed to add feed:', error)
+      throw error
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  removeFeed: async (id) => {
+    try {
+      await window.api.feed.removeFeed(id)
+      set((state) => ({
+        subscriptions: state.subscriptions.filter((s) => s.id !== id),
+        items: state.items.filter((i) => i.feed_id !== id),
+        activeSubscriptionId: state.activeSubscriptionId === id ? null : state.activeSubscriptionId
+      }))
+    } catch (error) {
+      console.error('Failed to remove feed:', error)
+    }
+  },
+
+  setFilter: (filter) => {
+    set({ filter })
+    get().fetchItems()
+  },
+
+  selectItem: async (id) => {
+    set({ selectedItemId: id })
+    if (id) {
+       // 自動標記為已讀
+       const item = get().items.find(i => i.id === id)
+       if (item && item.status === 'unread') {
+         await get().markAsRead(id)
+       }
+    }
+  },
+
+  setActiveSubscription: (id) => {
+    set({ activeSubscriptionId: id, selectedItemId: null })
+    get().fetchItems()
+  },
+
+  markAsRead: async (id) => {
+    try {
+      await window.api.feed.markAsRead(id)
+      set((state) => ({
+        items: state.items.map((item) =>
+          item.id === id ? { ...item, status: 'read' } : item
+        )
+      }))
+    } catch (error) {
+      console.error('Failed to mark as read:', error)
+    }
+  },
+
+  saveItem: async (id) => {
+    // 保存為筆記的邏輯
+    // 這裡調用 note API，並更新 feed item 狀態
+    const item = get().items.find(i => i.id === id)
+    if (!item) return
+
+    try {
+      await window.api.note.save({
+        title: item.title,
+        content: item.content,
+        sourceUrl: item.id, // TODO: Use real URL
+        sourceType: 'rss',
+        sourceItemId: item.id,
+        tags: ['rss']
+      })
+
+      set((state) => ({
+        items: state.items.map((i) => (i.id === id ? { ...i, status: 'saved' } : i))
+      }))
+    } catch (error) {
+      console.error('Failed to save item:', error)
+    }
+  }
 }))
