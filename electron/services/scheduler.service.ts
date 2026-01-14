@@ -51,43 +51,44 @@ async function runScheduledFetch(): Promise<void> {
 }
 
 async function fetchFeedAndSave(db: any, feed: Feed): Promise<void> {
-    try {
-        console.log(`[Scheduler] Fetching ${feed.title}...`)
-        const result = await fetchFeed(feed.url)
+  try {
+    console.log(`[Scheduler] Fetching ${feed.title}...`)
+    const result = await fetchFeed(feed.url)
 
-        const items = result.items.map((item) => ({
-            id: randomUUID(),
-            feed_id: feed.id,
-            guid: item.guid,
-            title: item.title,
-            url: item.link,
-            content: item.content,
-            author: item.creator,
-            published_at: item.pubDate
-        }))
+    const items = result.items.map((item) => ({
+      id: randomUUID(),
+      feed_id: feed.id,
+      guid: item.guid,
+      title: item.title,
+      url: item.link,
+      content: item.content,
+      author: item.creator,
+      published_at: item.pubDate
+    }))
 
-        const insert = db.prepare(`
+    const insert = db.prepare(`
             INSERT OR IGNORE INTO feed_items (id, feed_id, guid, title, url, content, author, published_at)
             VALUES (@id, @feed_id, @guid, @title, @url, @content, @author, @published_at)
         `)
 
-        let insertedCount = 0
-        // 安全性備註：資料庫 schema 已對 (feed_id, guid) 設置唯一索引
-        // 因此 INSERT OR IGNORE 會自動忽略重複項目，不會造成數據膨脹
-        const transaction = db.transaction((items) => {
-            for (const item of items) {
-                const result = insert.run(item)
-                insertedCount += result.changes
-            }
-        })
+    let insertedCount = 0
+    // 安全性備註：資料庫 schema 已對 (feed_id, guid) 設置唯一索引
+    // 因此 INSERT OR IGNORE 會自動忽略重複項目，不會造成數據膨脹
+    const transaction = db.transaction((items) => {
+      for (const item of items) {
+        const result = insert.run(item)
+        insertedCount += result.changes
+      }
+    })
 
-        transaction(items)
-        console.log(`[Scheduler] Fetched ${items.length} items from ${feed.title}, inserted ${insertedCount} new items.`)
+    transaction(items)
+    console.log(
+      `[Scheduler] Fetched ${items.length} items from ${feed.title}, inserted ${insertedCount} new items.`
+    )
 
-        // 更新最後抓取時間
-        db.prepare('UPDATE feeds SET last_fetched = CURRENT_TIMESTAMP WHERE id = ?').run(feed.id)
-
-    } catch (error) {
-        console.error(`[Scheduler] Failed to fetch ${feed.title}:`, error)
-    }
+    // 更新最後抓取時間
+    db.prepare('UPDATE feeds SET last_fetched = CURRENT_TIMESTAMP WHERE id = ?').run(feed.id)
+  } catch (error) {
+    console.error(`[Scheduler] Failed to fetch ${feed.title}:`, error)
+  }
 }

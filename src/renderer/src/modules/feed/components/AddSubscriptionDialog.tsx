@@ -9,6 +9,7 @@ interface Props {
 }
 
 export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
+  // State for form inputs
   const [url, setUrl] = useState('')
   const [name, setName] = useState('')
   const [category, setCategory] = useState('未分類')
