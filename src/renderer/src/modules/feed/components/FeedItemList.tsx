@@ -6,16 +6,21 @@ import { FilterTabs } from './FilterTabs'
 import { tokens } from '../../../styles/tokens'
 
 export const FeedItemList: React.FC = () => {
-  const { items, activeSubscriptionId, filter, selectedItemId, selectItem } = useFeedStore()
+  const { items, subscriptions, activeSubscriptionId, filter, selectedItemId, selectItem } =
+    useFeedStore()
   const parentRef = useRef<HTMLDivElement>(null)
 
   // 根據訂閱源和狀態過濾列表
   const filteredItems = useMemo(() => {
+    // O(M)
+    const subscriptionMap = new Map(subscriptions.map((s) => [s.id, s.name]))
+    const activeSubscriptionName = activeSubscriptionId
+      ? subscriptionMap.get(activeSubscriptionId)
+      : null
+
+    // O(N)
     return items.filter((item) => {
-      const matchSub = activeSubscriptionId
-        ? item.source ===
-          useFeedStore.getState().subscriptions.find((s) => s.id === activeSubscriptionId)?.name
-        : true
+      const matchSub = activeSubscriptionId ? item.source === activeSubscriptionName : true
       const matchStatus =
         filter === 'all'
           ? true
@@ -24,7 +29,7 @@ export const FeedItemList: React.FC = () => {
             : item.status === 'saved'
       return matchSub && matchStatus
     })
-  }, [items, activeSubscriptionId, filter])
+  }, [items, subscriptions, activeSubscriptionId, filter])
 
   const virtualizer = useVirtualizer({
     count: filteredItems.length,
