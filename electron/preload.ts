@@ -23,6 +23,15 @@ const api = {
     get: (id: string) => ipcRenderer.invoke('note:get', id),
     update: (id: string, updates: any) => ipcRenderer.invoke('note:update', id, updates),
     delete: (id: string) => ipcRenderer.invoke('note:delete', id)
+  },
+  project: {
+    create: (project: any) => ipcRenderer.invoke('project:create', project),
+    list: () => ipcRenderer.invoke('project:list'),
+    addItem: (projectId: string, noteId: string) =>
+      ipcRenderer.invoke('project:add-item', projectId, noteId),
+    getItems: (projectId: string) => ipcRenderer.invoke('project:get-items', projectId),
+    updateStatus: (id: string, status: string) =>
+      ipcRenderer.invoke('project:update-status', id, status)
   }
 }
 

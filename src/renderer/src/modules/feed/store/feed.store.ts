@@ -40,7 +40,7 @@ interface FeedState {
   selectItem: (id: string | null) => void
   setActiveSubscription: (id: string | null) => void
   markAsRead: (id: string) => Promise<void>
-  saveItem: (id: string) => Promise<void>
+  saveItem: (id: string) => Promise<string | undefined>
 }
 
 export const useFeedStore = create<FeedState>((set, get) => ({
@@ -191,14 +191,14 @@ export const useFeedStore = create<FeedState>((set, get) => ({
 
   saveItem: async (id) => {
     const item = get().items.find((i) => i.id === id)
-    if (!item) return
+    if (!item) return undefined
 
     try {
       // Convert HTML to Markdown
       const turndownService = new TurndownService()
       const markdown = item.content ? turndownService.turndown(item.content) : ''
 
-      await window.api.note.save({
+      const note = await window.api.note.save({
         title: item.title,
         content: markdown, // Save as Markdown
         sourceUrl: item.id,
@@ -210,8 +210,11 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       set((state) => ({
         items: state.items.map((i) => (i.id === id ? { ...i, status: 'saved' } : i))
       }))
+
+      return note.id
     } catch (error) {
       console.error('Failed to save item:', error)
+      return undefined
     }
   }
 }))
