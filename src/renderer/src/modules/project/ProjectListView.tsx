@@ -1,13 +1,36 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Plus, FolderKanban } from 'lucide-react'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { useProjectStore } from './store/project.store'
 import { tokens } from '../../styles/tokens'
 import { useAppStore } from '../../stores/app.store'
+import { CreateProjectDialog } from './components/CreateProjectDialog'
 
 export const ProjectListView: React.FC = () => {
-  const { projects } = useProjectStore()
+  const { projects, addProject } = useProjectStore()
   const { addTab } = useAppStore()
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+
+  const handleCreateProject = (title: string): void => {
+    const newProject = {
+      id: crypto.randomUUID(),
+      title,
+      status: 'active' as const,
+      targetDate: null,
+      materialCount: 0,
+      deliverableCount: 0,
+      notes: ''
+    }
+    addProject(newProject)
+
+    // Open the newly created project
+    addTab({
+      id: `project-${newProject.id}`,
+      type: 'project-page',
+      title: newProject.title,
+      data: { projectId: newProject.id }
+    })
+  }
 
   const statuses: { id: string; label: string; color: string }[] = [
     { id: 'active', label: '進行中', color: tokens.colors.primary },
@@ -26,7 +49,10 @@ export const ProjectListView: React.FC = () => {
             </h1>
             <p className="text-muted-foreground text-base mt-2 ml-1">追蹤您的創作進度與素材整合</p>
           </div>
-          <button className="bg-primary hover:bg-primary/80 text-white px-6 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
+          <button
+            onClick={() => setIsCreateDialogOpen(true)}
+            className="bg-primary hover:bg-primary/80 text-white px-6 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
+          >
             <Plus size={20} />
             新建專案
           </button>
@@ -115,7 +141,7 @@ export const ProjectListView: React.FC = () => {
                         description="目前沒有專案正在進行。您可以隨時建立新專案來開始您的創作旅程。"
                         action={{
                           label: '建立新專案',
-                          onClick: () => {} // TODO: 連接建立專案邏輯
+                          onClick: () => setIsCreateDialogOpen(true)
                         }}
                       />
                     </div>
@@ -126,6 +152,12 @@ export const ProjectListView: React.FC = () => {
           })}
         </div>
       </div>
+
+      <CreateProjectDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onConfirm={handleCreateProject}
+      />
     </div>
   )
 }
