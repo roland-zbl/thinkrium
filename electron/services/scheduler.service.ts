@@ -1,4 +1,3 @@
-import { ipcMain } from 'electron'
 import { getDatabase } from '../database'
 import { fetchFeed } from './rss.service'
 import { Feed } from '../../src/renderer/src/modules/feed/types'

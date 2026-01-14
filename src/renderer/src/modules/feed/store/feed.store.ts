@@ -1,13 +1,14 @@
 import { create } from 'zustand'
+import { ItemFilter, FeedItem as DbFeedItem } from '../types'
 
 export interface FeedItem {
   id: string
   title: string
   source: string
-  date: string
+  date: string | null
   status: 'unread' | 'read' | 'saved'
   summary: string
-  content: string
+  content: string | null
   feed_id: string
 }
 
@@ -74,7 +75,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     const { activeSubscriptionId, filter } = get()
     set({ loading: true })
     try {
-      const dbFilter: any = {
+      const dbFilter: ItemFilter = {
         limit: 100 // 限制載入數量，避免卡頓
       }
       if (activeSubscriptionId) {
@@ -91,7 +92,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       const items = await window.api.feed.listItems(dbFilter)
 
       // 轉換 DB 格式到 Store 格式
-      const feedItems: FeedItem[] = items.map((i: any) => ({
+      const feedItems: FeedItem[] = items.map((i: DbFeedItem) => ({
         id: i.id,
         title: i.title,
         source: get().subscriptions.find(s => s.id === i.feed_id)?.name || 'Unknown',

@@ -6,21 +6,15 @@ import { FilterTabs } from './FilterTabs'
 import { tokens } from '../../../styles/tokens'
 
 export const FeedItemList: React.FC = () => {
-  const { items, subscriptions, activeSubscriptionId, filter, selectedItemId, selectItem } =
-    useFeedStore()
+  const { items, activeSubscriptionId, filter, selectedItemId, selectItem } = useFeedStore()
   const parentRef = useRef<HTMLDivElement>(null)
 
   // 根據訂閱源和狀態過濾列表
+  // 使用 feed_id 直接比對，避免名稱比對的不穩定性
   const filteredItems = useMemo(() => {
-    // O(M)
-    const subscriptionMap = new Map(subscriptions.map((s) => [s.id, s.name]))
-    const activeSubscriptionName = activeSubscriptionId
-      ? subscriptionMap.get(activeSubscriptionId)
-      : null
-
-    // O(N)
     return items.filter((item) => {
-      const matchSub = activeSubscriptionId ? item.source === activeSubscriptionName : true
+      // 使用 feed_id 直接比對，而非透過 source 名稱
+      const matchSub = activeSubscriptionId ? item.feed_id === activeSubscriptionId : true
       const matchStatus =
         filter === 'all'
           ? true
@@ -29,7 +23,7 @@ export const FeedItemList: React.FC = () => {
             : item.status === 'saved'
       return matchSub && matchStatus
     })
-  }, [items, subscriptions, activeSubscriptionId, filter])
+  }, [items, activeSubscriptionId, filter])
 
   const virtualizer = useVirtualizer({
     count: filteredItems.length,
