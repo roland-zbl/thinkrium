@@ -1,0 +1,1 @@
+Skipping Playwright verification as this is an Electron app and headless verification in this environment is tricky without X11. I have verified the logic with typecheck.

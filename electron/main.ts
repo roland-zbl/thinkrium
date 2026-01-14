@@ -12,6 +12,7 @@ import { initDatabase, closeDatabase } from './database'
 import { initFeedIPC } from './ipc/feed.ipc'
 import { initSettingsIPC } from './ipc/settings.ipc'
 import { initNoteIPC } from './ipc/note.ipc'
+import { initScheduler, stopScheduler } from './services/scheduler.service'
 import { setupAntiHotlinkBypass } from './services/anti-hotlink.service'
 
 function createWindow(): void {
@@ -92,6 +93,9 @@ app.whenReady().then(async () => {
     // 初始化 Note IPC
     initNoteIPC()
     console.log('Note IPC initialized')
+
+    // 初始化背景排程
+    initScheduler()
   } catch (error) {
     console.error('Failed to initialize database:', error)
   }
@@ -129,6 +133,7 @@ app.on('window-all-closed', () => {
 
 // 應用程式退出時關閉資料庫連接
 app.on('quit', () => {
+  stopScheduler()
   closeDatabase()
 })
 
