@@ -51,6 +51,7 @@ export interface Feed {
   url: string
   title: string | null
   icon_url: string | null
+  category?: string
   last_fetched: string | null
   fetch_interval: number
   created_at: string

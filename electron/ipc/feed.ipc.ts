@@ -14,8 +14,13 @@ export function initFeedIPC(): void {
   })
 
   // 新增訂閱源
-  ipcMain.handle('feed:add', (_, feed: Omit<Feed, 'created_at'>): void => {
-    feedService.addFeed(feed)
+  ipcMain.handle('feed:add', (_, feed: Omit<Feed, 'created_at'> & { category?: string }): void => {
+    // 確保 category 存在，如果沒有則使用預設值
+    const feedWithCategory = {
+      ...feed,
+      category: feed.category || '未分類'
+    }
+    feedService.addFeed(feedWithCategory)
   })
 
   // 刪除訂閱源

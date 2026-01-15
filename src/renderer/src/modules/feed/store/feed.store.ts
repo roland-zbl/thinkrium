@@ -59,7 +59,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       const subscriptions = feeds.map((f) => ({
         id: f.id,
         name: f.title || f.url,
-        category: '未分類', // TODO: DB schema 需支援分類
+        category: f.category || '未分類',
         unreadCount: f.unreadCount || 0,
         url: f.url,
         icon_url: f.icon_url || undefined
@@ -121,9 +121,8 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     }
   },
 
-  addFeed: async (url, name, _category) => {
+  addFeed: async (url, name, category) => {
     try {
-      console.log('Category ignored:', _category) // Use to avoid linter error
       set({ loading: true })
       // 1. 驗證
       const validation = await window.api.feed.validateFeed(url)
@@ -138,7 +137,8 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         url,
         title: name || validation.title || url,
         type: 'rss',
-        icon_url: null, // TODO: Fetch icon
+        icon_url: validation.icon || null,
+        category: category || '未分類',
         last_fetched: null,
         fetch_interval: 30
       })
