@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { ItemFilter, FeedItem as DbFeedItem } from '../types'
+import { ItemFilter, FeedItem as DbFeedItem } from '@/types'
 import TurndownService from 'turndown'
 import { useToastStore } from '@/stores/toast.store'
 
@@ -60,9 +60,9 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         id: f.id,
         name: f.title || f.url,
         category: '未分類', // TODO: DB schema 需支援分類
-        unreadCount: f.unreadCount,
+        unreadCount: f.unreadCount || 0,
         url: f.url,
-        icon_url: f.icon_url
+        icon_url: f.icon_url || undefined
       }))
       set({ subscriptions })
     } catch (error) {

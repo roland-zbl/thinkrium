@@ -28,14 +28,18 @@ export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
     try {
       await addFeed(url, name || undefined, category)
       onClose()
-    } catch (err: any) {
+    } catch (err: unknown) {
       useToastStore.getState().addToast({
         type: 'error',
         title: 'Failed to add subscription',
-        description: err.message || '新增訂閱失敗'
+        description: err instanceof Error ? err.message : '新增訂閱失敗'
       })
       console.error('Failed to add subscription:', err)
-      setError(err.message || '新增訂閱失敗')
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('新增訂閱失敗')
+      }
     } finally {
       setLoading(false)
     }

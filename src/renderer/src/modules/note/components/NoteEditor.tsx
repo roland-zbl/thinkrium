@@ -5,6 +5,7 @@ import { Bold, Italic, Strikethrough, Code, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToastStore } from '@/stores/toast.store'
 
+
 interface NoteEditorProps {
   noteId: string
 }
@@ -18,7 +19,10 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
     const fetchNote = async () => {
       try {
         const fetchedNote = await window.api.note.get(noteId)
-        setNote(fetchedNote)
+        setNote({
+          title: fetchedNote.title,
+          content: fetchedNote.content || ''
+        })
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error)
         useToastStore.getState().addToast({
