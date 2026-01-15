@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { FolderOpen } from 'lucide-react'
 import { tokens } from '../styles/tokens'
+import { useToastStore } from '@/stores/toast.store'
 
 interface Props {
   onComplete: () => void
@@ -18,6 +19,12 @@ export const SetupDialog: React.FC<Props> = ({ onComplete }) => {
         setSelectedPath(path)
       }
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to select directory',
+        description: msg
+      })
       console.error('Failed to select directory:', error)
     } finally {
       setLoading(false)
@@ -29,8 +36,19 @@ export const SetupDialog: React.FC<Props> = ({ onComplete }) => {
     try {
       setLoading(true)
       await window.api.settings.set('notes.rootDir', selectedPath)
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Settings saved',
+        description: 'Knowledge base root directory configured'
+      })
       onComplete()
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to save settings',
+        description: msg
+      })
       console.error('Failed to save settings:', error)
     } finally {
       setLoading(false)

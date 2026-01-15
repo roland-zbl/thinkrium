@@ -17,7 +17,9 @@ import { MainContent } from './MainContent'
 import { AuxPanel } from './AuxPanel'
 import { TabBar } from './TabBar'
 import { ProjectSelectorDialog } from '@/modules/project/components/ProjectSelectorDialog'
+import { Toaster } from '@/components/ui/Toast'
 import { tokens } from '@/styles/tokens'
+import { useToastStore } from '@/stores/toast.store'
 
 export const AppShell: React.FC = () => {
   const { tabs, auxPanelOpen, setView, setActiveTab, theme } = useAppStore()
@@ -168,7 +170,17 @@ export const AppShell: React.FC = () => {
           try {
             await window.api.project.addItem(projectId, noteId)
             console.log(`[Drag] Item added to project ${projectId}`)
+            useToastStore.getState().addToast({
+              type: 'success',
+              title: 'Item added to project',
+            })
           } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error)
+            useToastStore.getState().addToast({
+              type: 'error',
+              title: 'Failed to add item to project',
+              description: msg
+            })
             console.error('Failed to add item to project:', error)
           }
         }
@@ -184,7 +196,17 @@ export const AppShell: React.FC = () => {
         try {
           await window.api.project.addItem(projectId, noteId)
           console.log(`[Selector] Item added to project ${projectId}`)
+          useToastStore.getState().addToast({
+            type: 'success',
+            title: 'Item added to project',
+          })
         } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error)
+          useToastStore.getState().addToast({
+            type: 'error',
+            title: 'Failed to add item to project',
+            description: msg
+          })
           console.error('Failed to add item to project:', error)
         }
       }
@@ -236,6 +258,7 @@ export const AppShell: React.FC = () => {
             </div>
           ) : null}
         </DragOverlay>
+        <Toaster />
       </div>
     </DndContext>
   )

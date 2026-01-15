@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { Project, ProjectStatus, DbProject } from '@/types'
+import { useToastStore } from '@/stores/toast.store'
+
 
 interface ProjectState {
   projects: Project[]
@@ -40,6 +42,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       )
       set({ projects })
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to fetch projects',
+        description: msg
+      })
       console.error('Failed to fetch projects:', error)
     } finally {
       set({ loading: false })
@@ -57,7 +65,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
       // Refresh list
       await get().fetchProjects()
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Project created',
+        description: project.title
+      })
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to create project',
+        description: msg
+      })
       console.error('Failed to create project:', error)
     }
   },
@@ -71,6 +90,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       await window.api.project.updateStatus(id, status)
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to update project status',
+        description: msg
+      })
       console.error('Failed to update project status:', error)
       // Rollback on error
       // In a real app we might revert the state here

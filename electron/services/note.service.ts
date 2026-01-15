@@ -1,6 +1,6 @@
 import { net } from 'electron'
 import { join, dirname } from 'path'
-import { mkdir, writeFile, unlink, rm } from 'fs/promises'
+import { mkdir, writeFile, unlink, rm, readFile } from 'fs/promises'
 import { existsSync } from 'fs'
 import TurndownService from 'turndown'
 import { getDatabase } from '../database'
@@ -130,7 +130,7 @@ export class NoteService {
 
       // 注意：這裡簡化了處理，實際應該保留原有的 YAML frontmatter
       // 為了保持簡單，我們先讀取舊文件，提取 frontmatter，再寫入新內容
-      const oldFileContent = await require('fs/promises').readFile(absoluteNotePath, 'utf-8')
+      const oldFileContent = await readFile(absoluteNotePath, 'utf-8')
       const frontmatterMatch = oldFileContent.match(/^---([\s\S]+?)---/)
       const frontmatter = frontmatterMatch ? frontmatterMatch[0] : ''
 

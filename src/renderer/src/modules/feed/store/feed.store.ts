@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { ItemFilter, FeedItem as DbFeedItem } from '@/types'
 import TurndownService from 'turndown'
+import { useToastStore } from '@/stores/toast.store'
 
 export interface FeedItem {
   id: string
@@ -65,6 +66,12 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       }))
       set({ subscriptions })
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to fetch subscriptions',
+        description: msg
+      })
       console.error('Failed to fetch subscriptions:', error)
     }
   },
@@ -102,6 +109,12 @@ export const useFeedStore = create<FeedState>((set, get) => ({
 
       set({ items: feedItems })
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to fetch items',
+        description: msg
+      })
       console.error('Failed to fetch items:', error)
     } finally {
       set({ loading: false })
@@ -136,7 +149,18 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       // 4. 更新列表
       await get().fetchSubscriptions()
       await get().fetchItems()
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Feed added',
+        description: name || validation.title || url
+      })
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to add feed',
+        description: msg
+      })
       console.error('Failed to add feed:', error)
       throw error
     } finally {
@@ -152,7 +176,17 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         items: state.items.filter((i) => i.feed_id !== id),
         activeSubscriptionId: state.activeSubscriptionId === id ? null : state.activeSubscriptionId
       }))
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Feed removed'
+      })
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to remove feed',
+        description: msg
+      })
       console.error('Failed to remove feed:', error)
     }
   },
@@ -185,6 +219,12 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         items: state.items.map((item) => (item.id === id ? { ...item, status: 'read' } : item))
       }))
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to mark as read',
+        description: msg
+      })
       console.error('Failed to mark as read:', error)
     }
   },
@@ -211,8 +251,20 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         items: state.items.map((i) => (i.id === id ? { ...i, status: 'saved' } : i))
       }))
 
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Item saved',
+        description: item.title
+      })
+
       return note.id
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to save item',
+        description: msg
+      })
       console.error('Failed to save item:', error)
       return undefined
     }
