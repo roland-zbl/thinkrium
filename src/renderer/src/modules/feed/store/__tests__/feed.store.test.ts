@@ -76,7 +76,8 @@ describe('FeedStore', () => {
             status: 'read',
             summary: 'test',
             content: 'test content',
-            feed_id: 'feed-1'
+            feed_id: 'feed-1',
+            link: 'http://test.com/item-1'
           }
         ]
       })
@@ -102,7 +103,8 @@ describe('FeedStore', () => {
             status: 'unread',
             summary: 'test',
             content: 'test content',
-            feed_id: 'feed-1'
+            feed_id: 'feed-1',
+            link: 'http://test.com/item-1'
           }
         ]
       })
@@ -182,7 +184,8 @@ describe('FeedStore', () => {
             date: null,
             status: 'unread',
             summary: '',
-            content: null
+            content: null,
+            link: null
           },
           {
             id: 'item-2',
@@ -192,7 +195,8 @@ describe('FeedStore', () => {
             date: null,
             status: 'unread',
             summary: '',
-            content: null
+            content: null,
+            link: null
           }
         ]
       })

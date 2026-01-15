@@ -10,6 +10,7 @@ import {
 } from '@dnd-kit/core'
 import { useAppStore } from '../../stores/app.store'
 import { useFeedStore } from '../../modules/feed/store/feed.store'
+import { useProjectStore } from '../../modules/project/store/project.store'
 import { Sidebar } from './Sidebar'
 import { MainContent } from './MainContent'
 import { AuxPanel } from './AuxPanel'
@@ -20,9 +21,15 @@ import { tokens } from '../../styles/tokens'
 export const AppShell: React.FC = () => {
   const { tabs, auxPanelOpen, setView, setActiveTab, theme } = useAppStore()
   const { saveItem } = useFeedStore()
+  const { fetchProjects } = useProjectStore()
   const [projectSelectorOpen, setProjectSelectorOpen] = useState(false)
   const [draggedItemTitle, setDraggedItemTitle] = useState<string | null>(null)
   const [pendingSaveItemId, setPendingSaveItemId] = useState<string | null>(null)
+
+  // Initialize Projects
+  React.useEffect(() => {
+    fetchProjects()
+  }, [])
 
   // Theme Effect
   React.useEffect(() => {
@@ -130,7 +137,7 @@ export const AppShell: React.FC = () => {
     }
   }
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     setDraggedItemTitle(null)
 
@@ -152,19 +159,34 @@ export const AppShell: React.FC = () => {
       else if (overId.startsWith('project-')) {
         const projectId = overId.replace('project-', '')
         console.log(`[Drag] Adding item ${itemId} to project ${projectId}`)
-        saveItem(itemId) // 先保存
-        // TODO: 真正的 "AddToProject" 邏輯 (目前 saveItem 只是變更狀態)
-        // 這裡我們模擬加入專案
-        alert(`已將文章加入專案: ${projectId} (模擬)`)
+
+        // Save item and get note ID
+        const noteId = await saveItem(itemId)
+
+        if (noteId) {
+          try {
+            await window.api.project.addItem(projectId, noteId)
+            console.log(`[Drag] Item added to project ${projectId}`)
+          } catch (error) {
+            console.error('Failed to add item to project:', error)
+          }
+        }
       }
     }
   }
 
-  const handleProjectSelect = (projectId: string) => {
+  const handleProjectSelect = async (projectId: string) => {
     if (pendingSaveItemId) {
       console.log(`[Selector] Adding item ${pendingSaveItemId} to project ${projectId}`)
-      saveItem(pendingSaveItemId)
-      // TODO: Add to project logic
+      const noteId = await saveItem(pendingSaveItemId)
+      if (noteId) {
+        try {
+          await window.api.project.addItem(projectId, noteId)
+          console.log(`[Selector] Item added to project ${projectId}`)
+        } catch (error) {
+          console.error('Failed to add item to project:', error)
+        }
+      }
     }
     setPendingSaveItemId(null)
   }

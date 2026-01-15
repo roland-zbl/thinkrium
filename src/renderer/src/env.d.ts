@@ -23,5 +23,12 @@ interface Window {
       update: (id: string, updates: any) => Promise<any>
       delete: (id: string) => Promise<void>
     }
+    project: {
+      create: (project: any) => Promise<any>
+      list: () => Promise<any[]>
+      addItem: (projectId: string, noteId: string) => Promise<void>
+      getItems: (projectId: string) => Promise<any[]>
+      updateStatus: (id: string, status: string) => Promise<void>
+    }
   }
 }

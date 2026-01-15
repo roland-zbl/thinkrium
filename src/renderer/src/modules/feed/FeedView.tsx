@@ -133,7 +133,7 @@ export const FeedView: React.FC = () => {
         {selectedItemId && (
           <Panel defaultSize={50} minSize={30} className="h-full">
             <div className="h-full w-full overflow-hidden">
-              <FeedPreview />
+              <FeedPreview key={selectedItemId} />
             </div>
           </Panel>
         )}

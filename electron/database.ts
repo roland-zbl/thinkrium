@@ -150,6 +150,56 @@ function runMigrations(database: Database.Database): void {
   } else {
     console.log(`[Database] Migration ${migrationNoteName} already applied`)
   }
+
+  // 檢查並執行 003_projects_schema
+  const migrationProjectName = '003_projects_schema'
+  const existingProject = database
+    .prepare('SELECT id FROM _migrations WHERE name = ?')
+    .get(migrationProjectName)
+
+  if (!existingProject) {
+    console.log(`[Database] Applying migration: ${migrationProjectName}`)
+
+    const schema = getProjectSchema()
+    database.exec(schema)
+
+    database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationProjectName)
+    console.log(`[Database] Migration ${migrationProjectName} applied successfully`)
+  } else {
+    console.log(`[Database] Migration ${migrationProjectName} already applied`)
+  }
+}
+
+/**
+ * 獲取 Project 模組的 schema SQL
+ */
+function getProjectSchema(): string {
+  return `
+        -- 專案表
+        CREATE TABLE IF NOT EXISTS projects (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
+            target_date DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- 專案項目關聯表
+        CREATE TABLE IF NOT EXISTS project_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id TEXT NOT NULL,
+            note_id TEXT NOT NULL,
+            added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+            FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE,
+            UNIQUE(project_id, note_id)
+        );
+
+        -- 索引
+        CREATE INDEX IF NOT EXISTS idx_project_items_project_id ON project_items(project_id);
+        CREATE INDEX IF NOT EXISTS idx_project_items_note_id ON project_items(note_id);
+    `
 }
 
 /**
