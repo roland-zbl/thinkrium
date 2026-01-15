@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Bold, Italic, Strikethrough, Code, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import { useToastStore } from '@/stores/toast.store'
 
 interface NoteEditorProps {
   noteId: string
@@ -20,8 +20,13 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
         const fetchedNote = await window.api.note.get(noteId)
         setNote(fetchedNote)
       } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error)
+        useToastStore.getState().addToast({
+          type: 'error',
+          title: `Failed to fetch note`,
+          description: msg
+        })
         console.error(`Failed to fetch note ${noteId}:`, error)
-        // TODO: Handle error state in UI
       }
     }
     fetchNote()
@@ -44,8 +49,17 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
     setIsSaving(true)
     try {
       await window.api.note.update(noteId, { title: note.title, content: note.content })
-      // TODO: Add user feedback (e.g., toast notification)
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Note saved'
+      })
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: `Failed to save note`,
+        description: msg
+      })
       console.error(`Failed to save note ${noteId}:`, error)
     } finally {
       setIsSaving(false)
