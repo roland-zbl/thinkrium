@@ -25,12 +25,18 @@ export function initFeedIPC(): void {
   })
 
   // 新增訂閱源
-  ipcMain.handle('feed:add', (_, feed: Omit<Feed, 'created_at'>): void => {
+  ipcMain.handle('feed:add', (_, feed: Omit<Feed, 'created_at'> & { category?: string }): void => {
+    // 確保 category 存在，如果沒有則使用預設值
+    const feedWithCategory = {
+      ...feed,
+      category: feed.category || '未分類'
+    }
+
     const stmt = db.prepare(`
-      INSERT INTO feeds (id, type, url, title, icon_url, last_fetched, fetch_interval)
-      VALUES (@id, @type, @url, @title, @icon_url, @last_fetched, @fetch_interval)
+      INSERT INTO feeds (id, type, url, title, icon_url, category, last_fetched, fetch_interval)
+      VALUES (@id, @type, @url, @title, @icon_url, @category, @last_fetched, @fetch_interval)
     `)
-    stmt.run(feed)
+    stmt.run(feedWithCategory)
   })
 
   // 刪除訂閱源

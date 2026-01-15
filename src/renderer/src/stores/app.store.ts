@@ -33,9 +33,12 @@ interface AppState {
   // Tab 系統
   tabs: Tab[]
   activeTabId: string | null
+  saveActiveTabRequested: boolean
   addTab: (tab: Tab) => void
   closeTab: (tabId: string) => void
+  updateTab: (tabId: string, updates: Partial<Tab>) => void
   setActiveTab: (tabId: string | null) => void
+  requestSaveActiveTab: (requested: boolean) => void
 
   // 主題系統
   theme: 'dark' | 'light' | 'system'
@@ -58,6 +61,7 @@ export const useAppStore = create<AppState>((set) => ({
 
   tabs: [],
   activeTabId: null,
+  saveActiveTabRequested: false,
   addTab: (tab) =>
     set((state) => {
       const existing = state.tabs.find((t) => t.id === tab.id)
@@ -79,7 +83,12 @@ export const useAppStore = create<AppState>((set) => ({
         activeTabId: newActiveId
       }
     }),
+  updateTab: (tabId, updates) =>
+    set((state) => ({
+      tabs: state.tabs.map((t) => (t.id === tabId ? { ...t, ...updates } : t))
+    })),
   setActiveTab: (tabId) => set({ activeTabId: tabId }),
+  requestSaveActiveTab: (requested) => set({ saveActiveTabRequested: requested }),
 
   theme: 'system',
   setTheme: (theme) => set({ theme })

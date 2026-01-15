@@ -19,7 +19,7 @@ interface ProjectState {
   loading: boolean
   fetchProjects: () => Promise<void>
   createProject: (project: Partial<Project>) => Promise<void>
-  updateProjectStatus: (id: string, status: ProjectStatus) => void // TODO: Implement backend update
+  updateProjectStatus: (id: string, status: ProjectStatus) => void
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -45,7 +45,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             targetDate: p.target_date,
             materialCount: p.materialCount,
             deliverableCount: p.deliverableCount,
-            notes: '', // TODO: DB does not have notes column for project itself yet
+            notes: p.notes || '',
             created_at: p.created_at,
             updated_at: p.updated_at
           }
