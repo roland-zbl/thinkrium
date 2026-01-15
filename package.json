@@ -21,7 +21,8 @@
     "build:linux": "electron-vite build && electron-builder --linux",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:backend": "vitest run -c vitest.node.config.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
