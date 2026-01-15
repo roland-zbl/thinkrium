@@ -14,7 +14,14 @@ export function initFeedIPC(): void {
 
   // 獲取所有訂閱源
   ipcMain.handle('feed:list', (): Feed[] => {
-    return db.prepare('SELECT * FROM feeds ORDER BY created_at DESC').all() as Feed[]
+    const query = `
+      SELECT
+        f.*,
+        (SELECT COUNT(*) FROM feed_items WHERE feed_id = f.id AND status = 'unread') as unreadCount
+      FROM feeds f
+      ORDER BY f.created_at DESC
+    `
+    return db.prepare(query).all() as Feed[]
   })
 
   // 新增訂閱源

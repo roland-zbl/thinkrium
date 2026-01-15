@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Search, Folder, Plus } from 'lucide-react'
-import { mockProjects } from '../../../mocks'
-import { tokens } from '../../../styles/tokens'
-import { cn } from '../../../lib/utils'
+import { mockProjects } from '@/mocks'
+import { tokens } from '@/styles/tokens'
+import { cn } from '@/lib/utils'
 
 interface Props {
   isOpen: boolean

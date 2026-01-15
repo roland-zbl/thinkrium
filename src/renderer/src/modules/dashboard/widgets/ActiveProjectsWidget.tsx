@@ -1,12 +1,13 @@
 import React from 'react'
 import { FolderKanban, Plus, ExternalLink } from 'lucide-react'
-import { tokens } from '../../../styles/tokens'
-import { mockProjects } from '../../../mocks'
-import { useAppStore } from '../../../stores/app.store'
+import { tokens } from '@/styles/tokens'
+import { useAppStore } from '@/stores/app.store'
+import { useProjectStore } from '@/modules/project/store/project.store'
 
 export const ActiveProjectsWidget: React.FC = () => {
   const { addTab } = useAppStore()
-  const activeProjects = mockProjects.filter((p) => p.status === 'active')
+  const { projects } = useProjectStore()
+  const activeProjects = projects.filter((p) => p.status === 'active')
 
   return (
     <div

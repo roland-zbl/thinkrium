@@ -8,15 +8,15 @@ import {
   PointerSensor,
   DragEndEvent
 } from '@dnd-kit/core'
-import { useAppStore } from '../../stores/app.store'
-import { useFeedStore } from '../../modules/feed/store/feed.store'
-import { useProjectStore } from '../../modules/project/store/project.store'
+import { useAppStore } from '@/stores/app.store'
+import { useFeedStore } from '@/modules/feed/store/feed.store'
+import { useProjectStore } from '@/modules/project/store/project.store'
 import { Sidebar } from './Sidebar'
 import { MainContent } from './MainContent'
 import { AuxPanel } from './AuxPanel'
 import { TabBar } from './TabBar'
-import { ProjectSelectorDialog } from '../../modules/project/components/ProjectSelectorDialog'
-import { tokens } from '../../styles/tokens'
+import { ProjectSelectorDialog } from '@/modules/project/components/ProjectSelectorDialog'
+import { tokens } from '@/styles/tokens'
 
 export const AppShell: React.FC = () => {
   const { tabs, auxPanelOpen, setView, setActiveTab, theme } = useAppStore()

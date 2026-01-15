@@ -18,7 +18,7 @@ interface ProjectState {
   projects: Project[]
   loading: boolean
   fetchProjects: () => Promise<void>
-  addProject: (title: string, targetDate?: string | null) => Promise<void>
+  createProject: (project: Partial<Project>) => Promise<void>
   updateProjectStatus: (id: string, status: ProjectStatus) => void // TODO: Implement backend update
 }
 
@@ -43,8 +43,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             title: p.title,
             status: p.status as ProjectStatus,
             targetDate: p.target_date,
-            materialCount: 0, // TODO: Implement count
-            deliverableCount: 0, // TODO: Implement count
+            materialCount: p.materialCount,
+            deliverableCount: p.deliverableCount,
             notes: '', // TODO: DB does not have notes column for project itself yet
             created_at: p.created_at,
             updated_at: p.updated_at
@@ -59,20 +59,19 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
   },
 
-  addProject: async (title, targetDate) => {
+  createProject: async (project) => {
     try {
-      const id = crypto.randomUUID()
-      await window.api.project.create({
-        id,
-        title,
+      const newProject = {
+        id: crypto.randomUUID(),
         status: 'active',
-        target_date: targetDate || null
-      })
+        ...project
+      }
+      await window.api.project.create(newProject)
 
       // Refresh list
       await get().fetchProjects()
     } catch (error) {
-      console.error('Failed to add project:', error)
+      console.error('Failed to create project:', error)
     }
   },
 

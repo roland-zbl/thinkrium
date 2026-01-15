@@ -1,8 +1,8 @@
 import React from 'react'
 import { Mail, ArrowRight } from 'lucide-react'
-import { useFeedStore } from '../../feed/store/feed.store'
-import { useAppStore } from '../../../stores/app.store'
-import { tokens } from '../../../styles/tokens'
+import { useFeedStore } from '@/modules/feed/store/feed.store'
+import { useAppStore } from '@/stores/app.store'
+import { tokens } from '@/styles/tokens'
 
 export const NewItemsWidget: React.FC = () => {
   const { items } = useFeedStore()

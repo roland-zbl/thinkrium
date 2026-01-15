@@ -1,7 +1,7 @@
 import React from 'react'
 import { useFeedStore } from '../store/feed.store'
-import { cn } from '../../../lib/utils'
-import { tokens } from '../../../styles/tokens'
+import { cn } from '@/lib/utils'
+import { tokens } from '@/styles/tokens'
 
 export const FilterTabs: React.FC = () => {
   const { filter, setFilter } = useFeedStore()

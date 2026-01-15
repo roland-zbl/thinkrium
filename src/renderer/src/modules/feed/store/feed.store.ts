@@ -59,7 +59,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         id: f.id,
         name: f.title || f.url,
         category: '未分類', // TODO: DB schema 需支援分類
-        unreadCount: 0, // TODO: 實作未讀數統計
+        unreadCount: f.unreadCount,
         url: f.url,
         icon_url: f.icon_url
       }))

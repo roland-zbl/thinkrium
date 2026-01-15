@@ -1,11 +1,11 @@
 import React, { useRef, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useLibraryStore } from '../store/library.store'
-import { useAppStore } from '../../../stores/app.store'
-import { tokens } from '../../../styles/tokens'
-import { cn } from '../../../lib/utils'
+import { useAppStore } from '@/stores/app.store'
+import { tokens } from '@/styles/tokens'
+import { cn } from '@/lib/utils'
 import { Calendar, FileText, Tag } from 'lucide-react'
-import { EmptyState } from '../../../components/ui/EmptyState'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export const NoteTable: React.FC = () => {
   const { notes, filters, selectedNoteId, selectNote } = useLibraryStore()

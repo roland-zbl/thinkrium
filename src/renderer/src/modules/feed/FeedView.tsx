@@ -5,7 +5,7 @@ import { SubscriptionSidebar } from './components/SubscriptionSidebar'
 import { FeedItemList } from './components/FeedItemList'
 import { FeedPreview } from './components/FeedPreview'
 import { useFeedStore } from './store/feed.store'
-import { useAppStore } from '../../stores/app.store'
+import { useAppStore } from '@/stores/app.store'
 
 export const FeedView: React.FC = () => {
   const { selectedItemId, items, selectItem, saveItem } = useFeedStore()

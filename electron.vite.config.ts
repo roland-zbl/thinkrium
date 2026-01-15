@@ -22,9 +22,16 @@ export default defineConfig({
     }
   },
   renderer: {
+    build: {
+      rollupOptions: {
+        input: {
+          index: resolve(__dirname, 'src/index.html')
+        }
+      }
+    },
     resolve: {
       alias: {
-        '@renderer': resolve('src/renderer/src')
+        '@': resolve('src/renderer/src')
       }
     },
     plugins: [react()]

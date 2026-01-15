@@ -1,4 +1,5 @@
 import { useDroppable } from '@dnd-kit/core'
+import React, { useEffect } from 'react'
 import {
   Home,
   Newspaper,
@@ -10,10 +11,10 @@ import {
   Moon,
   Sun
 } from 'lucide-react'
-import { useAppStore, ViewType } from '../../stores/app.store'
-import { tokens } from '../../styles/tokens'
-import { cn } from '../../lib/utils'
-import { mockProjects } from '../../mocks'
+import { useAppStore, ViewType } from '@/stores/app.store'
+import { tokens } from '@/styles/tokens'
+import { cn } from '@/lib/utils'
+import { useProjectStore } from '@/modules/project/store/project.store'
 
 // Droppable Nav Item Component
 const DroppableNavItem = ({ item, isActive, onClick, expanded }) => {
@@ -98,6 +99,11 @@ const NAV_ITEMS = [
 
 export const Sidebar: React.FC = () => {
   const { currentView, setView, sidebarExpanded, activeTabId, setActiveTab } = useAppStore()
+  const { projects, fetchProjects } = useProjectStore()
+
+  useEffect(() => {
+    fetchProjects()
+  }, [])
 
   const handleNavClick = (viewId: string) => {
     if (activeTabId) setActiveTab(null)
@@ -140,7 +146,7 @@ export const Sidebar: React.FC = () => {
             <span className="text-xs uppercase text-muted-foreground font-bold mb-2 tracking-wider">
               近期專案
             </span>
-            {mockProjects
+            {projects
               .filter((p) => p.status === 'active')
               .slice(0, 5)
               .map((proj) => (

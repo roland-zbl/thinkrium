@@ -2,8 +2,8 @@ import React from 'react'
 import { Bookmark, Clock } from 'lucide-react'
 import { useDraggable } from '@dnd-kit/core'
 import { FeedItem, useFeedStore } from '../store/feed.store'
-import { tokens } from '../../../styles/tokens'
-import { cn } from '../../../lib/utils'
+import { tokens } from '@/styles/tokens'
+import { cn } from '@/lib/utils'
 
 interface Props {
   item: FeedItem
