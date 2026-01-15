@@ -1,11 +1,10 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { TodayFocusWidget } from '@/modules/dashboard/widgets/TodayFocusWidget'
 import { ActiveProjectsWidget } from '@/modules/dashboard/widgets/ActiveProjectsWidget'
 import { NewItemsWidget } from '@/modules/dashboard/widgets/NewItemsWidget'
 import { RecentCompletedWidget } from '@/modules/dashboard/widgets/RecentCompletedWidget'
 import { useProjectStore } from '../project/store/project.store'
 import { useFeedStore } from '../feed/store/feed.store'
-import React, { useState, useEffect } from 'react'
 
 export const DashboardView: React.FC = () => {
   const { fetchProjects } = useProjectStore()

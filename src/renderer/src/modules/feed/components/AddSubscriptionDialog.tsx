@@ -9,16 +9,15 @@ interface Props {
 }
 
 export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
-  // State for form inputs
+  // All hooks must be called before any conditional returns
+  const { addFeed } = useFeedStore()
   const [url, setUrl] = useState('')
   const [name, setName] = useState('')
   const [category, setCategory] = useState('未分類')
-
-  if (!isOpen) return null
-
-  const { addFeed } = useFeedStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
