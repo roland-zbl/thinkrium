@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import { projectService } from '../services/project.service'
 
-export function registerProjectIpc() {
+export function initProjectIPC() {
   ipcMain.handle('project:create', (_, project) => {
     return projectService.createProject(project)
   })
