@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { X, AlertCircle } from 'lucide-react'
 import { tokens } from '@/styles/tokens'
 import { useFeedStore } from '../store/feed.store'
+import { useToastStore } from '@/stores/toast.store'
 
 interface Props {
   isOpen: boolean
@@ -28,6 +29,11 @@ export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
       await addFeed(url, name || undefined, category)
       onClose()
     } catch (err: any) {
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to add subscription',
+        description: err.message || '新增訂閱失敗'
+      })
       console.error('Failed to add subscription:', err)
       setError(err.message || '新增訂閱失敗')
     } finally {

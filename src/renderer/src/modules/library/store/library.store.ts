@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useToastStore } from '@/stores/toast.store'
 
 export interface Note {
   id: string
@@ -70,6 +71,12 @@ export const useLibraryStore = create<LibraryState>((set) => ({
       }))
       set({ notes })
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to fetch notes',
+        description: msg
+      })
       console.error('Failed to fetch notes:', error)
     }
   }
