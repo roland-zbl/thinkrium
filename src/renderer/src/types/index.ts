@@ -33,6 +33,18 @@ export interface Note {
   content?: string
 }
 
+export interface DbNote {
+  id: string
+  title: string
+  content?: string
+  created_at?: string
+  date?: string
+  source_type?: string
+  type?: string
+  projects?: string[]
+  tags?: string | string[]
+}
+
 export interface Feed {
   id: string
   type: 'rss' | 'rsshub'
@@ -42,7 +54,7 @@ export interface Feed {
   last_fetched: string | null
   fetch_interval: number
   created_at: string
-  unreadCount?: number // Added based on feed.store.ts mapping usage
+  unreadCount?: number
 }
 
 export interface FeedItem {
@@ -64,16 +76,4 @@ export interface ItemFilter {
   status?: 'unread' | 'read' | 'saved'
   limit?: number
   offset?: number
-}
-
-export interface DbNote {
-  id: string
-  title: string
-  content?: string
-  created_at?: string
-  date?: string
-  source_type?: string
-  type?: string
-  projects?: string[]
-  tags?: string | string[]
 }
