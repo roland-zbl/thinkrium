@@ -3,7 +3,9 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Bold, Italic, Strikethrough, Code, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import { useAppStore } from '@/stores/app.store'
+import { useToastStore } from '@/stores/toast.store'
+
 
 interface NoteEditorProps {
   noteId: string
@@ -13,15 +15,36 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
   const [note, setNote] = useState<{ title: string; content: string } | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
+  const { saveActiveTabRequested, requestSaveActiveTab, activeTabId, updateTab } = useAppStore()
+
+  // 監聽來自 TabBar 的保存請求
+  useEffect(() => {
+    if (saveActiveTabRequested && activeTabId) {
+      // 確認當前激活的 Tab 是這個 NoteEditor 對應的 Tab
+      // 這裡做一個簡單的假設：如果是激活狀態且請求保存，就執行保存
+      // 更嚴謹的做法是檢查 activeTabId 是否對應此 NoteEditor
+      handleSave().then(() => {
+        requestSaveActiveTab(false)
+      })
+    }
+  }, [saveActiveTabRequested, activeTabId])
 
   useEffect(() => {
     const fetchNote = async () => {
       try {
         const fetchedNote = await window.api.note.get(noteId)
-        setNote(fetchedNote)
+        setNote({
+          title: fetchedNote.title,
+          content: fetchedNote.content || ''
+        })
       } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error)
+        useToastStore.getState().addToast({
+          type: 'error',
+          title: `Failed to fetch note`,
+          description: msg
+        })
         console.error(`Failed to fetch note ${noteId}:`, error)
-        // TODO: Handle error state in UI
       }
     }
     fetchNote()
@@ -30,12 +53,19 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (note) {
       setNote({ ...note, content: e.target.value })
+      // 標記 Tab 為 dirty
+      if (activeTabId) {
+        updateTab(activeTabId, { isDirty: true })
+      }
     }
   }
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (note) {
       setNote({ ...note, title: e.target.value })
+      if (activeTabId) {
+        updateTab(activeTabId, { isDirty: true, title: e.target.value })
+      }
     }
   }
 
@@ -44,8 +74,22 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
     setIsSaving(true)
     try {
       await window.api.note.update(noteId, { title: note.title, content: note.content })
-      // TODO: Add user feedback (e.g., toast notification)
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Note saved'
+      })
+
+      // 清除 dirty 狀態
+      if (activeTabId) {
+        updateTab(activeTabId, { isDirty: false })
+      }
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: `Failed to save note`,
+        description: msg
+      })
       console.error(`Failed to save note ${noteId}:`, error)
     } finally {
       setIsSaving(false)

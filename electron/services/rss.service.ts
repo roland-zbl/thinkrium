@@ -40,16 +40,29 @@ const parser: Parser<CustomFeed, CustomItem> = new Parser({
  */
 export async function validateFeed(
   url: string
-): Promise<{ valid: boolean; title?: string; error?: string }> {
+): Promise<{ valid: boolean; title?: string; icon?: string; error?: string }> {
   console.log(`[RSS Service] Validating: ${url}`)
   try {
     const feed = await parser.parseURL(url)
     console.log(
       `[RSS Service] Validation success: ${feed.title}, items: ${feed.items?.length || 0}`
     )
+
+    // 嘗試獲取 Icon
+    let icon = feed.image?.url
+    if (!icon && feed.link) {
+      try {
+        const urlObj = new URL(feed.link)
+        icon = `${urlObj.origin}/favicon.ico`
+      } catch (e) {
+        // Ignore URL parse error
+      }
+    }
+
     return {
       valid: true,
-      title: feed.title
+      title: feed.title,
+      icon
     }
   } catch (error: any) {
     console.error('[RSS Service] Validation error:', error.message)

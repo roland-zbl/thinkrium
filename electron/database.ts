@@ -173,6 +173,30 @@ function runMigrations(database: Database.Database): void {
   } else {
     console.log(`[Database] Migration ${migrationProjectName} already applied`)
   }
+
+  // 檢查並執行 004_schema_updates
+  const migrationSchemaUpdateName = '004_schema_updates'
+  const existingSchemaUpdate = database
+    .prepare('SELECT id FROM _migrations WHERE name = ?')
+    .get(migrationSchemaUpdateName)
+
+  if (!existingSchemaUpdate) {
+    console.log(`[Database] Applying migration: ${migrationSchemaUpdateName}`)
+
+    // 執行 schema updates
+    try {
+      database.exec(`
+        ALTER TABLE projects ADD COLUMN notes TEXT DEFAULT '';
+        ALTER TABLE feeds ADD COLUMN category TEXT DEFAULT '未分類';
+      `)
+      database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationSchemaUpdateName)
+      console.log(`[Database] Migration ${migrationSchemaUpdateName} applied successfully`)
+    } catch (error) {
+      console.error(`[Database] Migration ${migrationSchemaUpdateName} failed:`, error)
+    }
+  } else {
+    console.log(`[Database] Migration ${migrationSchemaUpdateName} already applied`)
+  }
 }
 
 /**

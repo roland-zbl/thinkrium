@@ -10,6 +10,7 @@ export interface Project {
   updated_at: string
   materialCount: number
   deliverableCount: number
+  notes?: string
 }
 
 export class ProjectService {
@@ -22,13 +23,19 @@ export class ProjectService {
     return this.db
   }
 
-  createProject(project: Omit<Project, 'created_at' | 'updated_at'>): Project {
+  createProject(project: Omit<Project, 'created_at' | 'updated_at'> & { notes?: string }): Project {
     const stmt = this.getDb().prepare(`
-      INSERT INTO projects (id, title, status, target_date)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO projects (id, title, status, target_date, notes)
+      VALUES (?, ?, ?, ?, ?)
     `)
 
-    stmt.run(project.id, project.title, project.status, project.target_date)
+    stmt.run(
+      project.id,
+      project.title,
+      project.status,
+      project.target_date,
+      project.notes || ''
+    )
 
     return this.getProject(project.id) as Project
   }
