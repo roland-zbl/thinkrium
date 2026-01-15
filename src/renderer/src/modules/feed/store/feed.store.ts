@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { ItemFilter, FeedItem as DbFeedItem } from '../types'
-import TurndownService from 'turndown'
+import { turndown } from '@/lib/turndown'
 
 export interface FeedItem {
   id: string
@@ -195,8 +195,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
 
     try {
       // Convert HTML to Markdown
-      const turndownService = new TurndownService()
-      const markdown = item.content ? turndownService.turndown(item.content) : ''
+      const markdown = item.content ? turndown.turndown(item.content) : ''
 
       const note = await window.api.note.save({
         title: item.title,

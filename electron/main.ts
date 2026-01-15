@@ -12,7 +12,7 @@ import { initDatabase, closeDatabase } from './database'
 import { initFeedIPC } from './ipc/feed.ipc'
 import { initSettingsIPC } from './ipc/settings.ipc'
 import { initNoteIPC } from './ipc/note.ipc'
-import { registerProjectIpc } from './ipc/project.ipc'
+import { initProjectIPC } from './ipc/project.ipc'
 import { initScheduler, stopScheduler } from './services/scheduler.service'
 import { setupAntiHotlinkBypass } from './services/anti-hotlink.service'
 
@@ -96,7 +96,7 @@ app.whenReady().then(async () => {
     console.log('Note IPC initialized')
 
     // 初始化 Project IPC
-    registerProjectIpc()
+    initProjectIPC()
     console.log('Project IPC initialized')
 
     // 初始化背景排程
