@@ -10,10 +10,10 @@ import {
   MoreVertical
 } from 'lucide-react'
 import { useProjectStore } from './store/project.store'
-import { useAppStore } from '../../stores/app.store'
-import { tokens } from '../../styles/tokens'
-import { cn } from '../../lib/utils'
-import { mockNotes } from '../../mocks'
+import { useAppStore } from '@/stores/app.store'
+import { tokens } from '@/styles/tokens'
+import { cn } from '@/lib/utils'
+import { mockNotes } from '@/mocks'
 
 export const ProjectPageView: React.FC<{ id: string }> = ({ id }) => {
   const { projects, updateProjectStatus } = useProjectStore()

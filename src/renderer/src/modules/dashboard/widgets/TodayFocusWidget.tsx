@@ -1,17 +1,20 @@
 import React from 'react'
 import { Calendar, AlertCircle, Plus } from 'lucide-react'
-import { tokens } from '../../../styles/tokens'
-import { mockNotes, mockProjects } from '../../../mocks'
-import { useAppStore } from '../../../stores/app.store'
+import { tokens } from '@/styles/tokens'
+import { useAppStore } from '@/stores/app.store'
+import { useLibraryStore } from '@/modules/library/store/library.store'
+import { useProjectStore } from '@/modules/project/store/project.store'
 
 export const TodayFocusWidget: React.FC = () => {
   const { addTab } = useAppStore()
+  const { notes } = useLibraryStore()
+  const { projects } = useProjectStore()
 
   // 模擬邏輯
   const today = new Date().toISOString().split('T')[0]
-  const todayDiary = mockNotes.find((n) => n.type === 'daily' && n.date === today)
+  const todayDiary = notes.find((n) => n.type === 'daily' && n.date === today)
 
-  const mostUrgentProject = [...mockProjects]
+  const mostUrgentProject = [...projects]
     .filter((p) => p.status === 'active' && p.targetDate)
     .sort((a, b) => (a.targetDate || '').localeCompare(b.targetDate || ''))[0]
 

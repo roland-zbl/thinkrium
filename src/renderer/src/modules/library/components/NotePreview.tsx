@@ -1,8 +1,8 @@
 import React from 'react'
 import { Edit3, FolderPlus, X, FileText, Share2 } from 'lucide-react'
 import { useLibraryStore } from '../store/library.store'
-import { useAppStore } from '../../../stores/app.store'
-import { tokens } from '../../../styles/tokens'
+import { useAppStore } from '@/stores/app.store'
+import { tokens } from '@/styles/tokens'
 
 export const NotePreview: React.FC = () => {
   const { selectedNoteId, notes, selectNote } = useLibraryStore()

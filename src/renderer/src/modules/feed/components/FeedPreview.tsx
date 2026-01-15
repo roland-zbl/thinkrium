@@ -10,9 +10,9 @@ import {
   ChevronDown
 } from 'lucide-react'
 import { useFeedStore } from '../store/feed.store'
-import { tokens } from '../../../styles/tokens'
-import { cn } from '../../../lib/utils'
-import { useAppStore } from '../../../stores/app.store'
+import { tokens } from '@/styles/tokens'
+import { cn } from '@/lib/utils'
+import { useAppStore } from '@/stores/app.store'
 import DOMPurify from 'dompurify'
 
 export const FeedPreview: React.FC = () => {

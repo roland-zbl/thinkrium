@@ -8,6 +8,8 @@ export interface Project {
   target_date: string | null
   created_at: string
   updated_at: string
+  materialCount: number
+  deliverableCount: number
 }
 
 export class ProjectService {
@@ -36,7 +38,18 @@ export class ProjectService {
   }
 
   listProjects(): Project[] {
-    return this.getDb().prepare('SELECT * FROM projects ORDER BY created_at DESC').all() as Project[]
+    const query = `
+      SELECT
+        p.*,
+        COUNT(pi.note_id) as materialCount,
+        SUM(CASE WHEN n.tags LIKE '%"deliverable"%' THEN 1 ELSE 0 END) as deliverableCount
+      FROM projects p
+      LEFT JOIN project_items pi ON p.id = pi.project_id
+      LEFT JOIN notes n ON pi.note_id = n.id
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+    `
+    return this.getDb().prepare(query).all() as Project[]
   }
 
   updateProjectStatus(id: string, status: string): void {

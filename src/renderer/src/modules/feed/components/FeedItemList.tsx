@@ -3,7 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useFeedStore } from '../store/feed.store'
 import { FeedItemCard } from './FeedItemCard'
 import { FilterTabs } from './FilterTabs'
-import { tokens } from '../../../styles/tokens'
+import { tokens } from '@/styles/tokens'
 
 export const FeedItemList: React.FC = () => {
   const { items, activeSubscriptionId, filter, selectedItemId, selectItem } = useFeedStore()

@@ -1,10 +1,11 @@
 import React from 'react'
 import { CheckCircle2, History } from 'lucide-react'
-import { tokens } from '../../../styles/tokens'
-import { mockProjects } from '../../../mocks'
+import { tokens } from '@/styles/tokens'
+import { useProjectStore } from '@/modules/project/store/project.store'
 
 export const RecentCompletedWidget: React.FC = () => {
-  const completedProjects = mockProjects.filter((p) => p.status === 'completed')
+  const { projects } = useProjectStore()
+  const completedProjects = projects.filter((p) => p.status === 'completed')
 
   return (
     <div

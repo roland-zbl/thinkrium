@@ -1,16 +1,12 @@
 import React from 'react'
-import { useAppStore } from '../../stores/app.store'
-import { cn } from '../../lib/utils'
-import { DashboardView } from '../../modules/dashboard/DashboardView'
-import { FeedView } from '../../modules/feed/FeedView'
-import { LibraryView } from '../../modules/library/LibraryView'
-import { ProjectListView } from '../../modules/project/ProjectListView'
-import { ProjectPageView } from '../../modules/project/ProjectPageView'
-
-// 預留模塊視圖
-const EditorPlaceholder = ({ id }: { id: string }) => (
-  <div className="p-8 text-2xl">正在編輯筆記: {id}</div>
-)
+import { useAppStore } from '@/stores/app.store'
+import { cn } from '@/lib/utils'
+import { DashboardView } from '@/modules/dashboard/DashboardView'
+import { FeedView } from '@/modules/feed/FeedView'
+import { LibraryView } from '@/modules/library/LibraryView'
+import { ProjectListView } from '@/modules/project/ProjectListView'
+import { ProjectPageView } from '@/modules/project/ProjectPageView'
+import { NoteEditor } from '@/modules/note/components/NoteEditor'
 
 export const MainContent: React.FC = () => {
   const { currentView, activeTabId, tabs } = useAppStore()
@@ -42,7 +38,7 @@ export const MainContent: React.FC = () => {
           className={cn('absolute inset-0 bg-background', activeTabId !== tab.id && 'hidden')}
         >
           {tab.type === 'editor' ? (
-            <EditorPlaceholder id={tab.data.noteId || tab.id} />
+            <NoteEditor noteId={tab.data.noteId || tab.id} />
           ) : (
             <ProjectPageView id={tab.data.projectId || tab.id} />
           )}

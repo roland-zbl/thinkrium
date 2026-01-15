@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { X, FileText, FolderKanban } from 'lucide-react'
-import { useAppStore, Tab } from '../../stores/app.store'
-import { tokens } from '../../styles/tokens'
-import { cn } from '../../lib/utils'
+import { useAppStore, Tab } from '@/stores/app.store'
+import { tokens } from '@/styles/tokens'
+import { cn } from '@/lib/utils'
 
 // 確認對話框組件
 const ConfirmDialog: React.FC<{

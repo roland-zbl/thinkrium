@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { mockNotes } from '../../../mocks'
 
 export interface Note {
   id: string
@@ -21,13 +20,14 @@ interface LibraryState {
   }
 
   // Actions
+  fetchNotes: () => Promise<void>
   selectNote: (id: string | null) => void
   setFilter: (key: keyof LibraryState['filters'], value: string) => void
   resetFilters: () => void
 }
 
 export const useLibraryStore = create<LibraryState>((set) => ({
-  notes: mockNotes as Note[],
+  notes: [],
   selectedNoteId: null,
   filters: {
     type: '全部',
@@ -44,5 +44,14 @@ export const useLibraryStore = create<LibraryState>((set) => ({
   resetFilters: () =>
     set({
       filters: { type: '全部', tag: '全部', date: '全部', project: '全部' }
-    })
+    }),
+
+  fetchNotes: async () => {
+    try {
+      const notes = await window.api.note.list()
+      set({ notes: notes as Note[] })
+    } catch (error) {
+      console.error('Failed to fetch notes:', error)
+    }
+  }
 }))

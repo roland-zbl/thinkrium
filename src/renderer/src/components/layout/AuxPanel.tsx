@@ -1,8 +1,8 @@
 import React from 'react'
 import { X, LayoutList, Link as LinkIcon, Bot } from 'lucide-react'
-import { useAppStore } from '../../stores/app.store'
-import { tokens } from '../../styles/tokens'
-import { cn } from '../../lib/utils'
+import { useAppStore } from '@/stores/app.store'
+import { tokens } from '@/styles/tokens'
+import { cn } from '@/lib/utils'
 
 const TABS = [
   { id: 'outline', label: '大綱', icon: LayoutList },

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { X, AlertCircle } from 'lucide-react'
-import { tokens } from '../../../styles/tokens'
+import { tokens } from '@/styles/tokens'
 import { useFeedStore } from '../store/feed.store'
 
 interface Props {

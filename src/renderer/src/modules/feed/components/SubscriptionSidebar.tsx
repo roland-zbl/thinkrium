@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Plus, ListFilter, Hash, Trash2 } from 'lucide-react'
 import { useFeedStore } from '../store/feed.store'
-import { tokens } from '../../../styles/tokens'
-import { cn } from '../../../lib/utils'
+import { tokens } from '@/styles/tokens'
+import { cn } from '@/lib/utils'
 import { AddSubscriptionDialog } from './AddSubscriptionDialog'
 
 export const SubscriptionSidebar: React.FC = () => {

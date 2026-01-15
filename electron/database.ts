@@ -55,6 +55,11 @@ function seedTestData(database: Database.Database): void {
   if (feedCount.count === 0) {
     console.log('[Database] Seeding test data...')
 
+    // Seed user name
+    database
+      .prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)`)
+      .run('user.name', 'Roland')
+
     const feedId = 'seed-feed-1'
     database
       .prepare(

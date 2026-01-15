@@ -1,14 +1,14 @@
 import React from 'react'
 import { Filter, RotateCcw, ChevronDown } from 'lucide-react'
 import { useLibraryStore } from '../store/library.store'
-import { tokens } from '../../../styles/tokens'
-import { cn } from '../../../lib/utils'
+import { tokens } from '@/styles/tokens'
+import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
-} from '../../../components/ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu'
 
 export const FilterBar: React.FC = () => {
   const { filters, setFilter, resetFilters } = useLibraryStore()

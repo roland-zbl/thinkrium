@@ -1,12 +1,16 @@
 import React from 'react'
 import { Group, Panel, Separator } from 'react-resizable-panels'
-import { FilterBar } from '@renderer/modules/library/components/FilterBar'
-import { NoteTable } from '@renderer/modules/library/components/NoteTable'
-import { NotePreview } from '@renderer/modules/library/components/NotePreview'
+import { FilterBar } from '@/modules/library/components/FilterBar'
+import { NoteTable } from '@/modules/library/components/NoteTable'
+import { NotePreview } from '@/modules/library/components/NotePreview'
 import { useLibraryStore } from './store/library.store'
 
 export const LibraryView: React.FC = () => {
-  const { selectedNoteId } = useLibraryStore()
+  const { selectedNoteId, fetchNotes } = useLibraryStore()
+
+  React.useEffect(() => {
+    fetchNotes()
+  }, [fetchNotes])
 
   return (
     <div className="h-full w-full overflow-hidden flex flex-col bg-background">
