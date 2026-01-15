@@ -4,6 +4,8 @@ import remarkGfm from 'remark-gfm'
 import { Bold, Italic, Strikethrough, Code, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/stores/app.store'
+import { useToastStore } from '@/stores/toast.store'
+
 
 interface NoteEditorProps {
   noteId: string
@@ -31,10 +33,18 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
     const fetchNote = async () => {
       try {
         const fetchedNote = await window.api.note.get(noteId)
-        setNote(fetchedNote)
+        setNote({
+          title: fetchedNote.title,
+          content: fetchedNote.content || ''
+        })
       } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error)
+        useToastStore.getState().addToast({
+          type: 'error',
+          title: `Failed to fetch note`,
+          description: msg
+        })
         console.error(`Failed to fetch note ${noteId}:`, error)
-        // TODO: Handle error state in UI (blocked by Task 1: Toast system)
       }
     }
     fetchNote()
@@ -64,13 +74,22 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
     setIsSaving(true)
     try {
       await window.api.note.update(noteId, { title: note.title, content: note.content })
-      // TODO: Add user feedback (blocked by Task 1: Toast system)
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Note saved'
+      })
 
       // 清除 dirty 狀態
       if (activeTabId) {
         updateTab(activeTabId, { isDirty: false })
       }
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: `Failed to save note`,
+        description: msg
+      })
       console.error(`Failed to save note ${noteId}:`, error)
     } finally {
       setIsSaving(false)

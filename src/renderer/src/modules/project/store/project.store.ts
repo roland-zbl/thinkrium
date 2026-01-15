@@ -1,18 +1,7 @@
 import { create } from 'zustand'
+import { Project, ProjectStatus, DbProject } from '@/types'
+import { useToastStore } from '@/stores/toast.store'
 
-export type ProjectStatus = 'active' | 'pending' | 'completed'
-
-export interface Project {
-  id: string
-  title: string
-  status: ProjectStatus
-  targetDate: string | null
-  materialCount: number
-  deliverableCount: number
-  notes: string
-  created_at?: string
-  updated_at?: string
-}
 
 interface ProjectState {
   projects: Project[]
@@ -34,7 +23,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       // Note: materialCount and deliverableCount need to be calculated or fetched.
       // For now we set them to 0 or we need another API to get stats.
       const projects: Project[] = await Promise.all(
-        dbProjects.map(async (p: any) => {
+        dbProjects.map(async (p: DbProject) => {
           // Optional: Fetch item counts for each project
           // const items = await window.api.project.getItems(p.id)
           // const materialCount = items.length
@@ -53,6 +42,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       )
       set({ projects })
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to fetch projects',
+        description: msg
+      })
       console.error('Failed to fetch projects:', error)
     } finally {
       set({ loading: false })
@@ -70,7 +65,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
       // Refresh list
       await get().fetchProjects()
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Project created',
+        description: project.title
+      })
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to create project',
+        description: msg
+      })
       console.error('Failed to create project:', error)
     }
   },
@@ -84,6 +90,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       await window.api.project.updateStatus(id, status)
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to update project status',
+        description: msg
+      })
       console.error('Failed to update project status:', error)
       // Rollback on error
       // In a real app we might revert the state here

@@ -6,7 +6,8 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-  DragEndEvent
+  DragEndEvent,
+  DragStartEvent
 } from '@dnd-kit/core'
 import { useAppStore } from '@/stores/app.store'
 import { useFeedStore } from '@/modules/feed/store/feed.store'
@@ -16,7 +17,9 @@ import { MainContent } from './MainContent'
 import { AuxPanel } from './AuxPanel'
 import { TabBar } from './TabBar'
 import { ProjectSelectorDialog } from '@/modules/project/components/ProjectSelectorDialog'
+import { Toaster } from '@/components/ui/Toast'
 import { tokens } from '@/styles/tokens'
+import { useToastStore } from '@/stores/toast.store'
 
 export const AppShell: React.FC = () => {
   const { tabs, auxPanelOpen, setView, setActiveTab, theme } = useAppStore()
@@ -129,11 +132,11 @@ export const AppShell: React.FC = () => {
     return () => window.removeEventListener('open-project-selector' as any, handleOpenSelector)
   }, [])
 
-  const handleDragStart = (event: any) => {
+  const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
     // 假設 active.data.current.title 存在
     if (active.data.current?.title) {
-      setDraggedItemTitle(active.data.current.title)
+      setDraggedItemTitle(active.data.current.title as string)
     }
   }
 
@@ -167,7 +170,17 @@ export const AppShell: React.FC = () => {
           try {
             await window.api.project.addItem(projectId, noteId)
             console.log(`[Drag] Item added to project ${projectId}`)
+            useToastStore.getState().addToast({
+              type: 'success',
+              title: 'Item added to project',
+            })
           } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error)
+            useToastStore.getState().addToast({
+              type: 'error',
+              title: 'Failed to add item to project',
+              description: msg
+            })
             console.error('Failed to add item to project:', error)
           }
         }
@@ -183,7 +196,17 @@ export const AppShell: React.FC = () => {
         try {
           await window.api.project.addItem(projectId, noteId)
           console.log(`[Selector] Item added to project ${projectId}`)
+          useToastStore.getState().addToast({
+            type: 'success',
+            title: 'Item added to project',
+          })
         } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error)
+          useToastStore.getState().addToast({
+            type: 'error',
+            title: 'Failed to add item to project',
+            description: msg
+          })
           console.error('Failed to add item to project:', error)
         }
       }
@@ -235,6 +258,7 @@ export const AppShell: React.FC = () => {
             </div>
           ) : null}
         </DragOverlay>
+        <Toaster />
       </div>
     </DndContext>
   )

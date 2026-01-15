@@ -27,7 +27,7 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
-      webSecurity: false // 允許跨域資源載入（開發階段）
+      webSecurity: !is.dev // 僅開發環境關閉
     }
   })
 

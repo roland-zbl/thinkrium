@@ -1,6 +1,6 @@
 import { getDatabase } from '../database'
 import { fetchFeed } from './rss.service'
-import { Feed } from '../../src/renderer/src/modules/feed/types'
+import { Feed } from '../../src/renderer/src/types'
 import { randomUUID } from 'crypto'
 
 let schedulerInterval: NodeJS.Timeout | null = null

@@ -6,6 +6,7 @@ import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 import { Calendar, FileText, Tag } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { Note } from '@/types'
 
 export const NoteTable: React.FC = () => {
   const { notes, filters, selectedNoteId, selectNote } = useLibraryStore()
@@ -60,7 +61,7 @@ export const NoteTable: React.FC = () => {
     overscan: 10
   })
 
-  const handleDoubleClick = (note: any) => {
+  const handleDoubleClick = (note: Note) => {
     addTab({
       id: note.id,
       type: 'editor',
