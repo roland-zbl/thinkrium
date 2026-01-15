@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import { getDatabase } from '../database'
-import { Feed, FeedItem, ItemFilter } from '../../src/renderer/src/modules/feed/types'
+import { Feed, FeedItem, ItemFilter } from '../../src/renderer/src/types'
 import { validateFeed, fetchFeed } from '../services/rss.service'
 import { randomUUID } from 'crypto'
 

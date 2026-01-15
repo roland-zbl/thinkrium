@@ -6,7 +6,8 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-  DragEndEvent
+  DragEndEvent,
+  DragStartEvent
 } from '@dnd-kit/core'
 import { useAppStore } from '@/stores/app.store'
 import { useFeedStore } from '@/modules/feed/store/feed.store'
@@ -129,11 +130,11 @@ export const AppShell: React.FC = () => {
     return () => window.removeEventListener('open-project-selector' as any, handleOpenSelector)
   }, [])
 
-  const handleDragStart = (event: any) => {
+  const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
     // 假設 active.data.current.title 存在
     if (active.data.current?.title) {
-      setDraggedItemTitle(active.data.current.title)
+      setDraggedItemTitle(active.data.current.title as string)
     }
   }
 

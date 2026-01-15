@@ -1,13 +1,5 @@
 import { create } from 'zustand'
-
-export interface Note {
-  id: string
-  title: string
-  date: string
-  type: string
-  projects: string[]
-  tags: string[]
-}
+import { Note, DbNote } from '@/types'
 
 interface LibraryState {
   notes: Note[]
@@ -50,7 +42,7 @@ export const useLibraryStore = create<LibraryState>((set) => ({
     try {
       const rawNotes = await window.api.note.list()
       // 轉換 API 返回的格式為 Note 介面格式
-      const notes: Note[] = rawNotes.map((n: any) => ({
+      const notes: Note[] = rawNotes.map((n: DbNote) => ({
         id: n.id,
         title: n.title,
         date: n.created_at || n.date || new Date().toISOString().split('T')[0],
@@ -65,7 +57,7 @@ export const useLibraryStore = create<LibraryState>((set) => ({
               return []
             }
           }
-          return n.tags || []
+          return (n.tags as string[]) || []
         })()
       }))
       set({ notes })

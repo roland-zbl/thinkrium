@@ -3,7 +3,6 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Bold, Italic, Strikethrough, Code, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 
 interface NoteEditorProps {
   noteId: string
@@ -18,7 +17,10 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
     const fetchNote = async () => {
       try {
         const fetchedNote = await window.api.note.get(noteId)
-        setNote(fetchedNote)
+        setNote({
+          title: fetchedNote.title,
+          content: fetchedNote.content || ''
+        })
       } catch (error) {
         console.error(`Failed to fetch note ${noteId}:`, error)
         // TODO: Handle error state in UI

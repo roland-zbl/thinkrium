@@ -1,18 +1,5 @@
 import { create } from 'zustand'
-
-export type ProjectStatus = 'active' | 'pending' | 'completed'
-
-export interface Project {
-  id: string
-  title: string
-  status: ProjectStatus
-  targetDate: string | null
-  materialCount: number
-  deliverableCount: number
-  notes: string
-  created_at?: string
-  updated_at?: string
-}
+import { Project, ProjectStatus, DbProject } from '@/types'
 
 interface ProjectState {
   projects: Project[]
@@ -34,7 +21,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       // Note: materialCount and deliverableCount need to be calculated or fetched.
       // For now we set them to 0 or we need another API to get stats.
       const projects: Project[] = await Promise.all(
-        dbProjects.map(async (p: any) => {
+        dbProjects.map(async (p: DbProject) => {
           // Optional: Fetch item counts for each project
           // const items = await window.api.project.getItems(p.id)
           // const materialCount = items.length
