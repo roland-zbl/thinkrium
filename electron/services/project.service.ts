@@ -11,14 +11,17 @@ export interface Project {
 }
 
 export class ProjectService {
-  private db: Database
+  private db: Database | null = null
 
-  constructor() {
-    this.db = getDatabase()
+  private getDb(): Database {
+    if (!this.db) {
+      this.db = getDatabase()
+    }
+    return this.db
   }
 
   createProject(project: Omit<Project, 'created_at' | 'updated_at'>): Project {
-    const stmt = this.db.prepare(`
+    const stmt = this.getDb().prepare(`
       INSERT INTO projects (id, title, status, target_date)
       VALUES (?, ?, ?, ?)
     `)
@@ -29,15 +32,15 @@ export class ProjectService {
   }
 
   getProject(id: string): Project | undefined {
-    return this.db.prepare('SELECT * FROM projects WHERE id = ?').get(id) as Project | undefined
+    return this.getDb().prepare('SELECT * FROM projects WHERE id = ?').get(id) as Project | undefined
   }
 
   listProjects(): Project[] {
-    return this.db.prepare('SELECT * FROM projects ORDER BY created_at DESC').all() as Project[]
+    return this.getDb().prepare('SELECT * FROM projects ORDER BY created_at DESC').all() as Project[]
   }
 
   updateProjectStatus(id: string, status: string): void {
-    const stmt = this.db.prepare(`
+    const stmt = this.getDb().prepare(`
       UPDATE projects
       SET status = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
@@ -46,7 +49,7 @@ export class ProjectService {
   }
 
   addItemToProject(projectId: string, noteId: string): void {
-    const stmt = this.db.prepare(`
+    const stmt = this.getDb().prepare(`
       INSERT INTO project_items (project_id, note_id)
       VALUES (?, ?)
       ON CONFLICT(project_id, note_id) DO NOTHING
@@ -56,7 +59,7 @@ export class ProjectService {
 
   getProjectItems(projectId: string): any[] {
     // Join with notes to get details
-    const stmt = this.db.prepare(`
+    const stmt = this.getDb().prepare(`
       SELECT n.*, pi.added_at
       FROM notes n
       JOIN project_items pi ON n.id = pi.note_id
