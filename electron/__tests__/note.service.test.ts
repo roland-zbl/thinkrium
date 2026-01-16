@@ -24,18 +24,31 @@ vi.mock('../database', () => {
 })
 
 // Mock fs/promises
-vi.mock('fs/promises', () => ({
-  mkdir: vi.fn(),
-  writeFile: vi.fn(),
-  readFile: vi.fn(),
-  unlink: vi.fn(),
-  rm: vi.fn()
-}))
+vi.mock('fs/promises', () => {
+  const mkdir = vi.fn()
+  const writeFile = vi.fn()
+  const readFile = vi.fn()
+  const unlink = vi.fn()
+  const rm = vi.fn()
+
+  return {
+    default: { mkdir, writeFile, readFile, unlink, rm },
+    mkdir,
+    writeFile,
+    readFile,
+    unlink,
+    rm
+  }
+})
 
 // Mock fs existsSync (used in NoteService)
-vi.mock('fs', () => ({
-  existsSync: vi.fn(() => true)
-}))
+vi.mock('fs', () => {
+  const existsSync = vi.fn(() => true)
+  return {
+    default: { existsSync },
+    existsSync
+  }
+})
 
 // Mock TurndownService
 vi.mock('turndown', () => {
