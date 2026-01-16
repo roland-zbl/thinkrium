@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { Plus, FolderKanban } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useProjectStore } from './store/project.store'
-import { tokens } from '@/styles/tokens'
 import { useAppStore } from '@/stores/app.store'
 import { CreateProjectDialog } from './components/CreateProjectDialog'
 
@@ -15,10 +14,10 @@ export const ProjectListView: React.FC = () => {
     await createProject({ title })
   }
 
-  const statuses: { id: string; label: string; color: string }[] = [
-    { id: 'active', label: '進行中', color: tokens.colors.primary },
-    { id: 'pending', label: '待啟動', color: tokens.colors.warning },
-    { id: 'completed', label: '已完成', color: tokens.colors.success }
+  const statuses: { id: string; label: string; colorClass: string }[] = [
+    { id: 'active', label: '進行中', colorClass: 'bg-primary' },
+    { id: 'pending', label: '待啟動', colorClass: 'bg-warning' },
+    { id: 'completed', label: '已完成', colorClass: 'bg-success' }
   ]
 
   return (
@@ -49,12 +48,10 @@ export const ProjectListView: React.FC = () => {
             return (
               <section key={status.id} className="space-y-4">
                 <div
-                  className="flex items-center gap-3 border-b pb-3"
-                  style={{ borderColor: tokens.colors.bgSubtle }}
+                  className="flex items-center gap-3 border-b pb-3 border-border"
                 >
                   <div
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: status.color }}
+                    className={`w-2.5 h-2.5 rounded-full ${status.colorClass}`}
                   />
                   <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
                     {status.label}
@@ -110,8 +107,8 @@ export const ProjectListView: React.FC = () => {
 
                       {/* 底部裝飾線 */}
                       <div
-                        className="absolute bottom-0 left-0 h-1 transition-all duration-300 group-hover:w-full"
-                        style={{ backgroundColor: status.color, width: '20%' }}
+                        className={`absolute bottom-0 left-0 h-1 transition-all duration-300 group-hover:w-full ${status.colorClass}`}
+                        style={{ width: '20%' }}
                       />
                     </div>
                   ))}

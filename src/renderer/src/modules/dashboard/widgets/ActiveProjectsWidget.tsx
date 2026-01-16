@@ -1,6 +1,5 @@
 import React from 'react'
 import { FolderKanban, Plus, ExternalLink } from 'lucide-react'
-import { tokens } from '@/styles/tokens'
 import { useAppStore } from '@/stores/app.store'
 import { useProjectStore } from '@/modules/project/store/project.store'
 
@@ -11,8 +10,7 @@ export const ActiveProjectsWidget: React.FC = () => {
 
   return (
     <div
-      className="p-5 rounded-xl border flex flex-col h-[180px]"
-      style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+      className="p-5 rounded-xl border flex flex-col h-[180px] bg-card border-border"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-foreground font-bold">

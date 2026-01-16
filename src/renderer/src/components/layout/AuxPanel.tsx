@@ -1,7 +1,6 @@
 import React from 'react'
 import { X, LayoutList, Link as LinkIcon, Bot } from 'lucide-react'
 import { useAppStore } from '@/stores/app.store'
-import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 
 const TABS = [
@@ -15,14 +14,10 @@ export const AuxPanel: React.FC = () => {
 
   return (
     <div
-      className="w-[280px] border-l flex flex-col h-full overflow-hidden"
-      style={{
-        backgroundColor: tokens.colors.bgElevated,
-        borderColor: tokens.colors.bgSubtle
-      }}
+      className="w-[280px] border-l flex flex-col h-full overflow-hidden bg-card border-border"
     >
       {/* Tab 切換 */}
-      <div className="flex border-b" style={{ borderColor: tokens.colors.bgSubtle }}>
+      <div className="flex border-b border-border">
         {TABS.map((tab) => (
           <button
             key={tab.id}

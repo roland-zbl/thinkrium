@@ -1,7 +1,6 @@
 import React from 'react'
 import { useFeedStore } from '../store/feed.store'
 import { cn } from '@/lib/utils'
-import { tokens } from '@/styles/tokens'
 
 export const FilterTabs: React.FC = () => {
   const { filter, setFilter } = useFeedStore()
@@ -14,8 +13,7 @@ export const FilterTabs: React.FC = () => {
 
   return (
     <div
-      className="flex px-4 border-b shrink-0 h-10 items-center gap-4"
-      style={{ borderColor: tokens.colors.bgSubtle }}
+      className="flex px-4 border-b shrink-0 h-10 items-center gap-4 border-border"
     >
       {options.map((opt) => (
         <button

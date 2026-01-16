@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as ToastPrimitives from '@radix-ui/react-toast'
 import { X, CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { tokens } from '@/styles/tokens'
 import { useToastStore, ToastType } from '@/stores/toast.store'
 
 const ToastProvider = ToastPrimitives.Provider
@@ -31,13 +30,10 @@ const Toast = React.forwardRef<
       ref={ref}
       className={cn(
         'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full',
+        'bg-card text-foreground',
+        variant === 'error' ? 'border-destructive' : 'border-transparent',
         className
       )}
-      style={{
-        backgroundColor: tokens.colors.bgElevated,
-        color: tokens.colors.textPrimary,
-        borderColor: variant === 'error' ? tokens.colors.danger : 'transparent',
-      }}
       {...props}
     />
   )
@@ -103,10 +99,10 @@ ToastDescription.displayName = ToastPrimitives.Description.displayName
 
 // Icons mapping
 const icons = {
-  success: <CheckCircle className="h-5 w-5" style={{ color: tokens.colors.success }} />,
-  error: <XCircle className="h-5 w-5" style={{ color: tokens.colors.danger }} />,
-  warning: <AlertTriangle className="h-5 w-5" style={{ color: tokens.colors.warning }} />,
-  info: <Info className="h-5 w-5" style={{ color: tokens.colors.textSecondary }} />
+  success: <CheckCircle className="h-5 w-5 text-success" />,
+  error: <XCircle className="h-5 w-5 text-destructive" />,
+  warning: <AlertTriangle className="h-5 w-5 text-warning" />,
+  info: <Info className="h-5 w-5 text-muted-foreground" />
 }
 
 export function Toaster() {

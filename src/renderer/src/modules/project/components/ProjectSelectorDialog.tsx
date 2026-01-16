@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Search, Folder, Plus } from 'lucide-react'
 import { mockProjects } from '@/mocks'
-import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -67,13 +66,11 @@ export const ProjectSelectorDialog: React.FC<Props> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-xl border shadow-2xl overflow-hidden flex flex-col"
-        style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+        className="w-full max-w-md rounded-xl border shadow-2xl overflow-hidden flex flex-col bg-card border-border"
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="p-3 border-b flex items-center gap-2"
-          style={{ borderColor: tokens.colors.bgSubtle }}
+          className="p-3 border-b flex items-center gap-2 border-border"
         >
           <Search className="text-muted-foreground" size={18} />
           <input
@@ -128,12 +125,11 @@ export const ProjectSelectorDialog: React.FC<Props> = ({
         </div>
 
         <div
-          className="p-2 border-t bg-black/5 dark:bg-black/20"
-          style={{ borderColor: tokens.colors.bgSubtle }}
+          className="p-2 border-t bg-black/5 dark:bg-black/20 border-border"
         >
           <button className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
             <Plus size={14} />
-            建立新專案 "{search || '未命名'}"
+            建立新專案 &quot;{search || '未命名'}&quot;
           </button>
         </div>
       </div>

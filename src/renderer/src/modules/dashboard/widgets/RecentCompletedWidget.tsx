@@ -1,6 +1,5 @@
 import React from 'react'
 import { CheckCircle2, History } from 'lucide-react'
-import { tokens } from '@/styles/tokens'
 import { useProjectStore } from '@/modules/project/store/project.store'
 
 export const RecentCompletedWidget: React.FC = () => {
@@ -9,8 +8,7 @@ export const RecentCompletedWidget: React.FC = () => {
 
   return (
     <div
-      className="p-5 rounded-xl border flex flex-col h-[180px]"
-      style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+      className="p-5 rounded-xl border flex flex-col h-[180px] bg-card border-border"
     >
       <div className="flex items-center gap-2 text-muted-foreground font-bold mb-4">
         <CheckCircle2 size={18} className="text-success" />

@@ -4,7 +4,6 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useLibraryStore } from '../store/library.store'
 import { useAppStore } from '@/stores/app.store'
-import { tokens } from '@/styles/tokens'
 
 export const NotePreview: React.FC = () => {
   const { selectedNoteId, notes, activeNote, selectNote } = useLibraryStore()
@@ -27,13 +26,11 @@ export const NotePreview: React.FC = () => {
 
   return (
     <div
-      className="h-full flex flex-col border-l relative"
-      style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+      className="h-full flex flex-col border-l relative bg-card border-border"
     >
       {/* 工具欄 */}
       <div
-        className="h-12 border-b flex items-center justify-between px-6 shrink-0"
-        style={{ borderColor: tokens.colors.bgSubtle }}
+        className="h-12 border-b flex items-center justify-between px-6 shrink-0 border-border"
       >
         <div className="flex items-center gap-3">
           <button
@@ -74,8 +71,7 @@ export const NotePreview: React.FC = () => {
         <h1 className="text-2xl font-bold text-foreground leading-tight">{note.title}</h1>
 
         <div
-          className="flex items-center gap-4 text-xs text-muted-foreground pb-6 border-b"
-          style={{ borderColor: tokens.colors.bgSubtle }}
+          className="flex items-center gap-4 text-xs text-muted-foreground pb-6 border-b border-border"
         >
           <div className="flex items-center gap-1">
             <span>日期:</span>

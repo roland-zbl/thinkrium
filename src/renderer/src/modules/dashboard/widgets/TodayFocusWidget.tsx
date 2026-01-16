@@ -1,6 +1,5 @@
 import React from 'react'
 import { Calendar, AlertCircle, Plus } from 'lucide-react'
-import { tokens } from '@/styles/tokens'
 import { useAppStore } from '@/stores/app.store'
 import { useLibraryStore } from '@/modules/library/store/library.store'
 import { useProjectStore } from '@/modules/project/store/project.store'
@@ -20,8 +19,7 @@ export const TodayFocusWidget: React.FC = () => {
 
   return (
     <div
-      className="p-5 rounded-xl flex flex-col gap-4 border h-[180px]"
-      style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+      className="p-5 rounded-xl flex flex-col gap-4 border h-[180px] bg-card border-border"
     >
       <div className="flex items-center gap-2 text-primary font-bold">
         <Calendar size={18} />

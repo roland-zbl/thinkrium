@@ -2,7 +2,6 @@ import React from 'react'
 import { Mail, ArrowRight } from 'lucide-react'
 import { useFeedStore } from '@/modules/feed/store/feed.store'
 import { useAppStore } from '@/stores/app.store'
-import { tokens } from '@/styles/tokens'
 
 export const NewItemsWidget: React.FC = () => {
   const { items } = useFeedStore()
@@ -14,8 +13,7 @@ export const NewItemsWidget: React.FC = () => {
 
   return (
     <div
-      className="group flex flex-col justify-between p-5 rounded-xl border flex flex-col h-full hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer relative overflow-hidden"
-      style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+      className="group flex flex-col justify-between p-5 rounded-xl border h-full hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer relative overflow-hidden bg-card border-border"
       onClick={() => setView('feed')}
     >
       <div className="flex justify-between items-start mb-4">

@@ -2,7 +2,6 @@ import React, { useRef, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useLibraryStore } from '../store/library.store'
 import { useAppStore } from '@/stores/app.store'
-import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 import { Calendar, FileText, Tag } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -74,8 +73,7 @@ export const NoteTable: React.FC = () => {
     <div className="h-full flex flex-col bg-background">
       {/* 表頭 */}
       <div
-        className="flex items-center px-6 py-3 border-b text-xs font-bold text-muted-foreground uppercase tracking-widest bg-white/40 dark:bg-black/20 backdrop-blur"
-        style={{ borderColor: tokens.colors.bgSubtle }}
+        className="flex items-center px-6 py-3 border-b text-xs font-bold text-muted-foreground uppercase tracking-widest bg-white/40 dark:bg-black/20 backdrop-blur border-border"
       >
         <div className="w-24 px-2">日期</div>
         <div className="flex-1 px-2 text-muted-foreground">標題</div>
@@ -102,13 +100,12 @@ export const NoteTable: React.FC = () => {
                   onClick={() => selectNote(note.id)}
                   onDoubleClick={() => handleDoubleClick(note)}
                   className={cn(
-                    'absolute top-0 left-0 w-full flex items-center px-6 h-[44px] border-b cursor-pointer transition-colors group text-sm',
+                    'absolute top-0 left-0 w-full flex items-center px-6 h-[44px] border-b cursor-pointer transition-colors group text-sm border-border',
                     isActive
                       ? 'bg-primary/10 text-primary font-medium'
                       : 'text-foreground hover:bg-black/5 dark:hover:bg-white/[0.04] hover:text-foreground'
                   )}
                   style={{
-                    borderColor: tokens.colors.bgSubtle,
                     transform: `translateY(${virtualItem.start}px)`
                   }}
                 >

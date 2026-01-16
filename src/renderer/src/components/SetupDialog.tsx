@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { FolderOpen } from 'lucide-react'
-import { tokens } from '../styles/tokens'
 import { useToastStore } from '@/stores/toast.store'
 import { invokeIPC } from '@/utils/ipc'
 
@@ -49,8 +48,7 @@ export const SetupDialog: React.FC<Props> = ({ onComplete }) => {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/90 backdrop-blur-md">
       <div
-        className="w-full max-w-lg p-8 rounded-2xl shadow-2xl border"
-        style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+        className="w-full max-w-lg p-8 rounded-2xl shadow-2xl border bg-card border-border"
       >
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
@@ -66,8 +64,7 @@ export const SetupDialog: React.FC<Props> = ({ onComplete }) => {
 
         <div className="space-y-6">
           <div
-            className="border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-            style={{ borderColor: tokens.colors.bgSubtle }}
+            className="border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors border-border"
             onClick={handleSelect}
           >
             {selectedPath ? (
