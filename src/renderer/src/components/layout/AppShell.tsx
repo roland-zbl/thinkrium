@@ -194,7 +194,7 @@ export const AppShell: React.FC = () => {
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div
-        className="flex h-screen w-screen overflow-hidden text-sm"
+        className="flex h-dvh w-screen overflow-hidden text-sm"
         style={{ backgroundColor: tokens.colors.bgBase, color: tokens.colors.textPrimary }}
       >
         {/* 側邊導航 */}

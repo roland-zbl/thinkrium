@@ -35,14 +35,14 @@ export const ProjectPageView: React.FC<{ id: string }> = ({ id }) => {
               onClick={() => setActiveTab(null as any)}
               className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-xs font-bold transition-colors"
             >
-              <ArrowLeft size={16} /> 返回列表
+              <ArrowLeft size={16} aria-hidden="true" /> 返回列表
             </button>
             <div className="flex gap-2">
               <button className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
-                <Settings2 size={18} />
+                <Settings2 size={18} aria-hidden="true" />
               </button>
               <button className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
-                <MoreVertical size={18} />
+                <MoreVertical size={18} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -64,11 +64,11 @@ export const ProjectPageView: React.FC<{ id: string }> = ({ id }) => {
               </div>
               <div className="flex items-center gap-4 text-muted-foreground text-xs">
                 <span className="flex items-center gap-1.5">
-                  <Clock size={14} /> 建立於 2026-01-01
+                  <Clock size={14} aria-hidden="true" /> 建立於 2026-01-01
                 </span>
                 {project.targetDate && (
                   <span className="flex items-center gap-1.5 text-warning/60">
-                    <History size={14} /> 目標日期: {project.targetDate}
+                    <History size={14} aria-hidden="true" /> 目標日期: {project.targetDate}
                   </span>
                 )}
               </div>
@@ -84,7 +84,7 @@ export const ProjectPageView: React.FC<{ id: string }> = ({ id }) => {
           <div className="lg:col-span-2 space-y-8">
             <section className="space-y-4">
               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <LayoutList size={16} /> 專案素材 ({relatedNotes.length})
+                <LayoutList size={16} aria-hidden="true" /> 專案素材 ({relatedNotes.length})
               </h2>
               <div className="bg-black/[0.02] dark:bg-white/[0.02] border border-border rounded-xl overflow-hidden">
                 {relatedNotes.map((note) => (
@@ -96,6 +96,7 @@ export const ProjectPageView: React.FC<{ id: string }> = ({ id }) => {
                       <FileText
                         size={16}
                         className="text-muted-foreground group-hover:text-primary transition-colors"
+                        aria-hidden="true"
                       />
                       <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors">
                         {note.title}
@@ -112,7 +113,7 @@ export const ProjectPageView: React.FC<{ id: string }> = ({ id }) => {
 
             <section className="space-y-4">
               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <CheckCircle2 size={16} /> 最終產出
+                <CheckCircle2 size={16} aria-hidden="true" /> 最終產出
               </h2>
               <div className="h-32 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center text-muted-foreground italic text-sm">
                 目前尚無產出檔案

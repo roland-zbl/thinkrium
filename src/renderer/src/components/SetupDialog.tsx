@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { FolderOpen } from 'lucide-react'
 import { tokens } from '../styles/tokens'
+import { Dialog, DialogContent, DialogTitle } from './ui/dialog'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
 interface Props {
   onComplete: () => void
@@ -38,14 +40,20 @@ export const SetupDialog: React.FC<Props> = ({ onComplete }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/90 backdrop-blur-md">
-      <div
-        className="w-full max-w-lg p-8 rounded-2xl shadow-2xl border"
+    <Dialog open={true}>
+      <DialogContent
+        className="max-w-lg p-8 rounded-2xl shadow-2xl border"
         style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
       >
+        <VisuallyHidden>
+          <DialogTitle>設定知識庫</DialogTitle>
+        </VisuallyHidden>
+
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
-            <FolderOpen size={32} />
+            <FolderOpen size={32} aria-hidden="true" />
           </div>
           <h1 className="text-2xl font-bold mb-2 text-foreground">歡迎使用 Thinkrium</h1>
           <p className="text-muted-foreground">
@@ -60,6 +68,9 @@ export const SetupDialog: React.FC<Props> = ({ onComplete }) => {
             className="border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             style={{ borderColor: tokens.colors.bgSubtle }}
             onClick={handleSelect}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && handleSelect()}
           >
             {selectedPath ? (
               <>
@@ -88,7 +99,7 @@ export const SetupDialog: React.FC<Props> = ({ onComplete }) => {
             {loading ? '設定中...' : '開始使用'}
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

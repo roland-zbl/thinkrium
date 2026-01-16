@@ -22,10 +22,10 @@ export const FeedItemCard: React.FC<Props> = ({ item, isActive, onClick }) => {
 
   const style = transform
     ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        opacity: isDragging ? 0.5 : 1,
-        zIndex: isDragging ? 100 : 'auto'
-      }
+      transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      opacity: isDragging ? 0.5 : 1,
+      zIndex: isDragging ? 100 : 'auto'
+    }
     : undefined
 
   const handleCardClick = () => {
@@ -61,9 +61,9 @@ export const FeedItemCard: React.FC<Props> = ({ item, isActive, onClick }) => {
           {item.source}
         </span>
         <div className="flex items-center gap-2">
-          {item.status === 'saved' && <Bookmark size={14} className="text-primary fill-current" />}
+          {item.status === 'saved' && <Bookmark size={14} className="text-primary fill-current" aria-hidden="true" />}
           <div className="flex items-center gap-1">
-            <Clock size={12} />
+            <Clock size={12} aria-hidden="true" />
             <span>{item.date}</span>
           </div>
         </div>

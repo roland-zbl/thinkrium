@@ -50,7 +50,7 @@ export const FeedPreview: React.FC = () => {
   if (!item) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-muted-foreground bg-muted/40 backdrop-blur">
-        <FileText size={64} className="mb-6 opacity-20" />
+        <FileText size={64} className="mb-6 opacity-20" aria-hidden="true" />
         <span className="text-base font-medium">選擇一個項目來查看詳細內容</span>
       </div>
     )
@@ -88,7 +88,7 @@ export const FeedPreview: React.FC = () => {
             className="hover:bg-black/5 dark:hover:bg-white/5 p-1.5 rounded transition-colors text-muted-foreground hover:text-foreground shrink-0"
             title="關閉 (ESC)"
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
 
           <div className="flex items-center bg-muted/50 rounded-lg p-0.5 border border-border/50 shrink-0">
@@ -98,7 +98,7 @@ export const FeedPreview: React.FC = () => {
               className="p-1 hover:bg-background rounded-md disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-muted-foreground hover:text-foreground"
               title="上一篇 (K)"
             >
-              <ChevronUp size={18} />
+              <ChevronUp size={18} aria-hidden="true" />
             </button>
             <div className="w-px h-4 bg-border/50 mx-0.5" />
             <button
@@ -107,7 +107,7 @@ export const FeedPreview: React.FC = () => {
               className="p-1 hover:bg-background rounded-md disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-muted-foreground hover:text-foreground"
               title="下一篇 (J)"
             >
-              <ChevronDown size={18} />
+              <ChevronDown size={18} aria-hidden="true" />
             </button>
           </div>
 
@@ -126,7 +126,7 @@ export const FeedPreview: React.FC = () => {
             title="在瀏覽器開啟"
             disabled={!item.link}
           >
-            <ExternalLink size={20} />
+            <ExternalLink size={20} aria-hidden="true" />
           </button>
           <button
             onClick={() => {
@@ -139,7 +139,7 @@ export const FeedPreview: React.FC = () => {
             className="p-2 hover:text-primary text-muted-foreground transition-colors"
             title="加入專案 (P)"
           >
-            <FolderPlus size={20} />
+            <FolderPlus size={20} aria-hidden="true" />
           </button>
           <button
             onClick={handleSave}
@@ -150,7 +150,7 @@ export const FeedPreview: React.FC = () => {
                 : 'bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/20'
             )}
           >
-            <Bookmark size={16} fill={item.status === 'saved' ? 'currentColor' : 'none'} />
+            <Bookmark size={16} fill={item.status === 'saved' ? 'currentColor' : 'none'} aria-hidden="true" />
             {item.status === 'saved' ? '編輯筆記' : '保存'}
           </button>
         </div>
@@ -208,7 +208,7 @@ export const FeedPreview: React.FC = () => {
                 : 'text-muted-foreground opacity-50'
             )}
           >
-            <Send size={18} />
+            <Send size={18} aria-hidden="true" />
           </button>
         </div>
       </div>

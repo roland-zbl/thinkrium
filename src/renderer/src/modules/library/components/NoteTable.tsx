@@ -112,7 +112,7 @@ export const NoteTable: React.FC = () => {
                   }}
                 >
                   <div className="w-24 px-2 flex items-center gap-2 text-muted-foreground text-xs">
-                    <Calendar size={14} />
+                    <Calendar size={14} aria-hidden="true" />
                     {note.date}
                   </div>
                   <div className="flex-1 px-2 font-medium truncate flex items-center gap-2 text-base">
@@ -123,6 +123,7 @@ export const NoteTable: React.FC = () => {
                           ? 'text-primary'
                           : 'text-muted-foreground group-hover:text-primary/60'
                       }
+                      aria-hidden="true"
                     />
                     {note.title}
                   </div>
@@ -134,7 +135,7 @@ export const NoteTable: React.FC = () => {
                   <div className="w-32 px-2 truncate flex gap-2 items-center text-muted-foreground">
                     {note.projects.length > 0 ? (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Tag size={12} />
+                        <Tag size={12} aria-hidden="true" />
                         {note.projects[0]}
                       </div>
                     ) : (

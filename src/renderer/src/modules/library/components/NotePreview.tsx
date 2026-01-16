@@ -13,7 +13,7 @@ export const NotePreview: React.FC = () => {
   if (!note) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-muted-foreground bg-white/40 dark:bg-black/20 backdrop-blur">
-        <FileText size={48} className="mb-4 opacity-20" />
+        <FileText size={48} className="mb-4 opacity-20" aria-hidden="true" />
         <span className="text-sm font-medium">選擇筆記查看預覽</span>
       </div>
     )
@@ -34,7 +34,7 @@ export const NotePreview: React.FC = () => {
             onClick={() => selectNote(null)}
             className="hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded transition-colors text-muted-foreground hover:text-foreground"
           >
-            <X size={18} />
+            <X size={18} aria-hidden="true" />
           </button>
           <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">
             筆記詳情
@@ -45,7 +45,7 @@ export const NotePreview: React.FC = () => {
             className="p-2 hover:text-primary text-muted-foreground transition-colors tooltip"
             title="分享"
           >
-            <Share2 size={16} />
+            <Share2 size={16} aria-hidden="true" />
           </button>
           <button
             onClick={() =>
@@ -58,7 +58,7 @@ export const NotePreview: React.FC = () => {
             }
             className="flex items-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary text-xs px-3 py-1.5 rounded transition-colors font-bold"
           >
-            <Edit3 size={14} />
+            <Edit3 size={14} aria-hidden="true" />
             編輯
           </button>
         </div>
@@ -94,7 +94,7 @@ export const NotePreview: React.FC = () => {
                   key={p}
                   className="flex items-center gap-2 bg-warning/5 border border-warning/10 text-warning px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer hover:bg-warning/10 transition-colors"
                 >
-                  <FolderPlus size={12} />
+                  <FolderPlus size={12} aria-hidden="true" />
                   {p}
                 </div>
               ))

@@ -15,11 +15,11 @@ export const ActiveProjectsWidget: React.FC = () => {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-foreground font-bold">
-          <FolderKanban size={18} className="text-warning" />
+          <FolderKanban size={18} className="text-warning" aria-hidden="true" />
           <span>進行中專案</span>
         </div>
         <button className="text-xs text-primary hover:underline flex items-center gap-1">
-          <Plus size={12} /> 新增
+          <Plus size={12} aria-hidden="true" /> 新增
         </button>
       </div>
 
@@ -49,6 +49,7 @@ export const ActiveProjectsWidget: React.FC = () => {
               <ExternalLink
                 size={12}
                 className="text-muted-foreground group-hover:text-primary transition-colors"
+                aria-hidden="true"
               />
             </div>
           ))

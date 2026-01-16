@@ -21,7 +21,7 @@ export const TodayFocusWidget: React.FC = () => {
       style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
     >
       <div className="flex items-center gap-2 text-primary font-bold">
-        <Calendar size={18} />
+        <Calendar size={18} aria-hidden="true" />
         <span>今日重點</span>
       </div>
 
@@ -41,7 +41,7 @@ export const TodayFocusWidget: React.FC = () => {
           {todayDiary ? (
             <>
               <div className="p-2 bg-primary/10 rounded-full text-primary mb-1 group-hover:scale-110 transition-transform">
-                <Calendar size={18} />
+                <Calendar size={18} aria-hidden="true" />
               </div>
               <span className="text-xs text-muted-foreground font-medium">繼續寫日記</span>
               <span className="text-sm font-bold text-foreground">{todayDiary.title}</span>
@@ -49,7 +49,7 @@ export const TodayFocusWidget: React.FC = () => {
           ) : (
             <>
               <div className="p-3 bg-primary/10 rounded-full text-primary mb-1 group-hover:scale-110 transition-transform">
-                <Plus size={20} />
+                <Plus size={20} aria-hidden="true" />
               </div>
               <span className="text-sm font-bold text-primary">開始寫日記</span>
             </>
@@ -59,10 +59,10 @@ export const TodayFocusWidget: React.FC = () => {
         {/* 緊急專案 */}
         <div className="flex flex-col justify-center gap-1 rounded-xl bg-gradient-to-br from-background to-warning/5 p-4 border border-black/5 dark:border-white/5 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 p-2 opacity-5">
-            <AlertCircle size={48} />
+            <AlertCircle size={48} aria-hidden="true" />
           </div>
           <div className="flex items-center gap-1.5 mb-1">
-            <AlertCircle size={14} className="text-warning" />
+            <AlertCircle size={14} className="text-warning" aria-hidden="true" />
             <span className="text-[10px] uppercase text-warning font-bold tracking-wider">
               最緊急專案
             </span>

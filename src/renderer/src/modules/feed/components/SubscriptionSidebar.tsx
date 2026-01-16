@@ -33,7 +33,7 @@ export const SubscriptionSidebar: React.FC = () => {
           className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded text-primary transition-colors"
           title="新增訂閱"
         >
-          <Plus size={18} />
+          <Plus size={18} aria-hidden="true" />
         </button>
       </div>
 
@@ -47,7 +47,7 @@ export const SubscriptionSidebar: React.FC = () => {
               : 'text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'
           )}
         >
-          <ListFilter size={18} />
+          <ListFilter size={18} aria-hidden="true" />
           <span>全部項目</span>
         </button>
 
@@ -73,6 +73,7 @@ export const SubscriptionSidebar: React.FC = () => {
                     <Hash
                       size={16}
                       className="text-muted-foreground group-hover:text-primary/40 shrink-0"
+                      aria-hidden="true"
                     />
                     <span className="truncate">{sub.name}</span>
                   </div>
@@ -90,7 +91,7 @@ export const SubscriptionSidebar: React.FC = () => {
                       className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/10 hover:text-red-500 rounded transition-all"
                       title="刪除訂閱"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={14} aria-hidden="true" />
                     </button>
                   </div>
                 </div>

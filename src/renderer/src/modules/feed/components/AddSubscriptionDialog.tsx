@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { X, AlertCircle } from 'lucide-react'
 import { tokens } from '../../../styles/tokens'
 import { useFeedStore } from '../store/feed.store'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '../../../components/ui/dialog'
 
 interface Props {
   isOpen: boolean
@@ -13,8 +14,6 @@ export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
   const [url, setUrl] = useState('')
   const [name, setName] = useState('')
   const [category, setCategory] = useState('未分類')
-
-  if (!isOpen) return null
 
   const { addFeed } = useFeedStore()
   const [loading, setLoading] = useState(false)
@@ -28,6 +27,10 @@ export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
     try {
       await addFeed(url, name || undefined, category)
       onClose()
+      // Reset form after successful submission
+      setUrl('')
+      setName('')
+      setCategory('未分類')
     } catch (err: any) {
       console.error('Failed to add subscription:', err)
       setError(err.message || '新增訂閱失敗')
@@ -36,25 +39,27 @@ export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
     }
   }
 
+  // Handle open change to reset state if needed when closed
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose()
+      // Optional: reset state on close
+      setError(null)
+    }
+  }
+
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-background/60 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md rounded-xl border shadow-2xl flex flex-col overflow-hidden"
-        style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div
-          className="flex items-center justify-between p-4 border-b"
-          style={{ borderColor: tokens.colors.bgSubtle }}
-        >
-          <h2 className="font-bold text-foreground">新增 RSS 訂閱</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X size={18} />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="p-0 overflow-hidden max-w-md border shadow-2xl gap-0" style={{ backgroundColor: tokens.colors.bgElevated }}>
+        <DialogHeader className="p-4 border-b flex flex-row items-center justify-between space-y-0" style={{ borderColor: tokens.colors.bgSubtle }}>
+          <DialogTitle className="font-bold text-foreground">新增 RSS 訂閱</DialogTitle>
+          <DialogClose asChild>
+            <button className="text-muted-foreground hover:text-foreground">
+              <X size={18} aria-hidden="true" />
+              <span className="sr-only">Close</span>
+            </button>
+          </DialogClose>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="space-y-1.5">
@@ -97,7 +102,7 @@ export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
 
           {error && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-red-500 text-sm">
-              <AlertCircle size={16} />
+              <AlertCircle size={16} aria-hidden="true" />
               <span>{error}</span>
             </div>
           )}
@@ -120,7 +125,7 @@ export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -21,13 +21,13 @@ export const ProjectListView: React.FC = () => {
         <header className="flex items-center justify-between mb-10">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3 text-foreground">
-              <FolderKanban className="text-primary" size={32} />
+              <FolderKanban className="text-primary" size={32} aria-hidden="true" />
               專案管理
             </h1>
             <p className="text-muted-foreground text-base mt-2 ml-1">追蹤您的創作進度與素材整合</p>
           </div>
           <button className="bg-primary hover:bg-primary/80 text-white px-6 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
-            <Plus size={20} />
+            <Plus size={20} aria-hidden="true" />
             新建專案
           </button>
         </header>
@@ -115,7 +115,7 @@ export const ProjectListView: React.FC = () => {
                         description="目前沒有專案正在進行。您可以隨時建立新專案來開始您的創作旅程。"
                         action={{
                           label: '建立新專案',
-                          onClick: () => {} // TODO: 連接建立專案邏輯
+                          onClick: () => { } // TODO: 連接建立專案邏輯
                         }}
                       />
                     </div>

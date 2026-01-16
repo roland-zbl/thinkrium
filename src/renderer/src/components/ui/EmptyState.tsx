@@ -25,7 +25,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     <div
       className={cn(
         'flex flex-col items-center justify-center p-8 text-center',
-        'animate-in fade-in duration-500',
+        'animate-in fade-in duration-500 motion-reduce:animate-none',
         className
       )}
     >
@@ -33,7 +33,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         className="p-4 rounded-full mb-4 bg-black/5 dark:bg-white/5 shadow-sm"
         style={{ backgroundColor: tokens.colors.bgSubtle }}
       >
-        <Icon size={48} className="text-muted-foreground/50" />
+        <Icon size={48} className="text-muted-foreground/50" aria-hidden="true" />
       </div>
 
       <h3 className="text-lg font-bold text-foreground mb-2">{title}</h3>

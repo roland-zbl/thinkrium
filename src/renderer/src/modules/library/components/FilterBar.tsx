@@ -26,7 +26,7 @@ export const FilterBar: React.FC = () => {
       style={{ borderColor: tokens.colors.bgSubtle }}
     >
       <div className="flex items-center gap-2 text-muted-foreground mr-2">
-        <Filter size={16} />
+        <Filter size={16} aria-hidden="true" />
         <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
           過濾
         </span>
@@ -46,6 +46,7 @@ export const FilterBar: React.FC = () => {
                 <ChevronDown
                   size={14}
                   className="opacity-50 text-muted-foreground group-hover:text-foreground"
+                  aria-hidden="true"
                 />
               </button>
             </DropdownMenuTrigger>
@@ -57,7 +58,7 @@ export const FilterBar: React.FC = () => {
                   className={cn(
                     'cursor-pointer focus:bg-accent focus:text-accent-foreground',
                     filters[cfg.key] === opt &&
-                      'text-primary font-medium bg-primary/10 hover:bg-primary/20 focus:bg-primary/20 focus:text-primary'
+                    'text-primary font-medium bg-primary/10 hover:bg-primary/20 focus:bg-primary/20 focus:text-primary'
                   )}
                 >
                   {opt}
@@ -72,7 +73,7 @@ export const FilterBar: React.FC = () => {
         onClick={resetFilters}
         className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
       >
-        <RotateCcw size={14} />
+        <RotateCcw size={14} aria-hidden="true" />
         <span className="text-xs font-medium">重置</span>
       </button>
     </div>

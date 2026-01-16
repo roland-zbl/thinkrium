@@ -47,7 +47,7 @@ const DroppableNavItem = ({ item, isActive, onClick, expanded }) => {
       {isOver && item.id === 'project' && (
         <div className="absolute inset-0 border-2 border-primary rounded opacity-50 pointer-events-none" />
       )}
-      <Icon size={22} className="shrink-0" />
+      <Icon size={22} className="shrink-0" aria-hidden="true" />
       <span
         className={cn(
           'whitespace-nowrap transition-opacity text-sm font-medium tracking-wide',
@@ -107,7 +107,7 @@ export const Sidebar: React.FC = () => {
   return (
     <div
       className={cn(
-        'flex flex-col border-r h-full transition-all duration-200 z-50',
+        'flex flex-col border-r h-full transition-all duration-200 z-30',
         sidebarExpanded ? 'w-[200px]' : 'w-[56px]'
       )}
       style={{
@@ -159,11 +159,11 @@ export const Sidebar: React.FC = () => {
           className="flex items-center gap-3 px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-muted-foreground hover:text-foreground"
           onClick={() => useAppStore.getState().toggleAuxPanel()}
         >
-          <Bot size={22} />
+          <Bot size={22} aria-hidden="true" />
           {sidebarExpanded && <span className="text-sm font-medium">AI 助手</span>}
         </button>
         <button className="flex items-center gap-3 px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-muted-foreground hover:text-foreground">
-          <Settings size={22} />
+          <Settings size={22} aria-hidden="true" />
           {sidebarExpanded && <span className="text-sm font-medium">設定</span>}
         </button>
 
@@ -195,7 +195,7 @@ function ThemeToggle() {
       )}
       title={`目前模式：${label}`}
     >
-      <Icon size={20} />
+      <Icon size={20} aria-label={label} />
     </button>
   )
 }

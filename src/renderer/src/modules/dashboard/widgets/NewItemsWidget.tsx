@@ -21,7 +21,7 @@ export const NewItemsWidget: React.FC = () => {
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-secondary/20 rounded-lg text-secondary">
-            <Mail size={20} />
+            <Mail size={20} aria-hidden="true" />
           </div>
           <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">
             最新資訊
@@ -48,7 +48,7 @@ export const NewItemsWidget: React.FC = () => {
         ) : (
           <div className="flex flex-col items-center justify-center py-6 gap-3 text-muted-foreground">
             <div className="p-3 bg-primary/5 rounded-full text-primary/40">
-              <Mail size={24} />
+              <Mail size={24} aria-hidden="true" />
             </div>
             <span className="text-sm font-medium italic text-muted-foreground/80">
               目前環境一片和諧
@@ -58,7 +58,7 @@ export const NewItemsWidget: React.FC = () => {
       </div>
 
       <div className="mt-4 flex items-center gap-2 text-xs text-primary font-bold group-hover:translate-x-1 transition-transform">
-        前往閱讀列表 <ArrowRight size={14} />
+        前往閱讀列表 <ArrowRight size={14} aria-hidden="true" />
       </div>
     </div>
   )

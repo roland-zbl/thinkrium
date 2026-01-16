@@ -57,6 +57,7 @@ module.exports = {
         sm: 'calc(var(--radius) - 4px)'
       },
       keyframes: {
+        // P3: Accordion 動畫，若未來未使用可移除
         'accordion-down': {
           from: { height: 0 },
           to: { height: 'var(--radix-accordion-content-height)' }

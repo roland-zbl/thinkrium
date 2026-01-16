@@ -3,6 +3,7 @@ import { Search, Folder, Plus } from 'lucide-react'
 import { mockProjects } from '../../../mocks'
 import { tokens } from '../../../styles/tokens'
 import { cn } from '../../../lib/utils'
+import { Dialog, DialogContent, DialogTitle } from '../../../components/ui/dialog'
 
 interface Props {
   isOpen: boolean
@@ -53,90 +54,88 @@ export const ProjectSelectorDialog: React.FC<Props> = ({
         onSelect(filteredProjects[selectedIndex].id)
         onClose()
       }
-    } else if (e.key === 'Escape') {
-      e.preventDefault()
-      onClose()
     }
   }
 
-  if (!isOpen) return null
-
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-start justify-center pt-20 bg-black/40 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md rounded-xl border shadow-2xl overflow-hidden flex flex-col"
-        style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="p-0 gap-0 overflow-hidden max-w-md border-none shadow-2xl">
+        <DialogTitle className="sr-only">{title}</DialogTitle>
+
         <div
-          className="p-3 border-b flex items-center gap-2"
-          style={{ borderColor: tokens.colors.bgSubtle }}
+          className="w-full flex flex-col"
+          style={{ backgroundColor: tokens.colors.bgElevated }}
         >
-          <Search className="text-muted-foreground" size={18} />
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder={title}
-            className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder-muted-foreground"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <div className="flex gap-1">
-            <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-[10px] text-muted-foreground font-mono">
-              ↑
-            </kbd>
-            <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-[10px] text-muted-foreground font-mono">
-              ↓
-            </kbd>
-            <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-[10px] text-muted-foreground font-mono">
-              ↵
-            </kbd>
+          <div
+            className="p-3 border-b flex items-center gap-2"
+            style={{ borderColor: tokens.colors.bgSubtle }}
+          >
+            <Search className="text-muted-foreground shrink-0" size={18} aria-hidden="true" />
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder={title}
+              className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder-muted-foreground h-9"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <div className="flex gap-1 shrink-0">
+              <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-[10px] text-muted-foreground font-mono">
+                ↑
+              </kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-[10px] text-muted-foreground font-mono">
+                ↓
+              </kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-[10px] text-muted-foreground font-mono">
+                ↵
+              </kbd>
+            </div>
+          </div>
+
+          <div className="max-h-[300px] overflow-y-auto p-1">
+            {filteredProjects.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground text-sm">無符合專案</div>
+            ) : (
+              filteredProjects.map((project, index) => (
+                <button
+                  key={project.id}
+                  onClick={() => {
+                    onSelect(project.id)
+                    onClose()
+                  }}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors text-left',
+                    index === selectedIndex
+                      ? 'bg-primary text-white'
+                      : 'text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5'
+                  )}
+                >
+                  <Folder
+                    size={16}
+                    className={cn(index === selectedIndex ? 'text-white' : 'text-primary')}
+                    aria-hidden="true"
+                  />
+                  <span className="flex-1 truncate">{project.title}</span>
+                  {index === selectedIndex && (
+                    <span className="text-xs opacity-70 shrink-0">Enter 選擇</span>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+
+          <div
+            className="p-2 border-t bg-black/5 dark:bg-black/20"
+            style={{ borderColor: tokens.colors.bgSubtle }}
+          >
+            <button className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Plus size={14} aria-hidden="true" />
+              建立新專案 "{search || '未命名'}"
+            </button>
           </div>
         </div>
-
-        <div className="max-h-[300px] overflow-y-auto p-1">
-          {filteredProjects.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground text-sm">無符合專案</div>
-          ) : (
-            filteredProjects.map((project, index) => (
-              <button
-                key={project.id}
-                onClick={() => {
-                  onSelect(project.id)
-                  onClose()
-                }}
-                className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors text-left',
-                  index === selectedIndex
-                    ? 'bg-primary text-white'
-                    : 'text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5'
-                )}
-              >
-                <Folder
-                  size={16}
-                  className={cn(index === selectedIndex ? 'text-white' : 'text-primary')}
-                />
-                <span className="flex-1">{project.title}</span>
-                {index === selectedIndex && <span className="text-xs opacity-70">Enter 選擇</span>}
-              </button>
-            ))
-          )}
-        </div>
-
-        <div
-          className="p-2 border-t bg-black/5 dark:bg-black/20"
-          style={{ borderColor: tokens.colors.bgSubtle }}
-        >
-          <button className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-            <Plus size={14} />
-            建立新專案 "{search || '未命名'}"
-          </button>
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
