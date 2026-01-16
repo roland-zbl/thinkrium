@@ -4,7 +4,7 @@ import { mkdir, writeFile, unlink, rm, readFile } from 'fs/promises'
 import { existsSync } from 'fs'
 import TurndownService from 'turndown'
 import { getDatabase } from '../database'
-import { SaveNoteInput, Note, NoteUpdate } from '../../src/renderer/src/modules/note/types'
+import { SaveNoteInput, Note, NoteUpdate } from '@shared/types'
 import { randomUUID } from 'crypto'
 
 export class NoteService {
@@ -125,7 +125,7 @@ export class NoteService {
     if (!existing) throw new Error('筆記不存在')
 
     // 1. 如果內容有更新，寫入新內容到 Markdown 文件
-    if (updates.content) {
+    if (updates.content && existing.file_path) {
       const absoluteNotePath = join(rootDir, existing.file_path)
 
       // 注意：這裡簡化了處理，實際應該保留原有的 YAML frontmatter
@@ -177,9 +177,11 @@ export class NoteService {
     if (!note) return
 
     // 1. 刪除 Markdown 文件
-    const absoluteNotePath = join(rootDir, note.file_path)
-    if (existsSync(absoluteNotePath)) {
-      await unlink(absoluteNotePath)
+    if (note.file_path) {
+      const absoluteNotePath = join(rootDir, note.file_path)
+      if (existsSync(absoluteNotePath)) {
+        await unlink(absoluteNotePath)
+      }
     }
 
     // 2. 刪除附件目錄

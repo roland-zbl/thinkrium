@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { feedService } from '../services/feed.service'
-import { getDatabase, closeDatabase } from '../database'
-import * as rssService from '../services/rss.service'
+import { getDatabase } from '../database'
 
 // Mock getDatabase to return our spy object
 // We need to mock the whole module to intercept getDatabase

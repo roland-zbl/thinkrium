@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { Feed, FeedItem, ItemFilter } from '../../src/renderer/src/types'
+import { Feed, FeedItem, ItemFilter } from '@shared/types'
 import { feedService } from '../services/feed.service'
 
 /**

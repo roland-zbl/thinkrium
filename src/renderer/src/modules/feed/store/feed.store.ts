@@ -133,12 +133,15 @@ export const useFeedStore = create<FeedState>((set, get) => ({
 
       // 2. 新增
       const id = crypto.randomUUID()
+      // Fix: validation.icon property access
+      const iconUrl = 'icon' in validation ? (validation as any).icon : null
+
       await window.api.feed.addFeed({
         id,
         url,
         title: name || validation.title || url,
         type: 'rss',
-        icon_url: validation.icon || null,
+        icon_url: iconUrl,
         category: category || '未分類',
         last_fetched: null,
         fetch_interval: 30

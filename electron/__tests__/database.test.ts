@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { initDatabase, getDatabase, closeDatabase } from '../database'
-import { app } from 'electron'
 import Database from 'better-sqlite3'
 
 // Mock electron app

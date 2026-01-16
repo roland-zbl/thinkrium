@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import { noteService } from '../services/note.service'
-import { SaveNoteInput, NoteFilter, NoteUpdate } from '../../src/renderer/src/modules/note/types'
+import { SaveNoteInput, NoteFilter, NoteUpdate } from '@shared/types'
 import { getDatabase } from '../database'
 import { join } from 'path'
 import { readFile } from 'fs/promises'

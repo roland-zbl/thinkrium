@@ -94,8 +94,8 @@ export const NotePreview: React.FC = () => {
             關聯專案
           </h4>
           <div className="flex flex-wrap gap-2">
-            {note.projects.length > 0 ? (
-              note.projects.map((p) => (
+            {(note.projects || []).length > 0 ? (
+              (note.projects || []).map((p) => (
                 <div
                   key={p}
                   className="flex items-center gap-2 bg-warning/5 border border-warning/10 text-warning px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer hover:bg-warning/10 transition-colors"
