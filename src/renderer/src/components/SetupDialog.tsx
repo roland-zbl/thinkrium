@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { FolderOpen } from 'lucide-react'
 import { tokens } from '../styles/tokens'
 import { useToastStore } from '@/stores/toast.store'
+import { invokeIPC } from '@/utils/ipc'
 
 interface Props {
   onComplete: () => void
@@ -14,18 +15,13 @@ export const SetupDialog: React.FC<Props> = ({ onComplete }) => {
   const handleSelect = async () => {
     try {
       setLoading(true)
-      const path = await window.api.settings.selectDirectory()
+      const path = await invokeIPC(window.api.settings.selectDirectory())
       if (path) {
         setSelectedPath(path)
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to select directory',
-        description: msg
-      })
       console.error('Failed to select directory:', error)
+      // Toast handled by invokeIPC
     } finally {
       setLoading(false)
     }
@@ -35,7 +31,7 @@ export const SetupDialog: React.FC<Props> = ({ onComplete }) => {
     if (!selectedPath) return
     try {
       setLoading(true)
-      await window.api.settings.set('notes.rootDir', selectedPath)
+      await invokeIPC(window.api.settings.set('notes.rootDir', selectedPath))
       useToastStore.getState().addToast({
         type: 'success',
         title: 'Settings saved',
@@ -43,13 +39,8 @@ export const SetupDialog: React.FC<Props> = ({ onComplete }) => {
       })
       onComplete()
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to save settings',
-        description: msg
-      })
       console.error('Failed to save settings:', error)
+      // Toast handled by invokeIPC
     } finally {
       setLoading(false)
     }

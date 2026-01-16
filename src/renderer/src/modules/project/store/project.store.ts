@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Project, ProjectStatus, DbProject, ProjectItem } from '@/types'
 import { useToastStore } from '@/stores/toast.store'
+import { invokeIPC } from '@/utils/ipc'
 
 
 interface ProjectState {
@@ -21,7 +22,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   fetchProjects: async () => {
     set({ loading: true })
     try {
-      const dbProjects = await window.api.project.list()
+      const dbProjects = await invokeIPC(window.api.project.list())
       const projects: Project[] = dbProjects.map((p: DbProject) => ({
         id: p.id,
         title: p.title,
@@ -35,13 +36,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }))
       set({ projects })
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to fetch projects',
-        description: msg
-      })
       console.error('Failed to fetch projects:', error)
+      // Toast handled by invokeIPC
     } finally {
       set({ loading: false })
     }
@@ -50,16 +46,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   fetchProjectItems: async (projectId: string) => {
     set({ loading: true })
     try {
-      const items = await window.api.project.getItems(projectId)
+      const items = await invokeIPC(window.api.project.getItems(projectId))
       set({ activeProjectItems: items as ProjectItem[] })
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to fetch project items',
-        description: msg
-      })
       console.error('Failed to fetch project items:', error)
+      // Toast handled by invokeIPC
     } finally {
       set({ loading: false })
     }
@@ -72,7 +63,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         status: 'active',
         ...project
       }
-      await window.api.project.create(newProject)
+      await invokeIPC(window.api.project.create(newProject))
 
       // Refresh list
       await get().fetchProjects()
@@ -82,13 +73,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         description: project.title
       })
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to create project',
-        description: msg
-      })
       console.error('Failed to create project:', error)
+      // Toast handled by invokeIPC
     }
   },
 
@@ -99,15 +85,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }))
 
     try {
-      await window.api.project.updateStatus(id, status)
+      await invokeIPC(window.api.project.updateStatus(id, status))
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to update project status',
-        description: msg
-      })
       console.error('Failed to update project status:', error)
+      // Toast handled by invokeIPC
       // Rollback on error
       // In a real app we might revert the state here
       await get().fetchProjects()
