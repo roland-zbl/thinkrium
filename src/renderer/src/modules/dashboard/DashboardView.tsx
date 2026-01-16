@@ -5,6 +5,7 @@ import { NewItemsWidget } from '@/modules/dashboard/widgets/NewItemsWidget'
 import { RecentCompletedWidget } from '@/modules/dashboard/widgets/RecentCompletedWidget'
 import { useProjectStore } from '../project/store/project.store'
 import { useFeedStore } from '../feed/store/feed.store'
+import { invokeIPC } from '@/utils/ipc'
 
 export const DashboardView: React.FC = () => {
   const { fetchProjects } = useProjectStore()
@@ -13,8 +14,12 @@ export const DashboardView: React.FC = () => {
 
   useEffect(() => {
     const getUserName = async () => {
-      const name = await window.api.settings.get('user.name')
-      setUserName(name)
+      try {
+        const name = await invokeIPC(window.api.settings.get('user.name'))
+        setUserName(name)
+      } catch (error) {
+        console.error('Failed to fetch user name', error)
+      }
     }
     getUserName()
     fetchProjects()

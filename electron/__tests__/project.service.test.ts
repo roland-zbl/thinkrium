@@ -52,7 +52,8 @@ describe('Project Service', () => {
       projectInput.id,
       projectInput.title,
       projectInput.status,
-      projectInput.target_date
+      projectInput.target_date,
+      expect.any(String)
     )
     expect(result).toEqual(projectInput)
   })

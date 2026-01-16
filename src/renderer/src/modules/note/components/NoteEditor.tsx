@@ -5,6 +5,7 @@ import { Bold, Italic, Strikethrough, Code, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/stores/app.store'
 import { useToastStore } from '@/stores/toast.store'
+import { invokeIPC } from '@/utils/ipc'
 
 
 interface NoteEditorProps {
@@ -32,19 +33,14 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
   useEffect(() => {
     const fetchNote = async () => {
       try {
-        const fetchedNote = await window.api.note.get(noteId)
+        const fetchedNote = await invokeIPC(window.api.note.get(noteId))
         setNote({
           title: fetchedNote.title,
           content: fetchedNote.content || ''
         })
       } catch (error) {
-        const msg = error instanceof Error ? error.message : String(error)
-        useToastStore.getState().addToast({
-          type: 'error',
-          title: `Failed to fetch note`,
-          description: msg
-        })
         console.error(`Failed to fetch note ${noteId}:`, error)
+        // Toast handled by invokeIPC
       }
     }
     fetchNote()
@@ -73,7 +69,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
     if (!note) return
     setIsSaving(true)
     try {
-      await window.api.note.update(noteId, { title: note.title, content: note.content })
+      await invokeIPC(window.api.note.update(noteId, { title: note.title, content: note.content }))
       useToastStore.getState().addToast({
         type: 'success',
         title: 'Note saved'
@@ -84,13 +80,8 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ noteId }) => {
         updateTab(activeTabId, { isDirty: false })
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: `Failed to save note`,
-        description: msg
-      })
       console.error(`Failed to save note ${noteId}:`, error)
+      // Toast handled by invokeIPC
     } finally {
       setIsSaving(false)
     }

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { Note, DbNote } from '@/types'
-import { useToastStore } from '@/stores/toast.store'
+import { invokeIPC } from '@/utils/ipc'
 
 
 interface LibraryState {
@@ -52,7 +52,7 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
 
   fetchNote: async (id: string) => {
     try {
-      const rawNote = await window.api.note.get(id)
+      const rawNote = await invokeIPC(window.api.note.get(id))
       if (rawNote) {
         const note: Note = {
           id: rawNote.id,
@@ -75,19 +75,14 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
         set({ activeNote: note })
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to fetch note details',
-        description: msg
-      })
       console.error('Failed to fetch note details:', error)
+      // Toast handled by invokeIPC
     }
   },
 
   fetchNotes: async () => {
     try {
-      const rawNotes = await window.api.note.list()
+      const rawNotes = await invokeIPC(window.api.note.list())
       // 轉換 API 返回的格式為 Note 介面格式
       const notes: Note[] = rawNotes.map((n: DbNote) => ({
         id: n.id,
@@ -109,13 +104,8 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
       }))
       set({ notes })
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to fetch notes',
-        description: msg
-      })
       console.error('Failed to fetch notes:', error)
+      // Toast handled by invokeIPC
     }
   }
 }))
