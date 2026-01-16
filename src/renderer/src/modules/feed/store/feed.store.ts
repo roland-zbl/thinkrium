@@ -56,7 +56,9 @@ export const useFeedStore = create<FeedState>((set, get) => ({
 
   fetchSubscriptions: async () => {
     try {
-      const feeds = await invokeIPC(window.api.feed.listFeeds())
+      // Use silent IPC for fetches to avoid spamming toast on initial load failures
+      // But log the error.
+      const feeds = await invokeIPC(window.api.feed.listFeeds(), { showErrorToast: false })
       // 需要計算未讀數，這裡暫時簡化，後續可以優化 SQL
       const subscriptions = feeds.map((f) => ({
         id: f.id,
@@ -69,7 +71,14 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       set({ subscriptions })
     } catch (error) {
       console.error('Failed to fetch subscriptions:', error)
-      // Toast is already handled by invokeIPC
+      const msg = error instanceof Error ? error.message : String(error)
+      // Only toast if it's not a common network glitch? Or always?
+      // User asked for friendly messages.
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to refresh feeds',
+        description: msg
+      })
     }
   },
 
@@ -89,7 +98,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         dbFilter.status = 'saved'
       }
 
-      const items = await invokeIPC(window.api.feed.listItems(dbFilter))
+      const items = await invokeIPC(window.api.feed.listItems(dbFilter), { showErrorToast: false })
 
       // 轉換 DB 格式到 Store 格式
       const feedItems: FeedItem[] = items.map((i: DbFeedItem) => ({
@@ -107,7 +116,12 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       set({ items: feedItems })
     } catch (error) {
       console.error('Failed to fetch items:', error)
-      // Toast is already handled by invokeIPC
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to load items',
+        description: msg
+      })
     } finally {
       set({ loading: false })
     }
@@ -116,8 +130,8 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   addFeed: async (url, name, category) => {
     try {
       set({ loading: true })
-      // 1. 驗證
-      const validation = await invokeIPC(window.api.feed.validateFeed(url))
+      // 1. 驗證 (silent IPC, handle toast manually)
+      const validation = await invokeIPC(window.api.feed.validateFeed(url), { showErrorToast: false })
       if (!validation.valid) {
         throw new Error(validation.error || '無效的 RSS 源')
       }
@@ -136,10 +150,10 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         category: category || '未分類',
         last_fetched: null,
         fetch_interval: 30
-      }))
+      }), { showErrorToast: false })
 
       // 3. 立即抓取
-      await invokeIPC(window.api.feed.fetchFeed(id))
+      await invokeIPC(window.api.feed.fetchFeed(id), { showErrorToast: false })
 
       // 4. 更新列表
       await get().fetchSubscriptions()
@@ -150,23 +164,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         description: name || validation.title || url
       })
     } catch (error) {
-      // For validation errors we throw manually above, so we might want to toast here if it's not an IPC error
-      // But invokeIPC throws on IPC error and toasts.
-      // If we throw manually "無效的 RSS 源", invokeIPC didn't toast it.
-      // So we need to handle non-IPC errors or re-toast?
-      // Actually, invokeIPC only toasts if success: false.
-      // If success: true but validation.valid is false, we throw.
-      // So we need to catch and toast here for business logic errors.
       const msg = error instanceof Error ? error.message : String(error)
-      // Use toast only if it wasn't already toasted?
-      // Simple heuristic: invokeIPC throws with the error message from backend.
-      // If we throw "無效的 RSS 源", we should toast it.
-      // invokeIPC throws "IPC Error".
-      // Let's just toast. Duplicate toasts are annoying but better than none.
-      // Or we can check if it's an IPC error? No easy way.
-      // However, the previous code toasted everything.
-      // Since invokeIPC toasts "操作失敗", maybe we should let it be.
-      // But "無效的 RSS 源" is a user error, not system error.
       useToastStore.getState().addToast({
         type: 'error',
         title: 'Failed to add feed',
@@ -181,7 +179,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
 
   removeFeed: async (id) => {
     try {
-      await invokeIPC(window.api.feed.removeFeed(id))
+      await invokeIPC(window.api.feed.removeFeed(id), { showErrorToast: false })
       set((state) => ({
         subscriptions: state.subscriptions.filter((s) => s.id !== id),
         items: state.items.filter((i) => i.feed_id !== id),
@@ -193,7 +191,12 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       })
     } catch (error) {
       console.error('Failed to remove feed:', error)
-      // Toast handled by invokeIPC
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to remove feed',
+        description: msg
+      })
     }
   },
 
@@ -220,13 +223,18 @@ export const useFeedStore = create<FeedState>((set, get) => ({
 
   markAsRead: async (id) => {
     try {
-      await invokeIPC(window.api.feed.markAsRead(id))
+      await invokeIPC(window.api.feed.markAsRead(id), { showErrorToast: false })
       set((state) => ({
         items: state.items.map((item) => (item.id === id ? { ...item, status: 'read' } : item))
       }))
     } catch (error) {
       console.error('Failed to mark as read:', error)
-      // Toast handled by invokeIPC
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to mark as read',
+        description: msg
+      })
     }
   },
 
@@ -245,7 +253,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         sourceType: 'rss',
         sourceItemId: item.id,
         tags: ['rss']
-      }))
+      }), { showErrorToast: false })
 
       set((state) => ({
         items: state.items.map((i) => (i.id === id ? { ...i, status: 'saved' } : i))
@@ -260,7 +268,12 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       return note.id
     } catch (error) {
       console.error('Failed to save item:', error)
-      // Toast handled by invokeIPC
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to save item',
+        description: msg
+      })
       return undefined
     }
   }

@@ -34,7 +34,8 @@ describe('LibraryStore', () => {
     const mockNotes = [
       { id: '1', title: 'Note 1', created_at: '2023-01-01', type: 'note', projects: [], tags: '[]' }
     ]
-    mockApi.note.list.mockResolvedValue(mockNotes)
+    // Fix: Return IPCResult format
+    mockApi.note.list.mockResolvedValue({ success: true, data: mockNotes })
 
     await useLibraryStore.getState().fetchNotes()
 
@@ -53,14 +54,13 @@ describe('LibraryStore', () => {
       tags: '[]',
       content: 'Detailed content'
     }
-    mockApi.note.get.mockResolvedValue(mockNoteDetail)
+    // Fix: Return IPCResult format
+    mockApi.note.get.mockResolvedValue({ success: true, data: mockNoteDetail })
 
     // Call selectNote which internally calls fetchNote
     useLibraryStore.getState().selectNote('1')
 
     // Wait for the async fetchNote to complete
-    // Since selectNote is sync but triggers async, we need to wait for promise resolution
-    // However, since we can't await selectNote side effect easily, we can wait a tick
     await new Promise(resolve => setTimeout(resolve, 0))
 
     expect(mockApi.note.get).toHaveBeenCalledWith('1')
