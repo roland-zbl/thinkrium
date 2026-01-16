@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 import { useProjectStore } from './store/project.store'
 import { useAppStore } from '@/stores/app.store'
-import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 
@@ -35,7 +34,7 @@ export const ProjectPageView: React.FC<{ id: string }> = ({ id }) => {
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* 專案標頭 */}
-      <header className="p-8 border-b shrink-0" style={{ borderColor: tokens.colors.bgSubtle }}>
+      <header className="p-8 border-b shrink-0 border-border">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <button

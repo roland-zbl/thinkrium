@@ -1,7 +1,6 @@
 import React from 'react'
 import { Filter, RotateCcw, ChevronDown } from 'lucide-react'
 import { useLibraryStore } from '../store/library.store'
-import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -22,8 +21,7 @@ export const FilterBar: React.FC = () => {
 
   return (
     <div
-      className="h-12 border-b flex items-center px-6 gap-6 shrink-0 bg-white/60 dark:bg-black/20 backdrop-blur"
-      style={{ borderColor: tokens.colors.bgSubtle }}
+      className="h-12 border-b flex items-center px-6 gap-6 shrink-0 bg-white/60 dark:bg-black/20 backdrop-blur border-border"
     >
       <div className="flex items-center gap-2 text-muted-foreground mr-2">
         <Filter size={16} />

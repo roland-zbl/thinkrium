@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { X, AlertCircle } from 'lucide-react'
-import { tokens } from '@/styles/tokens'
 import { useFeedStore } from '../store/feed.store'
 import { useToastStore } from '@/stores/toast.store'
 
@@ -51,13 +50,11 @@ export const AddSubscriptionDialog: React.FC<Props> = ({ isOpen, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-xl border shadow-2xl flex flex-col overflow-hidden"
-        style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+        className="w-full max-w-md rounded-xl border shadow-2xl flex flex-col overflow-hidden bg-card border-border"
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="flex items-center justify-between p-4 border-b"
-          style={{ borderColor: tokens.colors.bgSubtle }}
+          className="flex items-center justify-between p-4 border-b border-border"
         >
           <h2 className="font-bold text-foreground">新增 RSS 訂閱</h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">

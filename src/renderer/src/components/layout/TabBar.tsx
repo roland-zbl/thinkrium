@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { X, FileText, FolderKanban } from 'lucide-react'
 import { useAppStore, Tab } from '@/stores/app.store'
-import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 
 // 確認對話框組件
@@ -17,8 +16,7 @@ const ConfirmDialog: React.FC<{
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/60 backdrop-blur-sm">
       <div
-        className="w-full max-w-sm rounded-xl border shadow-2xl p-6"
-        style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+        className="w-full max-w-sm rounded-xl border shadow-2xl p-6 bg-card border-border"
       >
         <h3 className="font-bold text-lg mb-2 text-foreground">未保存的變更</h3>
         <p className="text-sm text-muted-foreground mb-6">「{title}」有未保存的變更，是否保存？</p>
@@ -69,29 +67,6 @@ export const TabBar: React.FC = () => {
     if (confirmClose.tab) {
       // 觸發保存請求，NoteEditor 會監聽此請求並執行保存
       useAppStore.getState().requestSaveActiveTab(true)
-
-      // 注意：這裡不直接關閉 Tab，而是等待保存完成後（isDirty 變為 false）再關閉
-      // 或者在簡單實作中，我們假設保存會很快完成，但正確做法應該是等待
-      // 在這個迭代中，我們先觸發保存，關閉邏輯可能需要延後或依賴狀態更新
-      // 為了配合 NoteEditor 的邏輯，我們先暫時保留 closeTab，但這可能會導致競爭條件
-      // 更好的方式是：requestSaveActiveTab -> Editor Saves -> Editor clears Dirty -> TabBar checks dirty -> closes
-
-      // 修改策略：我們只發出保存請求。關閉動作應該由保存完成後的狀態決定，
-      // 但目前的 UI 流程是 "Confirm Dialog -> Save -> Close".
-      // 如果我們在這裡 closeTab，可能 NoteEditor 還沒來得及保存。
-
-      // 由於這是一個同步的狀態設定，NoteEditor 的 useEffect 會在下一個 render cycle 觸發。
-      // 我們不能在這裡立刻 closeTab。
-
-      // 暫時解決方案：我們發出保存請求，並關閉對話框。
-      // 真正的 "關閉 Tab" 動作應該在保存成功後執行。
-      // 但為了符合當前 TODO 的 "實際保存邏輯"，我們先專注於觸發保存。
-      // 為了不讓使用者困惑，我們可以先不 closeTab，讓使用者看到保存後的結果（clean state），
-      // 或者我們需要一個更複雜的 flow control。
-
-      // 鑒於 current implementation structure, we will just request save.
-      // The user will have to click close again, OR we implement a "closeAfterSave" flag.
-      // 讓我們簡單點：只觸發保存。
     }
     setConfirmClose({ open: false, tab: null })
   }
@@ -110,11 +85,7 @@ export const TabBar: React.FC = () => {
   return (
     <>
       <div
-        className="flex h-10 border-b overflow-x-auto no-scrollbar"
-        style={{
-          backgroundColor: tokens.colors.bgElevated,
-          borderColor: tokens.colors.bgSubtle
-        }}
+        className="flex h-10 border-b overflow-x-auto no-scrollbar bg-card border-border"
       >
         {tabs.map((tab) => {
           const isActive = activeTabId === tab.id
@@ -125,12 +96,11 @@ export const TabBar: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'group relative flex items-center h-full px-4 gap-2 border-r min-w-[120px] max-w-[240px] cursor-pointer transition-colors text-xs select-none',
+                'group relative flex items-center h-full px-4 gap-2 border-r min-w-[120px] max-w-[240px] cursor-pointer transition-colors text-xs select-none border-border',
                 isActive
                   ? 'bg-background text-primary border-b-2 border-b-primary font-bold'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground border-b-transparent'
               )}
-              style={{ borderColor: tokens.colors.bgSubtle }}
             >
               <Icon
                 size={14}

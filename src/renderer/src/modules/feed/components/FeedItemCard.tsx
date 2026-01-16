@@ -2,7 +2,6 @@ import React from 'react'
 import { Bookmark, Clock } from 'lucide-react'
 import { useDraggable } from '@dnd-kit/core'
 import { FeedItem, useFeedStore } from '../store/feed.store'
-import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -40,14 +39,13 @@ export const FeedItemCard: React.FC<Props> = ({ item, isActive, onClick }) => {
     <div
       ref={setNodeRef}
       style={{
-        ...style,
-        borderColor: tokens.colors.bgSubtle
+        ...style
       }}
       {...listeners}
       {...attributes}
       onClick={handleCardClick}
       className={cn(
-        'group flex flex-col gap-2 p-5 border-b cursor-pointer transition-all relative overflow-hidden',
+        'group flex flex-col gap-2 p-5 border-b cursor-pointer transition-all relative overflow-hidden border-border',
         isActive ? 'bg-primary/10' : 'hover:bg-accent/20 dark:hover:bg-white/[0.02]'
       )}
     >

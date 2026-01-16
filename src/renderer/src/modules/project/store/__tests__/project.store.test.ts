@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useProjectStore } from '../project.store'
 import { act } from '@testing-library/react'
-import { ProjectStatus } from '@/types'
 
 describe('ProjectStore', () => {
   beforeEach(() => {

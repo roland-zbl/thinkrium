@@ -18,7 +18,6 @@ import { AuxPanel } from './AuxPanel'
 import { TabBar } from './TabBar'
 import { ProjectSelectorDialog } from '@/modules/project/components/ProjectSelectorDialog'
 import { Toaster } from '@/components/ui/Toast'
-import { tokens } from '@/styles/tokens'
 import { useToastStore } from '@/stores/toast.store'
 
 export const AppShell: React.FC = () => {
@@ -112,17 +111,6 @@ export const AppShell: React.FC = () => {
     { enableOnFormTags: true }
   )
 
-  // P 鍵開啟專案選擇器
-  // 監聽來自 FeedView 的 P 鍵事件 (透過 window dispatch 或 全域 store flag，這裡簡單用全域 hotkey)
-  // 但 FeedView 已經有 P 鍵了。我們需要讓 FeedView 呼叫這裡的 open。
-  // 我們可以將 setProjectSelectorOpen 暴露給 store 或 context，但這有點麻煩。
-  // 簡單解法：AppShell 也監聽 P，但只在特定條件下？
-  // 更好解法：在 FeedView 的 P 鍵 handler 中，設置一個 global event 或 store action。
-  // 這裡我們假設 FeedView 的 P 鍵暫時只 log，我們待會更新 FeedView 來呼叫這裡的功能。
-  // 或者，我們把 ProjectSelectorDialog 放在 AppShell，並暴露控制方法。
-  // 暫時：AppShell 處理 DragEnd 的選擇器開啟。FeedView 的 P 鍵我們在 FeedView 裡直接處理 (如果能 render Dialog)。
-  // 為了統一，我們讓 ProjectSelectorDialog 只在 AppShell 渲染，並透過自定義事件 'open-project-selector' 觸發。
-
   React.useEffect(() => {
     const handleOpenSelector = (e: CustomEvent<{ itemId: string }>) => {
       setPendingSaveItemId(e.detail.itemId)
@@ -134,7 +122,6 @@ export const AppShell: React.FC = () => {
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
-    // 假設 active.data.current.title 存在
     if (active.data.current?.title) {
       setDraggedItemTitle(active.data.current.title as string)
     }
@@ -217,8 +204,7 @@ export const AppShell: React.FC = () => {
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div
-        className="flex h-screen w-screen overflow-hidden text-sm"
-        style={{ backgroundColor: tokens.colors.bgBase, color: tokens.colors.textPrimary }}
+        className="flex h-screen w-screen overflow-hidden text-sm bg-background text-foreground"
       >
         {/* 側邊導航 */}
         <div className="flex-none h-full z-50">

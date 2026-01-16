@@ -3,7 +3,6 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useFeedStore } from '../store/feed.store'
 import { FeedItemCard } from './FeedItemCard'
 import { FilterTabs } from './FilterTabs'
-import { tokens } from '@/styles/tokens'
 
 export const FeedItemList: React.FC = () => {
   const { items, activeSubscriptionId, filter, selectedItemId, selectItem } = useFeedStore()
@@ -33,7 +32,7 @@ export const FeedItemList: React.FC = () => {
   })
 
   return (
-    <div className="h-full flex flex-col" style={{ backgroundColor: tokens.colors.bgBase }}>
+    <div className="h-full flex flex-col bg-background">
       <FilterTabs />
 
       <div ref={parentRef} className="flex-1 overflow-auto scrollbar-hide relative">

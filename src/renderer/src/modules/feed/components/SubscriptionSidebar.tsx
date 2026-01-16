@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Plus, ListFilter, Hash, Trash2 } from 'lucide-react'
 import { useFeedStore } from '../store/feed.store'
-import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 import { AddSubscriptionDialog } from './AddSubscriptionDialog'
 
@@ -21,8 +20,7 @@ export const SubscriptionSidebar: React.FC = () => {
 
   return (
     <div
-      className="h-full flex flex-col"
-      style={{ backgroundColor: tokens.colors.bgElevated, borderColor: tokens.colors.bgSubtle }}
+      className="h-full flex flex-col bg-card border-border"
     >
       <div className="p-4 flex items-center justify-between border-b border-border">
         <span className="font-bold text-xs uppercase text-muted-foreground tracking-wider">

@@ -1,7 +1,6 @@
 import React from 'react'
 import { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { tokens } from '@/styles/tokens'
 
 interface EmptyStateProps {
   icon: LucideIcon
@@ -30,8 +29,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       )}
     >
       <div
-        className="p-4 rounded-full mb-4 bg-black/5 dark:bg-white/5 shadow-sm"
-        style={{ backgroundColor: tokens.colors.bgSubtle }}
+        className="p-4 rounded-full mb-4 bg-accent shadow-sm"
       >
         <Icon size={48} className="text-muted-foreground/50" />
       </div>

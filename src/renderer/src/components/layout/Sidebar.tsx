@@ -12,7 +12,6 @@ import {
   Sun
 } from 'lucide-react'
 import { useAppStore, ViewType } from '@/stores/app.store'
-import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 import { useProjectStore } from '@/modules/project/store/project.store'
 
@@ -23,15 +22,6 @@ const DroppableNavItem = ({ item, isActive, onClick, expanded }) => {
     disabled: item.id !== 'project' // 只允許放置到 Project
   })
 
-  const style = {
-    color: isActive ? tokens.colors.primary : 'inherit',
-    backgroundColor: isOver
-      ? document.documentElement.classList.contains('dark')
-        ? 'rgba(255, 255, 255, 0.1)'
-        : 'rgba(0, 0, 0, 0.05)'
-      : undefined
-  }
-
   const Icon = item.icon
 
   return (
@@ -40,9 +30,9 @@ const DroppableNavItem = ({ item, isActive, onClick, expanded }) => {
       onClick={onClick}
       className={cn(
         'flex items-center gap-3 px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group relative',
-        isActive && 'text-primary'
+        isActive ? 'text-primary' : 'inherit',
+        isOver ? (document.documentElement.classList.contains('dark') ? 'bg-white/10' : 'bg-black/5') : ''
       )}
-      style={style}
       title={item.label}
     >
       {isOver && item.id === 'project' && (
@@ -113,13 +103,9 @@ export const Sidebar: React.FC = () => {
   return (
     <div
       className={cn(
-        'flex flex-col border-r h-full transition-all duration-200 z-50',
+        'flex flex-col border-r h-full transition-all duration-200 z-50 bg-card border-border',
         sidebarExpanded ? 'w-[200px]' : 'w-[56px]'
       )}
-      style={{
-        backgroundColor: tokens.colors.bgElevated,
-        borderColor: tokens.colors.bgSubtle
-      }}
       onMouseEnter={() => !sidebarExpanded && useAppStore.getState().setSidebarExpanded(true)}
       onMouseLeave={() => sidebarExpanded && useAppStore.getState().setSidebarExpanded(false)}
     >
@@ -158,8 +144,7 @@ export const Sidebar: React.FC = () => {
 
       {/* 底部工具 */}
       <div
-        className="py-4 border-t flex flex-col gap-2"
-        style={{ borderColor: tokens.colors.bgSubtle }}
+        className="py-4 border-t flex flex-col gap-2 border-border"
       >
         <button
           className="flex items-center gap-3 px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-muted-foreground hover:text-foreground"

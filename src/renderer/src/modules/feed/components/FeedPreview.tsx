@@ -10,7 +10,6 @@ import {
   ChevronDown
 } from 'lucide-react'
 import { useFeedStore } from '../store/feed.store'
-import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/stores/app.store'
 import DOMPurify from 'dompurify'
@@ -74,13 +73,11 @@ export const FeedPreview: React.FC = () => {
 
   return (
     <div
-      className="h-full flex flex-col relative"
-      style={{ backgroundColor: tokens.colors.bgElevated }}
+      className="h-full flex flex-col relative bg-card"
     >
       {/* 工具欄 */}
       <div
-        className="h-14 border-b flex items-center justify-between px-4 shrink-0"
-        style={{ borderColor: tokens.colors.bgSubtle }}
+        className="h-14 border-b flex items-center justify-between px-4 shrink-0 border-border"
       >
         <div className="flex items-center gap-2 overflow-hidden mr-2">
           <button
@@ -183,8 +180,7 @@ export const FeedPreview: React.FC = () => {
 
       {/* 速記區 (Quick Note) */}
       <div
-        className="p-4 border-t bg-muted/40 backdrop-blur"
-        style={{ borderColor: tokens.colors.bgSubtle }}
+        className="p-4 border-t bg-muted/40 backdrop-blur border-border"
       >
         <div className="flex flex-col gap-3 relative max-w-4xl mx-auto w-full">
           <div className="flex items-center justify-between px-1">

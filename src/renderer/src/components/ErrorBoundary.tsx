@@ -1,6 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
-import { tokens } from '@/styles/tokens'
 
 interface Props {
   children: ReactNode
@@ -33,8 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div
-          className="flex h-screen w-screen flex-col items-center justify-center p-4 text-center"
-          style={{ backgroundColor: tokens.colors.bgBase, color: tokens.colors.textPrimary }}
+          className="flex h-screen w-screen flex-col items-center justify-center p-4 text-center bg-background text-foreground"
         >
           <div className="mb-4 rounded-full bg-red-100 p-4 dark:bg-red-900/20">
             <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
