@@ -103,7 +103,7 @@
 
 - [x] 4.1 `LibraryView.tsx` 兩欄佈局
 - [x] 4.2 `FilterBar.tsx`（Type/Tags/Date/關聯專案）
-- [ ] 4.3 `ViewToggle.tsx`（列表視圖優先）
+- [x] 4.3 `ViewToggle.tsx`（列表視圖優先）
 - [x] 4.4 `NoteTable.tsx`（虛擬滾動）
 - [x] 4.5 `NotePreview.tsx`
 - [x] 4.6 `library.store.ts`
@@ -127,10 +127,10 @@
 - [x] 5.2 `ProjectCard.tsx`
 - [x] 5.3 `StatusGroup.tsx`（可展開/收合）
 - [x] 5.4 `ProjectPageView.tsx`
-- [ ] 5.5 `DeliverableSection.tsx`
-- [ ] 5.6 `MaterialsTable.tsx`
-- [ ] 5.7 `ProjectNotes.tsx`
-- [ ] 5.8 `StatusDropdown.tsx`
+- [x] 5.5 `DeliverableSection.tsx`
+- [x] 5.6 `MaterialsTable.tsx`
+- [x] 5.7 `ProjectNotes.tsx`
+- [x] 5.8 `StatusDropdown.tsx`
 - [x] 5.9 `project.store.ts`
 
 ### 審查標準
@@ -148,10 +148,10 @@
 
 ### 確認點
 
-- [ ] 6.1 全域快捷鍵測試（Ctrl+1~4）
-- [ ] 6.2 Tab 關閉邏輯（含未保存確認）
-- [ ] 6.3 資料刷新按鈕功能
-- [ ] 6.4 跨模塊流程測試
+- [x] 6.1 全域快捷鍵測試（Ctrl+1~4）
+- [x] 6.2 Tab 關閉邏輯（含未保存確認）
+- [x] 6.3 資料刷新按鈕功能
+- [x] 6.4 跨模塊流程測試
 
 ### 審查標準
 

@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: IPC Bridge
 
@@ -10,9 +10,6 @@
 - **THEN** 透過 `window.api.feed` 提供資料庫操作方法
 - **AND** 包含 `listFeeds`, `addFeed`, `removeFeed`, `listItems`, `markAsRead`
 
----
-
-## ADDED Requirements
 
 ### Requirement: Feed IPC Handlers
 

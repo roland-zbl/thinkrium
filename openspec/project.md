@@ -58,8 +58,8 @@ src/
 - **Component hierarchy**: Page → Container → UI Components
 - **Separation of concerns**:
   - Components handle UI rendering
-  - (Future) Hooks handle state and logic
-  - (Future) Services handle API/IPC communication
+  - Zustand stores handle state management
+  - IPC services handle Main/Renderer communication
 
 ### Naming Conventions
 
@@ -73,9 +73,9 @@ src/
 
 ### Testing Strategy
 
-- Unit tests for utility functions
-- Component tests for UI components
-- (To be defined) Integration tests for Electron IPC
+- Unit tests with Vitest for stores and utilities
+- Component tests with @testing-library/react
+- E2E tests (planned) for Electron IPC workflows
 
 ### Git Workflow
 
@@ -113,12 +113,31 @@ src/
 
 ## External Dependencies
 
-### Electron APIs (Future)
+### Electron APIs
 
 - `ipcRenderer` / `ipcMain` for process communication
 - `dialog` for file operations
 - `fs` (via preload) for local file access
+- `better-sqlite3` for local database
 
-### Planned Integrations
+### Local-First Architecture
 
-- Obsidian Vault 資料來源 (讀取 Markdown 文件)
+- All data stored locally as SQLite database and Markdown files
+- No cloud dependency required
+- Future: Optional Obsidian Vault import/export
+
+## Coding Skills Reference
+
+When implementing specific types of tasks, refer to the corresponding Skill:
+
+| Task Type      | Skill Path                              | Description                               |
+| -------------- | --------------------------------------- | ----------------------------------------- |
+| UI Development | `.agent/skills/ui-development/SKILL.md` | Accessibility, animations, z-index layers |
+
+### Skills Integration Guidelines
+
+1. **Before implementing UI changes**, read the ui-development skill constraints
+2. **Follow the constraints** defined in the skill file
+3. **Validate against both**:
+   - `spec.md` for functional requirements (What to build)
+   - `SKILL.md` for implementation quality (How to build)

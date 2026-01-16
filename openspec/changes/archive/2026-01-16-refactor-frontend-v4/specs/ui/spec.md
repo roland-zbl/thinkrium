@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Application Layout
 
@@ -77,9 +77,6 @@ The application SHALL provide a Tab Bar for Editor and ProjectPage tabs only.
 - **THEN** Tab Bar is hidden
 - **AND** current navigation view is displayed
 
----
-
-## ADDED Requirements
 
 ### Requirement: Drag and Drop to Project
 
