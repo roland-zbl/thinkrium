@@ -1,6 +1,7 @@
 import React from 'react'
 import { AppShell } from './components/layout/AppShell'
 import { SetupDialog } from './components/SetupDialog'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 const App: React.FC = () => {
   const [isSetupComplete, setIsSetupComplete] = React.useState<boolean | null>(null)
@@ -26,10 +27,18 @@ const App: React.FC = () => {
   }
 
   if (isSetupComplete === false) {
-    return <SetupDialog onComplete={() => setIsSetupComplete(true)} />
+    return (
+      <ErrorBoundary>
+        <SetupDialog onComplete={() => setIsSetupComplete(true)} />
+      </ErrorBoundary>
+    )
   }
 
-  return <AppShell />
+  return (
+    <ErrorBoundary>
+      <AppShell />
+    </ErrorBoundary>
+  )
 }
 
 export default App

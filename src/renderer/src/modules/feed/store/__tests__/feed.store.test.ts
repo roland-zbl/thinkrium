@@ -90,7 +90,7 @@ describe('FeedStore', () => {
     })
 
     it('should mark unread item as read when selected', async () => {
-      const mockMarkAsRead = vi.fn().mockResolvedValue(undefined)
+      const mockMarkAsRead = vi.fn().mockResolvedValue({ success: true, data: undefined })
       window.api.feed.markAsRead = mockMarkAsRead
 
       useFeedStore.setState({
@@ -122,7 +122,7 @@ describe('FeedStore', () => {
       const mockFeeds = [
         { id: 'feed-1', title: 'Feed 1', url: 'http://example.com/feed1', icon_url: null }
       ]
-      window.api.feed.listFeeds = vi.fn().mockResolvedValue(mockFeeds)
+      window.api.feed.listFeeds = vi.fn().mockResolvedValue({ success: true, data: mockFeeds })
 
       await act(async () => {
         await useFeedStore.getState().fetchSubscriptions()
@@ -137,9 +137,9 @@ describe('FeedStore', () => {
 
   describe('addFeed', () => {
     it('should validate, add feed, and refresh lists', async () => {
-      const mockValidate = vi.fn().mockResolvedValue({ valid: true, title: 'New Feed' })
-      const mockAddFeed = vi.fn().mockResolvedValue(undefined)
-      const mockFetchFeed = vi.fn().mockResolvedValue({ count: 5 })
+      const mockValidate = vi.fn().mockResolvedValue({ success: true, data: { valid: true, title: 'New Feed' } })
+      const mockAddFeed = vi.fn().mockResolvedValue({ success: true, data: undefined })
+      const mockFetchFeed = vi.fn().mockResolvedValue({ success: true, data: { count: 5 } })
 
       window.api.feed.validateFeed = mockValidate
       window.api.feed.addFeed = mockAddFeed
@@ -155,9 +155,14 @@ describe('FeedStore', () => {
     })
 
     it('should throw error if feed validation fails', async () => {
+      // Logic for validation failure:
+      // Case 1: IPC success, but valid=false.
       window.api.feed.validateFeed = vi.fn().mockResolvedValue({
-        valid: false,
-        error: 'Invalid RSS'
+        success: true,
+        data: {
+          valid: false,
+          error: 'Invalid RSS'
+        }
       })
 
       await expect(
@@ -170,6 +175,8 @@ describe('FeedStore', () => {
 
   describe('removeFeed', () => {
     it('should remove feed and associated items from state', async () => {
+      window.api.feed.removeFeed = vi.fn().mockResolvedValue({ success: true, data: undefined })
+
       useFeedStore.setState({
         subscriptions: [
           { id: 'feed-1', name: 'Feed 1', category: '未分類', unreadCount: 0, url: 'http://...' },
