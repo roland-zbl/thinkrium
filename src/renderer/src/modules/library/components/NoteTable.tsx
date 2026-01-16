@@ -19,7 +19,7 @@ export const NoteTable: React.FC = () => {
       const matchType = filters.type === '全部' ? true : n.type === filters.type
 
       // Project 過濾
-      const matchProject = filters.project === '全部' ? true : n.projects.includes(filters.project)
+      const matchProject = filters.project === '全部' ? true : (n.projects || []).includes(filters.project)
 
       // Tag 過濾
       const matchTag = filters.tag === '全部' ? true : (n.tags || []).includes(filters.tag)
@@ -28,7 +28,7 @@ export const NoteTable: React.FC = () => {
       const matchDate = (() => {
         if (filters.date === '全部') return true
 
-        const noteDate = new Date(n.date)
+        const noteDate = new Date(n.date || '')
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
@@ -133,10 +133,10 @@ export const NoteTable: React.FC = () => {
                     </span>
                   </div>
                   <div className="w-32 px-2 truncate flex gap-2 items-center text-muted-foreground">
-                    {note.projects.length > 0 ? (
+                    {(note.projects || []).length > 0 ? (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Tag size={12} />
-                        {note.projects[0]}
+                        {note.projects![0]}
                       </div>
                     ) : (
                       '-'

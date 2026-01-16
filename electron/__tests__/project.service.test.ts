@@ -33,7 +33,10 @@ describe('Project Service', () => {
       id: 'proj-1',
       title: 'New Project',
       status: 'active' as const,
-      target_date: null
+      target_date: null,
+      materialCount: 0,
+      deliverableCount: 0,
+      notes: ''
     }
 
     const stmtMock = {

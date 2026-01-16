@@ -4,12 +4,19 @@
     "electron.vite.config.*",
     "electron/**/*",
     "src/renderer/src/modules/feed/types.ts",
-    "src/renderer/src/modules/note/types.ts"
+    "src/renderer/src/modules/note/types.ts",
+    "src/shared/**/*"
   ],
   "compilerOptions": {
     "composite": true,
+    "baseUrl": ".",
     "types": [
       "electron-vite/node"
-    ]
+    ],
+    "paths": {
+      "@shared/*": [
+        "src/shared/*"
+      ]
+    }
   }
 }
