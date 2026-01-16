@@ -192,7 +192,23 @@ export const mockApi = {
     getItems: async (projectId: string) => {
       await delay(100)
       console.log('[MockAPI] Getting items for project:', projectId)
-      return []
+      const project = projects.find(p => p.id === projectId)
+      if (!project) return []
+
+      // Filter notes that belong to this project
+      // mockNotes structure has `projects: string[]` (array of titles)
+      // So we match project.title
+      return notes.filter(n => n.projects && n.projects.includes(project.title)).map(n => ({
+        id: n.id,
+        title: n.title,
+        content: '# Mock Content',
+        created_at: n.date,
+        updated_at: n.date,
+        added_at: new Date().toISOString(), // Mock added_at for ProjectItem
+        source_type: n.type,
+        type: n.type,
+        tags: n.tags
+      }))
     },
     updateStatus: async (id: string, status: string) => {
       await delay(100)
