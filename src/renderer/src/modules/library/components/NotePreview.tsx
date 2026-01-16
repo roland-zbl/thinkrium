@@ -1,14 +1,20 @@
 import React from 'react'
 import { Edit3, FolderPlus, X, FileText, Share2 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { useLibraryStore } from '../store/library.store'
 import { useAppStore } from '@/stores/app.store'
 import { tokens } from '@/styles/tokens'
 
 export const NotePreview: React.FC = () => {
-  const { selectedNoteId, notes, selectNote } = useLibraryStore()
+  const { selectedNoteId, notes, activeNote, selectNote } = useLibraryStore()
   const { addTab } = useAppStore()
 
-  const note = notes.find((n) => n.id === selectedNoteId)
+  // Prefer activeNote (full details) if available and matching selected ID,
+  // otherwise fallback to note from list (summary)
+  const note = (activeNote && activeNote.id === selectedNoteId)
+    ? activeNote
+    : notes.find((n) => n.id === selectedNoteId)
 
   if (!note) {
     return (
@@ -106,11 +112,17 @@ export const NotePreview: React.FC = () => {
 
         <div className="space-y-4">
           <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-            內容摘要
+            內容預覽
           </h4>
-          <p className="text-sm text-foreground/80 leading-relaxed italic">
-            (內容預覽功能將在與後端對接後完整呈現。目前僅顯示 Metadata。)
-          </p>
+          <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed">
+            {note.content ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content}</ReactMarkdown>
+            ) : (
+               <p className="text-muted-foreground italic">
+                 {activeNote && activeNote.id === selectedNoteId ? '(無內容)' : '正在載入內容...'}
+               </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
