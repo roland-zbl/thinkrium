@@ -33,6 +33,8 @@ declare global {
         getItems: (projectId: string) => Promise<IPCResult<any[]>> // Keep any for items as structure is loose/unknown
         updateStatus: (id: string, status: string) => Promise<IPCResult<void>>
       }
+      // E2E Testing flag
+      isE2ETesting: boolean
     }
   }
 }

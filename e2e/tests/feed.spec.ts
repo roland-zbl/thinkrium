@@ -16,14 +16,12 @@ test.describe('Feed Workflow', () => {
   });
 
   test('Add Subscription -> View Article -> Save as Note', async ({ page }) => {
-    // 1. Add Subscription
-    // Locate the "Add Feed" button (implied by design patterns or need to check FeedView.tsx)
-    // Looking at AddSubscriptionDialog.tsx, it's a dialog. The button to open it is likely in SubscriptionSidebar or FeedView.
-    // Assuming text match for "新增訂閱" or "Add Subscription".
-    // I will try to find a button with "Plus" icon or "新增" text.
+    // 0. Navigate to Feed view first (app starts on Dashboard)
+    await page.getByRole('button', { name: 'Feed' }).click();
+    await page.waitForTimeout(500); // Wait for view to switch
 
-    // Attempt to open the dialog (This assumes the sidebar is visible)
-    // The Sidebar usually has a + button or "新增訂閱" tooltip.
+    // 1. Add Subscription
+    // Click the "新增" button in SubscriptionSidebar
     await page.getByRole('button', { name: /新增/i }).first().click();
 
     // Wait for Dialog
@@ -38,25 +36,31 @@ test.describe('Feed Workflow', () => {
     // Click Confirm (Button text: "確認新增")
     await page.getByRole('button', { name: '確認新增' }).click();
 
-    // Verify Feed appears in the list (Assuming SubscriptionSidebar lists it)
-    await expect(page.getByText('Test Feed')).toBeVisible();
+    // Wait for dialog to close and feed to appear
+    await page.waitForTimeout(1000);
 
-    // 2. View Article
-    // Click the feed in the sidebar
-    await page.getByText('Test Feed').click();
+    // Verify Feed appears in the sidebar (use .first() to avoid multiple matches)
+    await expect(page.getByText('Test Feed').first()).toBeVisible();
 
-    // Wait for items to load.
-    // The items are in FeedItemList.tsx, rendered as FeedItemCard.
+    // 2. View Article - the feed should already be selected after adding
+    // Wait for items to load
+    await page.waitForTimeout(500);
+
     // We expect "Test Article 1" to appear.
     await expect(page.getByText('Test Article 1')).toBeVisible();
 
     // Click the article to select it
-    await page.getByText('Test Article 1').click();
+    await page.getByText('Test Article 1').first().click();
+
+    // Wait for preview to load
+    await page.waitForTimeout(500);
 
     // 3. Save as Note
     // In FeedPreview.tsx, there is a button: "保存" or "編輯筆記".
-    // It has a Bookmark icon.
     await page.getByRole('button', { name: '保存' }).click();
+
+    // Wait for save to complete
+    await page.waitForTimeout(1000);
 
     // Verify button changes to "編輯筆記" which implies saved state.
     await expect(page.getByRole('button', { name: '編輯筆記' })).toBeVisible();

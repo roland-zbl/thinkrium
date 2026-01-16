@@ -8,6 +8,11 @@ const App: React.FC = () => {
 
   React.useEffect(() => {
     const checkSetup = async () => {
+      // Skip setup check in E2E testing mode
+      if (window.api.isE2ETesting) {
+        setIsSetupComplete(true)
+        return
+      }
       const rootDir = await window.api.settings.get('notes.rootDir')
       setIsSetupComplete(!!rootDir)
     }

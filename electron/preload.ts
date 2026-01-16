@@ -32,7 +32,9 @@ const api = {
     getItems: (projectId: string) => ipcRenderer.invoke('project:get-items', projectId),
     updateStatus: (id: string, status: string) =>
       ipcRenderer.invoke('project:update-status', id, status)
-  }
+  },
+  // E2E Testing flag - allows renderer to skip setup checks
+  isE2ETesting: process.env.E2E_TESTING === 'true'
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
