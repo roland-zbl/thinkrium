@@ -20,6 +20,7 @@ interface LibraryState {
   selectNote: (id: string | null) => void
   setFilter: (key: keyof LibraryState['filters'], value: string) => void
   resetFilters: () => void
+  getFilteredNotes: () => Note[]
 }
 
 export const useLibraryStore = create<LibraryState>((set, get) => ({
@@ -49,6 +50,25 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
     set({
       filters: { type: '全部', tag: '全部', date: '全部', project: '全部' }
     }),
+
+  getFilteredNotes: () => {
+    const { notes, filters } = get()
+    return notes.filter((note) => {
+      // Type filter
+      if (filters.type !== '全部' && note.type !== filters.type) return false
+
+      // Tag filter
+      if (filters.tag !== '全部' && !note.tags?.includes(filters.tag)) return false
+
+      // Date filter
+      if (filters.date !== '全部' && note.date !== filters.date) return false
+
+      // Project filter
+      if (filters.project !== '全部' && !note.projects?.includes(filters.project)) return false
+
+      return true
+    })
+  },
 
   fetchNote: async (id: string) => {
     try {

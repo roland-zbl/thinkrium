@@ -10,10 +10,15 @@ vi.mock('electron', () => ({
 }))
 
 // Mock fs
-vi.mock('fs', () => ({
-  existsSync: vi.fn(() => true),
-  mkdirSync: vi.fn()
-}))
+vi.mock('fs', () => {
+  const existsSync = vi.fn(() => true)
+  const mkdirSync = vi.fn()
+  return {
+    default: { existsSync, mkdirSync },
+    existsSync,
+    mkdirSync
+  }
+})
 
 // Mock better-sqlite3
 vi.mock('better-sqlite3', () => {
