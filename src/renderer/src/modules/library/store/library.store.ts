@@ -6,6 +6,7 @@ import { useToastStore } from '@/stores/toast.store'
 interface LibraryState {
   notes: Note[]
   selectedNoteId: string | null
+  activeNote: Note | null
   filters: {
     type: string
     tag: string
@@ -15,14 +16,16 @@ interface LibraryState {
 
   // Actions
   fetchNotes: () => Promise<void>
+  fetchNote: (id: string) => Promise<void>
   selectNote: (id: string | null) => void
   setFilter: (key: keyof LibraryState['filters'], value: string) => void
   resetFilters: () => void
 }
 
-export const useLibraryStore = create<LibraryState>((set) => ({
+export const useLibraryStore = create<LibraryState>((set, get) => ({
   notes: [],
   selectedNoteId: null,
+  activeNote: null,
   filters: {
     type: '全部',
     tag: '全部',
@@ -30,7 +33,14 @@ export const useLibraryStore = create<LibraryState>((set) => ({
     project: '全部'
   },
 
-  selectNote: (id) => set({ selectedNoteId: id }),
+  selectNote: (id) => {
+    set({ selectedNoteId: id })
+    if (id) {
+      get().fetchNote(id)
+    } else {
+      set({ activeNote: null })
+    }
+  },
   setFilter: (key, value) =>
     set((state) => ({
       filters: { ...state.filters, [key]: value }
@@ -39,6 +49,41 @@ export const useLibraryStore = create<LibraryState>((set) => ({
     set({
       filters: { type: '全部', tag: '全部', date: '全部', project: '全部' }
     }),
+
+  fetchNote: async (id: string) => {
+    try {
+      const rawNote = await window.api.note.get(id)
+      if (rawNote) {
+        const note: Note = {
+          id: rawNote.id,
+          title: rawNote.title,
+          date: rawNote.created_at || rawNote.date || new Date().toISOString().split('T')[0],
+          type: rawNote.source_type || rawNote.type || 'note',
+          projects: rawNote.projects || [],
+          content: rawNote.content,
+          tags: (() => {
+            if (typeof rawNote.tags === 'string') {
+              try {
+                return JSON.parse(rawNote.tags) || []
+              } catch {
+                return []
+              }
+            }
+            return (rawNote.tags as string[]) || []
+          })()
+        }
+        set({ activeNote: note })
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to fetch note details',
+        description: msg
+      })
+      console.error('Failed to fetch note details:', error)
+    }
+  },
 
   fetchNotes: async () => {
     try {
