@@ -1,45 +1,38 @@
 import { create } from 'zustand'
-import { Project, ProjectStatus, DbProject } from '@/types'
+import { Project, ProjectStatus, DbProject, ProjectItem } from '@/types'
 import { useToastStore } from '@/stores/toast.store'
 
 
 interface ProjectState {
   projects: Project[]
+  activeProjectItems: ProjectItem[]
   loading: boolean
   fetchProjects: () => Promise<void>
+  fetchProjectItems: (projectId: string) => Promise<void>
   createProject: (project: Partial<Project>) => Promise<void>
   updateProjectStatus: (id: string, status: ProjectStatus) => void
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
   projects: [],
+  activeProjectItems: [],
   loading: false,
 
   fetchProjects: async () => {
     set({ loading: true })
     try {
       const dbProjects = await window.api.project.list()
-      // Map DB projects to frontend Project interface
-      // Note: materialCount and deliverableCount need to be calculated or fetched.
-      // For now we set them to 0 or we need another API to get stats.
-      const projects: Project[] = await Promise.all(
-        dbProjects.map(async (p: DbProject) => {
-          // Optional: Fetch item counts for each project
-          // const items = await window.api.project.getItems(p.id)
-          // const materialCount = items.length
-          return {
-            id: p.id,
-            title: p.title,
-            status: p.status as ProjectStatus,
-            targetDate: p.target_date,
-            materialCount: p.materialCount,
-            deliverableCount: p.deliverableCount,
-            notes: p.notes || '',
-            created_at: p.created_at,
-            updated_at: p.updated_at
-          }
-        })
-      )
+      const projects: Project[] = dbProjects.map((p: DbProject) => ({
+        id: p.id,
+        title: p.title,
+        status: p.status as ProjectStatus,
+        targetDate: p.target_date,
+        materialCount: p.materialCount,
+        deliverableCount: p.deliverableCount,
+        notes: p.notes || '',
+        created_at: p.created_at,
+        updated_at: p.updated_at
+      }))
       set({ projects })
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error)
@@ -49,6 +42,24 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         description: msg
       })
       console.error('Failed to fetch projects:', error)
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  fetchProjectItems: async (projectId: string) => {
+    set({ loading: true })
+    try {
+      const items = await window.api.project.getItems(projectId)
+      set({ activeProjectItems: items as ProjectItem[] })
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to fetch project items',
+        description: msg
+      })
+      console.error('Failed to fetch project items:', error)
     } finally {
       set({ loading: false })
     }

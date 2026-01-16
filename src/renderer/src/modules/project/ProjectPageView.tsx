@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   ArrowLeft,
   Settings2,
@@ -13,17 +13,24 @@ import { useProjectStore } from './store/project.store'
 import { useAppStore } from '@/stores/app.store'
 import { tokens } from '@/styles/tokens'
 import { cn } from '@/lib/utils'
-import { mockNotes } from '@/mocks'
+import { format } from 'date-fns'
 
 export const ProjectPageView: React.FC<{ id: string }> = ({ id }) => {
-  const { projects, updateProjectStatus } = useProjectStore()
+  const { projects, updateProjectStatus, activeProjectItems, fetchProjectItems } = useProjectStore()
   const { setActiveTab } = useAppStore()
+
+  useEffect(() => {
+    if (id) {
+      fetchProjectItems(id)
+    }
+  }, [id, fetchProjectItems])
 
   const project = projects.find((p) => p.id === id)
 
   if (!project) return <div className="p-8">專案不存在</div>
 
-  const relatedNotes = mockNotes.filter((n) => n.projects.includes(project.title))
+  // Use activeProjectItems from store
+  const relatedNotes = activeProjectItems
 
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden">
@@ -87,23 +94,35 @@ export const ProjectPageView: React.FC<{ id: string }> = ({ id }) => {
                 <LayoutList size={16} /> 專案素材 ({relatedNotes.length})
               </h2>
               <div className="bg-black/[0.02] dark:bg-white/[0.02] border border-border rounded-xl overflow-hidden">
-                {relatedNotes.map((note) => (
-                  <div
-                    key={note.id}
-                    className="flex items-center justify-between p-4 border-b border-border hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText
-                        size={16}
-                        className="text-muted-foreground group-hover:text-primary transition-colors"
-                      />
-                      <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors">
-                        {note.title}
+                {relatedNotes.length === 0 ? (
+                  <div className="p-4 text-center text-sm text-muted-foreground italic">
+                    尚無關聯素材
+                  </div>
+                ) : (
+                  relatedNotes.map((note) => (
+                    <div
+                      key={note.id}
+                      className="flex items-center justify-between p-4 border-b border-border hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText
+                          size={16}
+                          className="text-muted-foreground group-hover:text-primary transition-colors"
+                        />
+                        <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors">
+                          {note.title}
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {note.date
+                          ? note.date
+                          : note.created_at
+                            ? format(new Date(note.created_at), 'yyyy-MM-dd')
+                            : ''}
                       </span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{note.date}</span>
-                  </div>
-                ))}
+                  ))
+                )}
                 <button className="w-full p-4 text-xs text-primary/60 hover:text-primary hover:bg-primary/5 transition-all text-center font-medium">
                   + 關聯現有素材
                 </button>

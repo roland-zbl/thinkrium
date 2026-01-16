@@ -19,6 +19,7 @@ export interface DbProject {
   target_date: string | null
   materialCount: number
   deliverableCount: number
+  notes?: string
   created_at: string
   updated_at: string
 }
@@ -77,4 +78,8 @@ export interface ItemFilter {
   status?: 'unread' | 'read' | 'saved'
   limit?: number
   offset?: number
+}
+
+export interface ProjectItem extends DbNote {
+  added_at: string
 }
