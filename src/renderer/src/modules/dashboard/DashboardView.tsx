@@ -13,18 +13,19 @@ export const DashboardView: React.FC = () => {
   const [userName, setUserName] = useState<string | null>(null)
 
   useEffect(() => {
-    const getUserName = async () => {
+    const init = async () => {
       try {
         const name = await invokeIPC(window.api.settings.get('user.name'))
         setUserName(name)
       } catch (error) {
         console.error('Failed to fetch user name', error)
       }
+      fetchProjects()
+      // 確保先載入訂閱源，再載入文章（避免 source 顯示為 Unknown）
+      await fetchSubscriptions()
+      await fetchItems()
     }
-    getUserName()
-    fetchProjects()
-    fetchSubscriptions()
-    fetchItems()
+    init()
   }, [])
 
   return (

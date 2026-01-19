@@ -15,6 +15,33 @@ export interface FeedItem {
   content: string | null
   feed_id: string
   link: string | null
+  thumbnail?: string // First image URL extracted from content
+}
+
+// Helper: Strip HTML tags and decode entities for clean text summary
+function stripHtml(html: string): string {
+  if (!html) return ''
+  // Remove HTML tags
+  let text = html.replace(/<[^>]*>/g, '')
+  // Decode common HTML entities
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&hellip;/g, '…')
+  // Collapse whitespace
+  text = text.replace(/\s+/g, ' ').trim()
+  return text
+}
+
+// Helper: Extract first image URL from HTML content
+function extractFirstImage(html: string): string | undefined {
+  if (!html) return undefined
+  const match = html.match(/<img[^>]+src=["']([^"']+)["']/i)
+  return match?.[1]
 }
 
 export interface Subscription {
@@ -101,17 +128,22 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       const items = await invokeIPC(window.api.feed.listItems(dbFilter), { showErrorToast: false })
 
       // 轉換 DB 格式到 Store 格式
-      const feedItems: FeedItem[] = items.map((i: DbFeedItem) => ({
-        id: i.id,
-        title: i.title,
-        source: get().subscriptions.find((s) => s.id === i.feed_id)?.name || 'Unknown',
-        date: i.published_at,
-        status: i.status,
-        summary: i.content ? i.content.substring(0, 100) : '',
-        content: i.content,
-        feed_id: i.feed_id,
-        link: i.url
-      }))
+      const feedItems: FeedItem[] = items.map((i: DbFeedItem) => {
+        const cleanSummary = stripHtml(i.content || '').substring(0, 150)
+        const thumbnail = extractFirstImage(i.content || '')
+        return {
+          id: i.id,
+          title: i.title,
+          source: get().subscriptions.find((s) => s.id === i.feed_id)?.name || 'Unknown',
+          date: i.published_at,
+          status: i.status,
+          summary: cleanSummary,
+          content: i.content,
+          feed_id: i.feed_id,
+          link: i.url,
+          thumbnail
+        }
+      })
 
       set({ items: feedItems })
     } catch (error) {
@@ -223,9 +255,19 @@ export const useFeedStore = create<FeedState>((set, get) => ({
 
   markAsRead: async (id) => {
     try {
+      // 先取得 item 來獲取 feed_id（用於更新 unreadCount）
+      const item = get().items.find((i) => i.id === id)
+      if (!item || item.status !== 'unread') return // 已讀或不存在則跳過
+
       await invokeIPC(window.api.feed.markAsRead(id), { showErrorToast: false })
       set((state) => ({
-        items: state.items.map((item) => (item.id === id ? { ...item, status: 'read' } : item))
+        items: state.items.map((i) => (i.id === id ? { ...i, status: 'read' } : i)),
+        // 同時更新對應訂閱源的未讀數
+        subscriptions: state.subscriptions.map((sub) =>
+          sub.id === item.feed_id && sub.unreadCount > 0
+            ? { ...sub, unreadCount: sub.unreadCount - 1 }
+            : sub
+        )
       }))
     } catch (error) {
       console.error('Failed to mark as read:', error)
