@@ -1,13 +1,17 @@
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
+import { createRequire } from 'module'
+
+const require = createRequire(import.meta.url)
 
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin({ exclude: ['fast-xml-parser'] })],
     resolve: {
       alias: {
-        '@shared': resolve('src/shared')
+        '@shared': resolve('src/shared'),
+        'fast-xml-parser': require.resolve('fast-xml-parser')
       }
     },
     build: {
