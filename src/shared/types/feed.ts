@@ -42,3 +42,16 @@ export interface ItemFilter {
   limit?: number
   offset?: number
 }
+
+export interface SearchOptions {
+  feedId?: string
+  folderId?: string // This will need to be resolved to feedIds in the backend or frontend
+  feedIds?: string[]
+  limit?: number
+  offset?: number
+}
+
+export interface SearchResult extends FeedItem {
+  title_snippet?: string
+  content_snippet?: string
+}

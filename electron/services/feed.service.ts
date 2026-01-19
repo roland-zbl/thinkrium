@@ -1,8 +1,20 @@
 import { Database } from 'better-sqlite3'
 import { getDatabase } from '../database'
-import { Feed, FeedItem, ItemFilter } from '../../src/renderer/src/modules/feed/types'
+import { Feed, FeedItem, ItemFilter } from '../../src/shared/types/feed'
 import { fetchFeed, validateFeed } from './rss.service'
 import { randomUUID } from 'crypto'
+
+export interface SearchOptions {
+  feedId?: string
+  feedIds?: string[]
+  limit?: number
+  offset?: number
+}
+
+export interface SearchResult extends FeedItem {
+  title_snippet?: string
+  content_snippet?: string
+}
 
 export class FeedService {
   private db: Database | null = null
@@ -152,6 +164,121 @@ export class FeedService {
     db.prepare('UPDATE feeds SET last_fetched = CURRENT_TIMESTAMP WHERE id = ?').run(feedId)
 
     return { count: items.length }
+  }
+
+  searchItems(query: string, options: SearchOptions = {}): SearchResult[] {
+    // 1. Try FTS Search first
+    let results = this.ftsSearch(query, options)
+
+    // 2. Fallback to LIKE if no results and query contains CJK (simple check)
+    // This is to handle cases where FTS might fail on certain Chinese phrases if tokenizer isn't perfect
+    // or to provide a "fuzzy" fallback.
+    // Regex for CJK characters range
+    const hasCJK = /[\u4e00-\u9fa5]/.test(query)
+    if (results.length === 0 && hasCJK) {
+      console.log('[FeedService] FTS returned 0 results for CJK query, falling back to LIKE')
+      results = this.likeSearch(query, options)
+    }
+
+    return results
+  }
+
+  private ftsSearch(query: string, options: SearchOptions): SearchResult[] {
+    // FTS5 Query
+    let sql = `
+      SELECT
+        fi.*,
+        snippet(feed_items_fts, 0, '<b>', '</b>', '...', 32) as title_snippet,
+        snippet(feed_items_fts, 1, '<b>', '</b>', '...', 64) as content_snippet
+      FROM feed_items_fts
+      JOIN feed_items fi ON feed_items_fts.rowid = fi.rowid
+      WHERE feed_items_fts MATCH ?
+    `
+    const params: any[] = [query]
+
+    // Add scope filters
+    if (options.feedId) {
+      sql += ' AND fi.feed_id = ?'
+      params.push(options.feedId)
+    }
+    if (options.feedIds && options.feedIds.length > 0) {
+      const placeholders = options.feedIds.map(() => '?').join(',')
+      sql += ` AND fi.feed_id IN (${placeholders})`
+      params.push(...options.feedIds)
+    }
+
+    sql += ' ORDER BY rank'
+
+    if (options.limit) {
+      sql += ' LIMIT ?'
+      params.push(options.limit)
+    }
+    if (options.offset) {
+      sql += ' OFFSET ?'
+      params.push(options.offset)
+    }
+
+    try {
+      return this.getDb().prepare(sql).all(...params) as SearchResult[]
+    } catch (error) {
+      console.error('[FeedService] FTS search failed:', error)
+      return []
+    }
+  }
+
+  private likeSearch(query: string, options: SearchOptions): SearchResult[] {
+    let sql = `
+      SELECT fi.*
+      FROM feed_items fi
+      WHERE (fi.title LIKE ? OR fi.content LIKE ?)
+    `
+    const likeQuery = `%${query}%`
+    const params: any[] = [likeQuery, likeQuery]
+
+    if (options.feedId) {
+      sql += ' AND fi.feed_id = ?'
+      params.push(options.feedId)
+    }
+    if (options.feedIds && options.feedIds.length > 0) {
+      const placeholders = options.feedIds.map(() => '?').join(',')
+      sql += ` AND fi.feed_id IN (${placeholders})`
+      params.push(...options.feedIds)
+    }
+
+    sql += ' ORDER BY fi.published_at DESC'
+
+    if (options.limit) {
+      sql += ' LIMIT ?'
+      params.push(options.limit)
+    }
+    if (options.offset) {
+      sql += ' OFFSET ?'
+      params.push(options.offset)
+    }
+
+    const results = this.getDb().prepare(sql).all(...params) as FeedItem[]
+
+    // For LIKE results, we manually simulate snippets (simple version)
+    return results.map(item => {
+        // Simple highlight replacer
+        const highlight = (text: string | null) => {
+            if (!text) return ''
+            // Note: This is a simple replace, case sensitivity matches the query roughly
+            // For better results we'd need a case-insensitive regex replace
+            try {
+               return text.replace(new RegExp(query, 'gi'), (match) => `<b>${match}</b>`)
+            } catch (e) {
+               return text
+            }
+        }
+
+        return {
+            ...item,
+            title_snippet: highlight(item.title),
+            // Truncate content for snippet
+            content_snippet: highlight(item.content?.substring(0, 200) || '')
+        }
+    })
   }
 }
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { ItemFilter, FeedItem as DbFeedItem, Folder } from '@/types'
+import { ItemFilter, FeedItem as DbFeedItem, Folder, SearchOptions, SearchResult } from '@/types'
 import { turndown } from '@/lib/turndown'
 import { useToastStore } from '@/stores/toast.store'
 import { invokeIPC } from '@/utils/ipc'
@@ -67,6 +67,12 @@ interface FeedState {
   recentlyReadIds: Set<string>
   autoHideRead: boolean
 
+  // Search State
+  searchQuery: string
+  isSearching: boolean
+  searchResults: FeedItem[]
+  searchScope: 'all' | 'current'
+
   // Actions
   fetchSubscriptions: () => Promise<void>
   fetchFolders: () => Promise<void>
@@ -83,6 +89,11 @@ interface FeedState {
   saveQuickNote: (itemId: string, note: string) => Promise<void>
   importOpml: (filePath: string) => Promise<{ added: number; skipped: number; errors: string[] } | undefined>
   exportOpml: () => Promise<void>
+
+  // Search Actions
+  search: (query: string) => Promise<void>
+  clearSearch: () => void
+  setSearchScope: (scope: 'all' | 'current') => void
 
   // Folder Actions
   createFolder: (name: string, parentId?: string) => Promise<void>
@@ -103,6 +114,11 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   loading: false,
   recentlyReadIds: new Set(),
   autoHideRead: false,
+
+  searchQuery: '',
+  isSearching: false,
+  searchResults: [],
+  searchScope: 'all',
 
   fetchFolders: async () => {
     try {
@@ -536,6 +552,104 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     } catch (error) {
       console.error(error)
       useToastStore.getState().addToast({ type: 'error', title: 'Failed to move feed' })
+    }
+  },
+
+  search: async (query) => {
+    set({ searchQuery: query })
+    if (!query.trim()) {
+      set({ isSearching: false, searchResults: [] })
+      return
+    }
+
+    set({ isSearching: true, loading: true })
+    const { activeSubscriptionId, activeFolderId, searchScope, subscriptions, folders } = get()
+
+    try {
+      const options: SearchOptions = {
+        limit: 100
+      }
+
+      if (searchScope === 'current') {
+        if (activeSubscriptionId) {
+          options.feedId = activeSubscriptionId
+        } else if (activeFolderId) {
+          // Helper to recursively get feed IDs (duplicated from fetchItems, consider refactoring)
+          const getFolderFeedIds = (folderId: string): string[] => {
+            const feedIds = subscriptions
+              .filter((s) => s.folder_id === folderId)
+              .map((s) => s.id)
+            const subFolderIds = folders
+              .filter((f) => f.parent_id === folderId)
+              .map((f) => f.id)
+
+            let allFeedIds = [...feedIds]
+            for (const subId of subFolderIds) {
+              allFeedIds = [...allFeedIds, ...getFolderFeedIds(subId)]
+            }
+            return allFeedIds
+          }
+          const ids = getFolderFeedIds(activeFolderId)
+          if (ids.length > 0) options.feedIds = ids
+        }
+      }
+
+      const results = (await invokeIPC(window.api.feed.search(query, options), {
+        showErrorToast: false
+      })) as SearchResult[]
+
+      const feedItems: FeedItem[] = results.map((i: SearchResult) => {
+        const thumbnail = extractFirstImage(i.content || '')
+
+        // Use content_snippet for summary if available, otherwise title_snippet, otherwise fallback to content/title
+        // We trust the backend snippet to contain safe HTML (only <b> tags added by sqlite or us)
+        // Ideally we should sanitize but for now we assume trust.
+        let displaySummary = i.content_snippet
+        if (!displaySummary && i.content) {
+             displaySummary = stripHtml(i.content).substring(0, 150)
+        }
+
+        // Use title_snippet if available
+        const displayTitle = i.title_snippet || i.title
+
+        return {
+          id: i.id,
+          title: displayTitle,
+          source: get().subscriptions.find((s) => s.id === i.feed_id)?.name || 'Unknown',
+          date: i.published_at,
+          status: i.status,
+          summary: displaySummary || '',
+          content: i.content,
+          feed_id: i.feed_id,
+          link: i.url,
+          thumbnail,
+          quickNote: i.quick_note
+        }
+      })
+
+      set({ searchResults: feedItems })
+    } catch (error) {
+      console.error('Search failed:', error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Search failed',
+        description: error instanceof Error ? error.message : String(error)
+      })
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  clearSearch: () => {
+    set({ searchQuery: '', isSearching: false, searchResults: [] })
+  },
+
+  setSearchScope: (scope) => {
+    set({ searchScope: scope })
+    // Re-trigger search if there is a query
+    const { searchQuery } = get()
+    if (searchQuery) {
+      get().search(searchQuery)
     }
   }
 }))

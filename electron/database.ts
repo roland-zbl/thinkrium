@@ -11,20 +11,25 @@ let db: Database.Database | null = null
  * - 在 userData 目錄建立或打開 knowledge-base.db
  * - 執行 schema migration
  */
-export function initDatabase(): Database.Database {
+export function initDatabase(filename?: string, skipSeed = false): Database.Database {
   if (db) {
     return db
   }
 
   // 資料庫文件路徑
-  const userDataPath = app.getPath('userData')
-  const dbPath = join(userDataPath, 'knowledge-base.db')
+  let dbPath = filename
+  if (!dbPath) {
+    const userDataPath = app.getPath('userData')
+    dbPath = join(userDataPath, 'knowledge-base.db')
 
-  console.log('[Database] Initializing database at:', dbPath)
+    console.log('[Database] Initializing database at:', dbPath)
 
-  // 確保目錄存在
-  if (!existsSync(userDataPath)) {
-    mkdirSync(userDataPath, { recursive: true })
+    // 確保目錄存在
+    if (!existsSync(userDataPath)) {
+      mkdirSync(userDataPath, { recursive: true })
+    }
+  } else {
+    console.log('[Database] Initializing database at:', dbPath)
   }
 
   // 創建或打開資料庫
@@ -39,8 +44,22 @@ export function initDatabase(): Database.Database {
   // 執行 schema migration
   runMigrations(db)
 
+  // Explicitly check for feed_items_fts existence after migration for debugging/verification
+  try {
+      const ftsCheck = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='feed_items_fts'").get();
+      if (ftsCheck) {
+          console.log('[Database] Verified: feed_items_fts table exists.');
+      } else {
+          console.error('[Database] WARNING: feed_items_fts table does NOT exist after migration.');
+      }
+  } catch (e) {
+      console.error('[Database] Failed to verify feed_items_fts existence:', e);
+  }
+
   // 開發階段：插入種子數據
-  seedTestData(db)
+  if (!skipSeed) {
+    seedTestData(db)
+  }
 
   console.log('[Database] Database initialized successfully')
   return db
@@ -269,6 +288,88 @@ function runMigrations(database: Database.Database): void {
     }
   } else {
     console.log(`[Database] Migration ${migrationFeedFoldersName} already applied`)
+  }
+
+  // 007_feed_search
+  const migrationFeedSearchName = '007_feed_search'
+  const existingFeedSearch = database
+    .prepare('SELECT id FROM _migrations WHERE name = ?')
+    .get(migrationFeedSearchName)
+
+  if (!existingFeedSearch) {
+    console.log(`[Database] Applying migration: ${migrationFeedSearchName}`)
+    try {
+      // 1. Create FTS virtual table
+      // Note: content_rowid='rowid' links to the implicit rowid of feed_items
+      database.exec(`
+        CREATE VIRTUAL TABLE IF NOT EXISTS feed_items_fts USING fts5(
+            title,
+            content,
+            author,
+            content='feed_items',
+            content_rowid='rowid',
+            tokenize='trigram'
+        );
+      `)
+
+      // 2. Create triggers to keep FTS in sync
+      database.exec(`
+        CREATE TRIGGER IF NOT EXISTS feed_items_ai AFTER INSERT ON feed_items BEGIN
+          INSERT INTO feed_items_fts(rowid, title, content, author) VALUES (new.rowid, new.title, new.content, new.author);
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS feed_items_ad AFTER DELETE ON feed_items BEGIN
+          INSERT INTO feed_items_fts(feed_items_fts, rowid, title, content, author) VALUES('delete', old.rowid, old.title, old.content, old.author);
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS feed_items_au AFTER UPDATE ON feed_items BEGIN
+          INSERT INTO feed_items_fts(feed_items_fts, rowid, title, content, author) VALUES('delete', old.rowid, old.title, old.content, old.author);
+          INSERT INTO feed_items_fts(rowid, title, content, author) VALUES (new.rowid, new.title, new.content, new.author);
+        END;
+      `)
+
+      // 3. Populate existing data
+      // For external content tables, 'rebuild' scans the content table and builds the index
+      database.exec("INSERT INTO feed_items_fts(feed_items_fts) VALUES('rebuild')")
+
+      database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationFeedSearchName)
+      console.log(`[Database] Migration ${migrationFeedSearchName} applied successfully`)
+    } catch (error) {
+      console.error(`[Database] Migration ${migrationFeedSearchName} failed:`, error)
+      // Fallback: If trigram is not supported, try standard tokenizer
+      if (String(error).includes('tokenizer')) {
+        console.log('[Database] Retrying migration with standard tokenizer...')
+        try {
+           database.exec(`
+            CREATE VIRTUAL TABLE IF NOT EXISTS feed_items_fts USING fts5(
+                title,
+                content,
+                author,
+                content='feed_items',
+                content_rowid='rowid'
+            );
+            -- (Re-create triggers and rebuild...)
+            CREATE TRIGGER IF NOT EXISTS feed_items_ai AFTER INSERT ON feed_items BEGIN
+              INSERT INTO feed_items_fts(rowid, title, content, author) VALUES (new.rowid, new.title, new.content, new.author);
+            END;
+            CREATE TRIGGER IF NOT EXISTS feed_items_ad AFTER DELETE ON feed_items BEGIN
+              INSERT INTO feed_items_fts(feed_items_fts, rowid, title, content, author) VALUES('delete', old.rowid, old.title, old.content, old.author);
+            END;
+            CREATE TRIGGER IF NOT EXISTS feed_items_au AFTER UPDATE ON feed_items BEGIN
+              INSERT INTO feed_items_fts(feed_items_fts, rowid, title, content, author) VALUES('delete', old.rowid, old.title, old.content, old.author);
+              INSERT INTO feed_items_fts(rowid, title, content, author) VALUES (new.rowid, new.title, new.content, new.author);
+            END;
+            INSERT INTO feed_items_fts(feed_items_fts) VALUES('rebuild');
+           `)
+           database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationFeedSearchName)
+           console.log(`[Database] Migration ${migrationFeedSearchName} applied successfully (fallback)`)
+        } catch (retryError) {
+           console.error(`[Database] Migration ${migrationFeedSearchName} failed even with fallback:`, retryError)
+        }
+      }
+    }
+  } else {
+    console.log(`[Database] Migration ${migrationFeedSearchName} already applied`)
   }
 }
 
