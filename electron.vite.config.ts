@@ -1,9 +1,15 @@
 import { resolve } from 'path'
-import { defineConfig } from 'electron-vite'
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   main: {
+    plugins: [externalizeDepsPlugin({ exclude: ['fast-xml-parser'] })],
+    resolve: {
+      alias: {
+        '@shared': resolve('src/shared')
+      }
+    },
     build: {
       rollupOptions: {
         input: {
@@ -13,6 +19,12 @@ export default defineConfig({
     }
   },
   preload: {
+    plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: {
+        '@shared': resolve('src/shared')
+      }
+    },
     build: {
       rollupOptions: {
         input: {
