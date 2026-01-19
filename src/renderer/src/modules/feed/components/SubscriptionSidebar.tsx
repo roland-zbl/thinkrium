@@ -1,12 +1,26 @@
 import React, { useState } from 'react'
-import { Plus, ListFilter, Hash, Trash2 } from 'lucide-react'
+import { Plus, ListFilter, Hash, Trash2, MoreHorizontal, FileUp, FileDown } from 'lucide-react'
 import { useFeedStore } from '../store/feed.store'
 import { cn } from '@/lib/utils'
 import { AddSubscriptionDialog } from './AddSubscriptionDialog'
+import { ImportOpmlDialog } from './ImportOpmlDialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@radix-ui/react-dropdown-menu'
 
 export const SubscriptionSidebar: React.FC = () => {
-  const { subscriptions, activeSubscriptionId, setActiveSubscription, removeFeed } = useFeedStore()
+  const {
+    subscriptions,
+    activeSubscriptionId,
+    setActiveSubscription,
+    removeFeed,
+    exportOpml
+  } = useFeedStore()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
 
   // 按分類分組
   const categories = Array.from(new Set(subscriptions.map((s) => s.category)))
@@ -19,20 +33,51 @@ export const SubscriptionSidebar: React.FC = () => {
   }
 
   return (
-    <div
-      className="h-full flex flex-col bg-card border-border"
-    >
+    <div className="h-full flex flex-col bg-card border-border">
       <div className="p-4 flex items-center justify-between border-b border-border">
         <span className="font-bold text-xs uppercase text-muted-foreground tracking-wider">
           訂閱源
         </span>
-        <button
-          onClick={() => setIsAddDialogOpen(true)}
-          className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded text-primary transition-colors"
-          title="新增訂閱"
-        >
-          <Plus size={18} />
-        </button>
+        <div className="flex items-center gap-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded text-muted-foreground transition-colors"
+                title="更多選項"
+                data-testid="more-options-button"
+              >
+                <MoreHorizontal size={18} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+              align="end"
+            >
+              <DropdownMenuItem
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                onClick={() => setIsImportDialogOpen(true)}
+              >
+                <FileUp className="mr-2 h-4 w-4" />
+                <span>匯入 OPML</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                onClick={() => exportOpml()}
+              >
+                <FileDown className="mr-2 h-4 w-4" />
+                <span>匯出 OPML</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded text-primary transition-colors"
+            title="新增訂閱"
+          >
+            <Plus size={18} />
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto py-2">
@@ -98,6 +143,7 @@ export const SubscriptionSidebar: React.FC = () => {
       </div>
 
       <AddSubscriptionDialog isOpen={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} />
+      <ImportOpmlDialog isOpen={isImportDialogOpen} onClose={() => setIsImportDialogOpen(false)} />
     </div>
   )
 }

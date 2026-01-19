@@ -27,8 +27,8 @@ export class FeedService {
 
   addFeed(feed: Omit<Feed, 'created_at'>): void {
     const stmt = this.getDb().prepare(`
-      INSERT INTO feeds (id, type, url, title, icon_url, last_fetched, fetch_interval)
-      VALUES (@id, @type, @url, @title, @icon_url, @last_fetched, @fetch_interval)
+      INSERT INTO feeds (id, type, url, title, icon_url, category, last_fetched, fetch_interval)
+      VALUES (@id, @type, @url, @title, @icon_url, @category, @last_fetched, @fetch_interval)
     `)
     stmt.run(feed)
   }

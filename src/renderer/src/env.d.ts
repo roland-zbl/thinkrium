@@ -14,6 +14,11 @@ declare global {
         validateFeed: (url: string) => Promise<IPCResult<{ valid: boolean; title?: string; error?: string }>>
         fetchFeed: (feedId: string) => Promise<IPCResult<{ count: number }>>
         saveQuickNote: (itemId: string, note: string) => Promise<IPCResult<void>>
+        importOpml: (filePath: string) => Promise<IPCResult<{ added: number; skipped: number; errors: string[] }>>
+        exportOpml: () => Promise<IPCResult<boolean>>
+      }
+      dialog: {
+        openFile: (options: any) => Promise<IPCResult<string | null>>
       }
       settings: {
         get: (key: string) => Promise<IPCResult<string | null>>

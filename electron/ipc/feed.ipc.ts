@@ -1,12 +1,79 @@
-import { ipcMain } from 'electron'
+import { ipcMain, dialog } from 'electron'
 import { Feed, FeedItem, ItemFilter } from '@shared/types'
 import { feedService } from '../services/feed.service'
+import { opmlService } from '../services/opml.service'
 import { handleIPC } from '../utils/ipc-wrapper'
+import { readFileSync, writeFileSync } from 'fs'
+import { randomUUID } from 'crypto'
 
 /**
  * 初始化 Feed 模組的 IPC 處理器
  */
 export function initFeedIPC(): void {
+  // --- OPML Import/Export ---
+
+  ipcMain.handle('feed:import-opml', (_, filePath: string) =>
+    handleIPC(() => {
+      const content = readFileSync(filePath, 'utf-8')
+      const feeds = opmlService.parseOpml(content)
+      const result = {
+        added: 0,
+        skipped: 0,
+        errors: [] as string[]
+      }
+
+      // Get existing feeds to check for duplicates
+      const existingFeeds = feedService.getAllFeeds()
+      const existingUrls = new Set(existingFeeds.map((f) => f.url))
+
+      for (const opmlFeed of feeds) {
+        try {
+          if (existingUrls.has(opmlFeed.xmlUrl)) {
+            result.skipped++
+            continue
+          }
+
+          feedService.addFeed({
+            id: randomUUID(),
+            type: 'rss',
+            url: opmlFeed.xmlUrl,
+            title: opmlFeed.title,
+            icon_url: null,
+            category: opmlFeed.category || '未分類',
+            last_fetched: null,
+            fetch_interval: 30
+          })
+
+          existingUrls.add(opmlFeed.xmlUrl) // Add to set to prevent internal duplicates
+          result.added++
+        } catch (error) {
+          result.errors.push(`Failed to import ${opmlFeed.xmlUrl}: ${error}`)
+        }
+      }
+
+      return result
+    })
+  )
+
+  ipcMain.handle('feed:export-opml', () =>
+    handleIPC(async () => {
+      const feeds = feedService.getAllFeeds()
+      const opmlContent = opmlService.generateOpml(feeds)
+
+      const { filePath } = await dialog.showSaveDialog({
+        title: 'Export OPML',
+        defaultPath: 'subscriptions.opml',
+        filters: [{ name: 'OPML Files', extensions: ['opml', 'xml'] }]
+      })
+
+      if (filePath) {
+        writeFileSync(filePath, opmlContent, 'utf-8')
+        return true
+      }
+      return false
+    })
+  )
+
   // --- 訂閱源管理 ---
 
   // 獲取所有訂閱源

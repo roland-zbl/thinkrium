@@ -10,7 +10,12 @@ const api = {
     listItems: (filter: any) => ipcRenderer.invoke('feed:items:list', filter),
     markAsRead: (itemId: string) => ipcRenderer.invoke('feed:items:mark-read', itemId),
     validateFeed: (url: string) => ipcRenderer.invoke('feed:validate', url),
-    fetchFeed: (feedId: string) => ipcRenderer.invoke('feed:fetch', feedId)
+    fetchFeed: (feedId: string) => ipcRenderer.invoke('feed:fetch', feedId),
+    importOpml: (filePath: string) => ipcRenderer.invoke('feed:import-opml', filePath),
+    exportOpml: () => ipcRenderer.invoke('feed:export-opml')
+  },
+  dialog: {
+    openFile: (options: any) => ipcRenderer.invoke('dialog:openFile', options)
   },
   settings: {
     get: (key: string) => ipcRenderer.invoke('settings:get', key),
