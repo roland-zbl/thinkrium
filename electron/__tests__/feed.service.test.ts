@@ -89,4 +89,20 @@ describe('Feed Service', () => {
     // Called twice (once for each item)
     expect(stmtMock.run).toHaveBeenCalledTimes(2)
   })
+
+  it('saveQuickNote should update quick_note in database', () => {
+    const stmtMock = {
+      run: vi.fn()
+    }
+    vi.spyOn(db, 'prepare').mockReturnValue(stmtMock as any)
+
+    const itemId = 'item-123'
+    const note = 'My quick note'
+
+    feedService.saveQuickNote(itemId, note)
+
+    expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining('UPDATE feed_items'))
+    expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining('quick_note = ?'))
+    expect(stmtMock.run).toHaveBeenCalledWith(note, itemId)
+  })
 })

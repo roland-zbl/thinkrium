@@ -51,6 +51,13 @@ export function initFeedIPC(): void {
     })
   )
 
+  // 保存 Quick Note
+  ipcMain.handle('feed:save-quick-note', (_, { itemId, note }: { itemId: string; note: string }) =>
+    handleIPC((): void => {
+      feedService.saveQuickNote(itemId, note)
+    })
+  )
+
   // 批量新增文章（供抓取服務使用）
   ipcMain.handle(
     'feed:items:bulk-add',

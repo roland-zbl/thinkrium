@@ -16,6 +16,7 @@ export interface FeedItem {
   feed_id: string
   link: string | null
   thumbnail?: string // First image URL extracted from content
+  quickNote?: string
 }
 
 // Helper: Strip HTML tags and decode entities for clean text summary
@@ -60,6 +61,8 @@ interface FeedState {
   activeSubscriptionId: string | null // null means 'All'
   filter: 'all' | 'unread' | 'saved'
   loading: boolean
+  recentlyReadIds: Set<string>
+  autoHideRead: boolean
 
   // Actions
   fetchSubscriptions: () => Promise<void>
@@ -71,6 +74,8 @@ interface FeedState {
   setActiveSubscription: (id: string | null) => void
   markAsRead: (id: string) => Promise<void>
   saveItem: (id: string) => Promise<string | undefined>
+  toggleAutoHideRead: () => void
+  saveQuickNote: (itemId: string, note: string) => Promise<void>
 }
 
 export const useFeedStore = create<FeedState>((set, get) => ({
@@ -80,6 +85,8 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   activeSubscriptionId: null,
   filter: 'all',
   loading: false,
+  recentlyReadIds: new Set(),
+  autoHideRead: false,
 
   fetchSubscriptions: async () => {
     try {
@@ -141,7 +148,8 @@ export const useFeedStore = create<FeedState>((set, get) => ({
           content: i.content,
           feed_id: i.feed_id,
           link: i.url,
-          thumbnail
+          thumbnail,
+          quickNote: i.quick_note // 這裡暫時會報錯，因為 DbFeedItem 還沒更新，稍後會修
         }
       })
 
@@ -233,7 +241,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   },
 
   setFilter: (filter) => {
-    set({ filter })
+    set({ filter, recentlyReadIds: new Set() })
     get().fetchItems()
   },
 
@@ -249,7 +257,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   },
 
   setActiveSubscription: (id) => {
-    set({ activeSubscriptionId: id, selectedItemId: null })
+    set({ activeSubscriptionId: id, selectedItemId: null, recentlyReadIds: new Set() })
     get().fetchItems()
   },
 
@@ -260,15 +268,22 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       if (!item || item.status !== 'unread') return // 已讀或不存在則跳過
 
       await invokeIPC(window.api.feed.markAsRead(id), { showErrorToast: false })
-      set((state) => ({
-        items: state.items.map((i) => (i.id === id ? { ...i, status: 'read' } : i)),
-        // 同時更新對應訂閱源的未讀數
-        subscriptions: state.subscriptions.map((sub) =>
-          sub.id === item.feed_id && sub.unreadCount > 0
-            ? { ...sub, unreadCount: sub.unreadCount - 1 }
-            : sub
-        )
-      }))
+      set((state) => {
+        const recentlyReadIds = new Set(state.recentlyReadIds)
+        if (!state.autoHideRead) {
+          recentlyReadIds.add(id)
+        }
+        return {
+          recentlyReadIds,
+          items: state.items.map((i) => (i.id === id ? { ...i, status: 'read' } : i)),
+          // 同時更新對應訂閱源的未讀數
+          subscriptions: state.subscriptions.map((sub) =>
+            sub.id === item.feed_id && sub.unreadCount > 0
+              ? { ...sub, unreadCount: sub.unreadCount - 1 }
+              : sub
+          )
+        }
+      })
     } catch (error) {
       console.error('Failed to mark as read:', error)
       const msg = error instanceof Error ? error.message : String(error)
@@ -317,6 +332,27 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         description: msg
       })
       return undefined
+    }
+  },
+
+  toggleAutoHideRead: () => {
+    set((state) => ({ autoHideRead: !state.autoHideRead }))
+  },
+
+  saveQuickNote: async (itemId, note) => {
+    try {
+      await invokeIPC(window.api.feed.saveQuickNote(itemId, note), { showErrorToast: false })
+      set((state) => ({
+        items: state.items.map((i) => (i.id === itemId ? { ...i, quickNote: note } : i))
+      }))
+    } catch (error) {
+      console.error('Failed to save quick note:', error)
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to save quick note',
+        description: msg
+      })
     }
   }
 }))

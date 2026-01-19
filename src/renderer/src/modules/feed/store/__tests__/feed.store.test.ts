@@ -219,4 +219,55 @@ describe('FeedStore', () => {
       expect(state.items[0].feed_id).toBe('feed-2')
     })
   })
+
+  describe('toggleAutoHideRead', () => {
+    it('should toggle autoHideRead state', () => {
+      const { toggleAutoHideRead } = useFeedStore.getState()
+
+      expect(useFeedStore.getState().autoHideRead).toBe(false)
+
+      act(() => {
+        toggleAutoHideRead()
+      })
+
+      expect(useFeedStore.getState().autoHideRead).toBe(true)
+
+      act(() => {
+        toggleAutoHideRead()
+      })
+
+      expect(useFeedStore.getState().autoHideRead).toBe(false)
+    })
+  })
+
+  describe('saveQuickNote', () => {
+    it('should save quick note via IPC and update local state', async () => {
+      const mockSaveQuickNote = vi.fn().mockResolvedValue({ success: true, data: undefined })
+      window.api.feed.saveQuickNote = mockSaveQuickNote
+
+      useFeedStore.setState({
+        items: [
+          {
+            id: 'item-1',
+            title: 'Item 1',
+            source: 'Source',
+            date: null,
+            status: 'read',
+            summary: '',
+            content: null,
+            feed_id: 'feed-1',
+            link: null
+          }
+        ]
+      })
+
+      await act(async () => {
+        await useFeedStore.getState().saveQuickNote('item-1', 'My Note')
+      })
+
+      expect(mockSaveQuickNote).toHaveBeenCalledWith('item-1', 'My Note')
+      const item = useFeedStore.getState().items.find((i) => i.id === 'item-1')
+      expect(item?.quickNote).toBe('My Note')
+    })
+  })
 })

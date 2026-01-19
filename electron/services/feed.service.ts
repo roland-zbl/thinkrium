@@ -76,6 +76,16 @@ export class FeedService {
     ).run(itemId)
   }
 
+  saveQuickNote(itemId: string, note: string): void {
+    this.getDb().prepare(
+      `
+      UPDATE feed_items
+      SET quick_note = ?
+      WHERE id = ?
+    `
+    ).run(note, itemId)
+  }
+
   addFeedItems(items: Omit<FeedItem, 'status' | 'read_at' | 'fetched_at'>[]): void {
     const insert = this.getDb().prepare(`
       INSERT OR IGNORE INTO feed_items (id, feed_id, guid, title, url, content, author, published_at)
