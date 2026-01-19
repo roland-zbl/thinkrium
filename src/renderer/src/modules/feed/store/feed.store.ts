@@ -76,6 +76,8 @@ interface FeedState {
   saveItem: (id: string) => Promise<string | undefined>
   toggleAutoHideRead: () => void
   saveQuickNote: (itemId: string, note: string) => Promise<void>
+  importOpml: (filePath: string) => Promise<{ added: number; skipped: number; errors: string[] } | undefined>
+  exportOpml: () => Promise<void>
 }
 
 export const useFeedStore = create<FeedState>((set, get) => ({
@@ -351,6 +353,68 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       useToastStore.getState().addToast({
         type: 'error',
         title: 'Failed to save quick note',
+        description: msg
+      })
+    }
+  },
+
+  importOpml: async (filePath) => {
+    set({ loading: true })
+    try {
+      const result = await invokeIPC(window.api.feed.importOpml(filePath), {
+        showErrorToast: false
+      })
+      if (result.added > 0) {
+        useToastStore.getState().addToast({
+          type: 'success',
+          title: 'OPML Import Completed',
+          description: `Added ${result.added} feeds, skipped ${result.skipped}`
+        })
+        await get().fetchSubscriptions()
+        await get().fetchItems()
+      } else if (result.errors.length > 0) {
+        useToastStore.getState().addToast({
+          type: 'error',
+          title: 'OPML Import Finished with Errors',
+          description: `Failed to import ${result.errors.length} feeds`
+        })
+      } else {
+        useToastStore.getState().addToast({
+          type: 'info',
+          title: 'No new feeds added',
+          description: `Skipped ${result.skipped} duplicates`
+        })
+      }
+      return result
+    } catch (error) {
+      console.error('Failed to import OPML:', error)
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to import OPML',
+        description: msg
+      })
+      throw error
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  exportOpml: async () => {
+    try {
+      const success = await invokeIPC(window.api.feed.exportOpml(), { showErrorToast: false })
+      if (success) {
+        useToastStore.getState().addToast({
+          type: 'success',
+          title: 'OPML Exported Successfully'
+        })
+      }
+    } catch (error) {
+      console.error('Failed to export OPML:', error)
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to export OPML',
         description: msg
       })
     }
