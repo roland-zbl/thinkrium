@@ -5,10 +5,19 @@ export interface Feed {
   title: string | null
   icon_url: string | null
   category?: string
+  folder_id?: string | null
   last_fetched: string | null
   fetch_interval: number
   created_at: string
   unreadCount?: number
+}
+
+export interface Folder {
+  id: string
+  name: string
+  parent_id: string | null
+  position: number
+  created_at: string
 }
 
 export interface FeedItem {
@@ -28,6 +37,7 @@ export interface FeedItem {
 
 export interface ItemFilter {
   feedId?: string
+  feedIds?: string[] // Support multiple feeds
   status?: 'unread' | 'read' | 'saved'
   limit?: number
   offset?: number

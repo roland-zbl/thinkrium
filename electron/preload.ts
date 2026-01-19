@@ -12,7 +12,18 @@ const api = {
     validateFeed: (url: string) => ipcRenderer.invoke('feed:validate', url),
     fetchFeed: (feedId: string) => ipcRenderer.invoke('feed:fetch', feedId),
     importOpml: (filePath: string) => ipcRenderer.invoke('feed:import-opml', filePath),
-    exportOpml: () => ipcRenderer.invoke('feed:export-opml')
+    exportOpml: () => ipcRenderer.invoke('feed:export-opml'),
+    moveFeedToFolder: (feedId: string, folderId: string | null) =>
+      ipcRenderer.invoke('feed:move-to-folder', { feedId, folderId })
+  },
+  folder: {
+    create: (name: string, parentId?: string) =>
+      ipcRenderer.invoke('folder:create', { name, parentId }),
+    rename: (id: string, name: string) => ipcRenderer.invoke('folder:rename', { id, name }),
+    delete: (id: string) => ipcRenderer.invoke('folder:delete', id),
+    move: (id: string, newParentId: string | null) =>
+      ipcRenderer.invoke('folder:move', { id, newParentId }),
+    list: () => ipcRenderer.invoke('folder:list')
   },
   dialog: {
     openFile: (options: any) => ipcRenderer.invoke('dialog:openFile', options)
