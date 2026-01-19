@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { Note, DbProject, Feed, FeedItem, ItemFilter, DbNote, Folder } from './types'
+import { Note, DbProject, Feed, FeedItem, ItemFilter, DbNote, Folder, SearchOptions, SearchResult } from './types'
 import { IPCResult } from '@shared/types/ipc'
 
 declare global {
@@ -11,12 +11,13 @@ declare global {
         removeFeed: (feedId: string) => Promise<IPCResult<void>>
         listItems: (filter: ItemFilter) => Promise<IPCResult<FeedItem[]>>
         markAsRead: (itemId: string) => Promise<IPCResult<void>>
-        validateFeed: (url: string) => Promise<IPCResult<{ valid: boolean; title?: string; error?: string }>>
+        validateFeed: (url: string) => Promise<IPCResult<{ valid: boolean; title?: string; error?: string; icon?: string }>>
         fetchFeed: (feedId: string) => Promise<IPCResult<{ count: number }>>
         saveQuickNote: (itemId: string, note: string) => Promise<IPCResult<void>>
         importOpml: (filePath: string) => Promise<IPCResult<{ added: number; skipped: number; errors: string[] }>>
         exportOpml: () => Promise<IPCResult<boolean>>
         moveFeedToFolder: (feedId: string, folderId: string | null) => Promise<IPCResult<void>>
+        search: (query: string, options: SearchOptions) => Promise<IPCResult<SearchResult[]>>
       }
       folder: {
         create: (name: string, parentId?: string) => Promise<IPCResult<void>>

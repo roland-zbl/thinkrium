@@ -12,6 +12,7 @@ import {
 import { useFeedStore } from '../store/feed.store'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/stores/app.store'
+import { useToastStore } from '@/stores/toast.store'
 import DOMPurify from 'dompurify'
 
 export const FeedPreview: React.FC = () => {
@@ -209,7 +210,7 @@ export const FeedPreview: React.FC = () => {
             onClick={() => {
               if (item && quickNote.trim()) {
                 saveQuickNote(item.id, quickNote)
-                useAppStore.getState().addToast({
+                useToastStore.getState().addToast({
                   type: 'success',
                   title: 'Quick Note 已保存'
                 })
