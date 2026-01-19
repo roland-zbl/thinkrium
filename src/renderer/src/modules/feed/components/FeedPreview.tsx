@@ -15,12 +15,19 @@ import { useAppStore } from '@/stores/app.store'
 import DOMPurify from 'dompurify'
 
 export const FeedPreview: React.FC = () => {
-  const { selectedItemId, items, saveItem, selectItem } = useFeedStore()
+  const { selectedItemId, items, saveItem, selectItem, saveQuickNote } = useFeedStore()
   const { addTab } = useAppStore()
   const [quickNote, setQuickNote] = useState('')
 
   const itemIndex = items.findIndex((i) => i.id === selectedItemId)
   const item = items[itemIndex]
+
+  // 當選擇的項目改變時，更新 Quick Note
+  React.useEffect(() => {
+    if (item) {
+      setQuickNote(item.quickNote || '')
+    }
+  }, [item?.id, item?.quickNote])
 
   // 處理導航
   const handlePrev = (): void => {
@@ -168,10 +175,12 @@ export const FeedPreview: React.FC = () => {
           </div>
 
           <div
-            className="prose prose-lg dark:prose-invert max-w-none
+            className="prose prose-lg dark:prose-invert max-w-prose mx-auto
+              leading-relaxed
+              prose-p:my-6
               prose-img:rounded-xl prose-img:shadow-md prose-img:mx-auto prose-img:block prose-img:max-w-full
               prose-headings:font-bold prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-              prose-pre:bg-muted prose-pre:text-muted-foreground prose-pre:border prose-pre:border-border
+              prose-pre:bg-muted prose-pre:text-muted-foreground prose-pre:border prose-pre:border-border prose-pre:rounded-lg
             "
             dangerouslySetInnerHTML={{ __html: sanitizedContent }}
           />
@@ -197,6 +206,15 @@ export const FeedPreview: React.FC = () => {
           />
           <button
             disabled={!quickNote.trim()}
+            onClick={() => {
+              if (item && quickNote.trim()) {
+                saveQuickNote(item.id, quickNote)
+                useAppStore.getState().addToast({
+                  type: 'success',
+                  title: 'Quick Note 已保存'
+                })
+              }
+            }}
             className={cn(
               'absolute bottom-3 right-3 p-2 rounded transition-all',
               quickNote.trim()

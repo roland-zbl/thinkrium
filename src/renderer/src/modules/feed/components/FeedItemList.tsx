@@ -5,7 +5,14 @@ import { FeedItemCard } from './FeedItemCard'
 import { FilterTabs } from './FilterTabs'
 
 export const FeedItemList: React.FC = () => {
-  const { items, activeSubscriptionId, filter, selectedItemId, selectItem } = useFeedStore()
+  const {
+    items,
+    activeSubscriptionId,
+    filter,
+    selectedItemId,
+    selectItem,
+    recentlyReadIds
+  } = useFeedStore()
   const parentRef = useRef<HTMLDivElement>(null)
 
   // 根據訂閱源和狀態過濾列表
@@ -18,11 +25,11 @@ export const FeedItemList: React.FC = () => {
         filter === 'all'
           ? true
           : filter === 'unread'
-            ? item.status === 'unread'
+            ? item.status === 'unread' || recentlyReadIds.has(item.id)
             : item.status === 'saved'
       return matchSub && matchStatus
     })
-  }, [items, activeSubscriptionId, filter])
+  }, [items, activeSubscriptionId, filter, recentlyReadIds])
 
   const virtualizer = useVirtualizer({
     count: filteredItems.length,

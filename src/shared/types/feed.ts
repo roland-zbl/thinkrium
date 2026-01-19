@@ -23,6 +23,7 @@ export interface FeedItem {
   fetched_at: string
   status: 'unread' | 'read' | 'saved'
   read_at: string | null
+  quick_note?: string
 }
 
 export interface ItemFilter {

@@ -54,6 +54,9 @@ export const FeedItemCard: React.FC<Props> = ({ item, isActive, onClick }) => {
     onClick() // selectItem 會自動呼叫 markAsRead
   }
 
+  // 檢查是否為已讀狀態但在未讀列表中顯示 (recently read)
+  const isRecentlyRead = item.status === 'read' && !isActive
+
   return (
     <div
       ref={setNodeRef}
@@ -65,7 +68,8 @@ export const FeedItemCard: React.FC<Props> = ({ item, isActive, onClick }) => {
       onClick={handleCardClick}
       className={cn(
         'group flex gap-4 p-4 border-b cursor-pointer transition-all relative overflow-hidden border-border',
-        isActive ? 'bg-primary/10' : 'hover:bg-accent/30 dark:hover:bg-white/[0.03]'
+        isActive ? 'bg-primary/10' : 'hover:bg-accent/30 dark:hover:bg-white/[0.03]',
+        isRecentlyRead && 'opacity-60 bg-muted/20'
       )}
     >
       {/* 未讀指示器 (左側藍色條) */}

@@ -197,6 +197,27 @@ function runMigrations(database: Database.Database): void {
   } else {
     console.log(`[Database] Migration ${migrationSchemaUpdateName} already applied`)
   }
+
+  // 檢查並執行 005_add_quick_note
+  const migrationQuickNoteName = '005_add_quick_note'
+  const existingQuickNote = database
+    .prepare('SELECT id FROM _migrations WHERE name = ?')
+    .get(migrationQuickNoteName)
+
+  if (!existingQuickNote) {
+    console.log(`[Database] Applying migration: ${migrationQuickNoteName}`)
+    try {
+      database.exec(`
+        ALTER TABLE feed_items ADD COLUMN quick_note TEXT;
+      `)
+      database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationQuickNoteName)
+      console.log(`[Database] Migration ${migrationQuickNoteName} applied successfully`)
+    } catch (error) {
+      console.error(`[Database] Migration ${migrationQuickNoteName} failed:`, error)
+    }
+  } else {
+    console.log(`[Database] Migration ${migrationQuickNoteName} already applied`)
+  }
 }
 
 /**

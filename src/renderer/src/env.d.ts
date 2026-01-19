@@ -13,6 +13,7 @@ declare global {
         markAsRead: (itemId: string) => Promise<IPCResult<void>>
         validateFeed: (url: string) => Promise<IPCResult<{ valid: boolean; title?: string; error?: string }>>
         fetchFeed: (feedId: string) => Promise<IPCResult<{ count: number }>>
+        saveQuickNote: (itemId: string, note: string) => Promise<IPCResult<void>>
       }
       settings: {
         get: (key: string) => Promise<IPCResult<string | null>>
