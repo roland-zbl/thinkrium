@@ -25,6 +25,24 @@ export class FeedService {
     return this.getDb().prepare(query).all() as Feed[]
   }
 
+  moveFeedToFolder(feedId: string, folderId: string | null): void {
+    this.getDb()
+      .prepare('UPDATE feeds SET folder_id = ? WHERE id = ?')
+      .run(folderId || null, feedId)
+  }
+
+  getFeedsByFolder(folderId: string): Feed[] {
+    const query = `
+      SELECT
+        f.*,
+        (SELECT COUNT(*) FROM feed_items WHERE feed_id = f.id AND status = 'unread') as unreadCount
+      FROM feeds f
+      WHERE f.folder_id = ?
+      ORDER BY f.created_at DESC
+    `
+    return this.getDb().prepare(query).all(folderId) as Feed[]
+  }
+
   addFeed(feed: Omit<Feed, 'created_at'>): void {
     const stmt = this.getDb().prepare(`
       INSERT INTO feeds (id, type, url, title, icon_url, category, last_fetched, fetch_interval)
@@ -44,6 +62,12 @@ export class FeedService {
     if (filter.feedId) {
       query += ' AND feed_id = ?'
       params.push(filter.feedId)
+    }
+
+    if (filter.feedIds && filter.feedIds.length > 0) {
+      const placeholders = filter.feedIds.map(() => '?').join(',')
+      query += ` AND feed_id IN (${placeholders})`
+      params.push(...filter.feedIds)
     }
 
     if (filter.status) {

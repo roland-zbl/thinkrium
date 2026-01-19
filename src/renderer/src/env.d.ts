@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { Note, DbProject, Feed, FeedItem, ItemFilter, DbNote } from './types'
+import { Note, DbProject, Feed, FeedItem, ItemFilter, DbNote, Folder } from './types'
 import { IPCResult } from '@shared/types/ipc'
 
 declare global {
@@ -16,6 +16,14 @@ declare global {
         saveQuickNote: (itemId: string, note: string) => Promise<IPCResult<void>>
         importOpml: (filePath: string) => Promise<IPCResult<{ added: number; skipped: number; errors: string[] }>>
         exportOpml: () => Promise<IPCResult<boolean>>
+        moveFeedToFolder: (feedId: string, folderId: string | null) => Promise<IPCResult<void>>
+      }
+      folder: {
+        create: (name: string, parentId?: string) => Promise<IPCResult<void>>
+        rename: (id: string, name: string) => Promise<IPCResult<void>>
+        delete: (id: string) => Promise<IPCResult<void>>
+        move: (id: string, newParentId: string | null) => Promise<IPCResult<void>>
+        list: () => Promise<IPCResult<Folder[]>>
       }
       dialog: {
         openFile: (options: any) => Promise<IPCResult<string | null>>

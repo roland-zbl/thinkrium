@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { ItemFilter, FeedItem as DbFeedItem } from '@/types'
+import { ItemFilter, FeedItem as DbFeedItem, Folder } from '@/types'
 import { turndown } from '@/lib/turndown'
 import { useToastStore } from '@/stores/toast.store'
 import { invokeIPC } from '@/utils/ipc'
@@ -52,13 +52,16 @@ export interface Subscription {
   unreadCount: number
   url: string
   icon_url?: string
+  folder_id?: string | null
 }
 
 interface FeedState {
   items: FeedItem[]
   subscriptions: Subscription[]
+  folders: Folder[]
   selectedItemId: string | null
   activeSubscriptionId: string | null // null means 'All'
+  activeFolderId: string | null
   filter: 'all' | 'unread' | 'saved'
   loading: boolean
   recentlyReadIds: Set<string>
@@ -66,35 +69,57 @@ interface FeedState {
 
   // Actions
   fetchSubscriptions: () => Promise<void>
+  fetchFolders: () => Promise<void>
   fetchItems: () => Promise<void>
   addFeed: (url: string, name?: string, category?: string) => Promise<void>
   removeFeed: (id: string) => Promise<void>
   setFilter: (filter: 'all' | 'unread' | 'saved') => void
   selectItem: (id: string | null) => void
   setActiveSubscription: (id: string | null) => void
+  setActiveFolder: (id: string | null) => void
   markAsRead: (id: string) => Promise<void>
   saveItem: (id: string) => Promise<string | undefined>
   toggleAutoHideRead: () => void
   saveQuickNote: (itemId: string, note: string) => Promise<void>
   importOpml: (filePath: string) => Promise<{ added: number; skipped: number; errors: string[] } | undefined>
   exportOpml: () => Promise<void>
+
+  // Folder Actions
+  createFolder: (name: string, parentId?: string) => Promise<void>
+  renameFolder: (id: string, name: string) => Promise<void>
+  deleteFolder: (id: string) => Promise<void>
+  moveFolder: (id: string, newParentId: string | null) => Promise<void>
+  moveFeedToFolder: (feedId: string, folderId: string | null) => Promise<void>
 }
 
 export const useFeedStore = create<FeedState>((set, get) => ({
   items: [],
   subscriptions: [],
+  folders: [],
   selectedItemId: null,
   activeSubscriptionId: null,
+  activeFolderId: null,
   filter: 'all',
   loading: false,
   recentlyReadIds: new Set(),
   autoHideRead: false,
+
+  fetchFolders: async () => {
+    try {
+      const folders = await invokeIPC(window.api.folder.list(), { showErrorToast: false })
+      set({ folders })
+    } catch (error) {
+      console.error('Failed to fetch folders:', error)
+    }
+  },
 
   fetchSubscriptions: async () => {
     try {
       // Use silent IPC for fetches to avoid spamming toast on initial load failures
       // But log the error.
       const feeds = await invokeIPC(window.api.feed.listFeeds(), { showErrorToast: false })
+      const folders = await invokeIPC(window.api.folder.list(), { showErrorToast: false })
+
       // 需要計算未讀數，這裡暫時簡化，後續可以優化 SQL
       const subscriptions = feeds.map((f) => ({
         id: f.id,
@@ -102,9 +127,10 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         category: f.category || '未分類',
         unreadCount: f.unreadCount || 0,
         url: f.url,
-        icon_url: f.icon_url || undefined
+        icon_url: f.icon_url || undefined,
+        folder_id: f.folder_id
       }))
-      set({ subscriptions })
+      set({ subscriptions, folders })
     } catch (error) {
       console.error('Failed to fetch subscriptions:', error)
       const msg = error instanceof Error ? error.message : String(error)
@@ -119,15 +145,42 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   },
 
   fetchItems: async () => {
-    const { activeSubscriptionId, filter } = get()
+    const { activeSubscriptionId, activeFolderId, filter, subscriptions, folders } = get()
     set({ loading: true })
     try {
       const dbFilter: ItemFilter = {
         limit: 100 // 限制載入數量，避免卡頓
       }
+
       if (activeSubscriptionId) {
         dbFilter.feedId = activeSubscriptionId
+      } else if (activeFolderId) {
+         // Collect all feed IDs in this folder and subfolders
+        const getFolderFeedIds = (folderId: string): string[] => {
+          const feedIds = subscriptions
+            .filter((s) => s.folder_id === folderId)
+            .map((s) => s.id)
+          const subFolderIds = folders
+            .filter((f) => f.parent_id === folderId)
+            .map((f) => f.id)
+
+          let allFeedIds = [...feedIds]
+          for (const subId of subFolderIds) {
+            allFeedIds = [...allFeedIds, ...getFolderFeedIds(subId)]
+          }
+          return allFeedIds
+        }
+
+        const targetFeedIds = getFolderFeedIds(activeFolderId)
+        if (targetFeedIds.length > 0) {
+            dbFilter.feedIds = targetFeedIds
+        } else {
+            // Folder is empty, return empty list immediately
+            set({ items: [], loading: false })
+            return
+        }
       }
+
       if (filter === 'unread') {
         dbFilter.status = 'unread'
       } else if (filter === 'saved') {
@@ -151,7 +204,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
           feed_id: i.feed_id,
           link: i.url,
           thumbnail,
-          quickNote: i.quick_note // 這裡暫時會報錯，因為 DbFeedItem 還沒更新，稍後會修
+          quickNote: i.quick_note
         }
       })
 
@@ -259,7 +312,22 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   },
 
   setActiveSubscription: (id) => {
-    set({ activeSubscriptionId: id, selectedItemId: null, recentlyReadIds: new Set() })
+    set({
+      activeSubscriptionId: id,
+      activeFolderId: null,
+      selectedItemId: null,
+      recentlyReadIds: new Set()
+    })
+    get().fetchItems()
+  },
+
+  setActiveFolder: (id) => {
+    set({
+      activeFolderId: id,
+      activeSubscriptionId: null,
+      selectedItemId: null,
+      recentlyReadIds: new Set()
+    })
     get().fetchItems()
   },
 
@@ -417,6 +485,57 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         title: 'Failed to export OPML',
         description: msg
       })
+    }
+  },
+
+  // Folder Actions
+  createFolder: async (name, parentId) => {
+    try {
+      await invokeIPC(window.api.folder.create(name, parentId))
+      await get().fetchFolders()
+      useToastStore.getState().addToast({ type: 'success', title: 'Folder created' })
+    } catch (error) {
+      console.error(error)
+      useToastStore.getState().addToast({ type: 'error', title: 'Failed to create folder' })
+    }
+  },
+  renameFolder: async (id, name) => {
+    try {
+      await invokeIPC(window.api.folder.rename(id, name))
+      await get().fetchFolders()
+      useToastStore.getState().addToast({ type: 'success', title: 'Folder renamed' })
+    } catch (error) {
+      console.error(error)
+      useToastStore.getState().addToast({ type: 'error', title: 'Failed to rename folder' })
+    }
+  },
+  deleteFolder: async (id) => {
+    try {
+      await invokeIPC(window.api.folder.delete(id))
+      await get().fetchFolders()
+      await get().fetchSubscriptions() // Feeds are moved to root
+      useToastStore.getState().addToast({ type: 'success', title: 'Folder deleted' })
+    } catch (error) {
+      console.error(error)
+      useToastStore.getState().addToast({ type: 'error', title: 'Failed to delete folder' })
+    }
+  },
+  moveFolder: async (id, newParentId) => {
+    try {
+      await invokeIPC(window.api.folder.move(id, newParentId))
+      await get().fetchFolders()
+    } catch (error) {
+      console.error(error)
+      useToastStore.getState().addToast({ type: 'error', title: 'Failed to move folder' })
+    }
+  },
+  moveFeedToFolder: async (feedId, folderId) => {
+    try {
+      await invokeIPC(window.api.feed.moveFeedToFolder(feedId, folderId))
+      await get().fetchSubscriptions()
+    } catch (error) {
+      console.error(error)
+      useToastStore.getState().addToast({ type: 'error', title: 'Failed to move feed' })
     }
   }
 }))

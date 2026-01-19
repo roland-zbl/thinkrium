@@ -102,6 +102,15 @@ export function initFeedIPC(): void {
     })
   )
 
+  // 移動訂閱源到資料夾
+  ipcMain.handle(
+    'feed:move-to-folder',
+    (_, { feedId, folderId }: { feedId: string; folderId: string | null }) =>
+      handleIPC((): void => {
+        feedService.moveFeedToFolder(feedId, folderId)
+      })
+  )
+
   // --- 內容項目管理 ---
 
   // 獲取文章列表

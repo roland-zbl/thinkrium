@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import { app } from 'electron'
 import { join } from 'path'
 import { existsSync, mkdirSync } from 'fs'
+import { randomUUID } from 'crypto'
 
 let db: Database.Database | null = null
 
@@ -217,6 +218,57 @@ function runMigrations(database: Database.Database): void {
     }
   } else {
     console.log(`[Database] Migration ${migrationQuickNoteName} already applied`)
+  }
+
+  // 006_feed_folders
+  const migrationFeedFoldersName = '006_feed_folders'
+  const existingFeedFolders = database
+    .prepare('SELECT id FROM _migrations WHERE name = ?')
+    .get(migrationFeedFoldersName)
+
+  if (!existingFeedFolders) {
+    console.log(`[Database] Applying migration: ${migrationFeedFoldersName}`)
+    try {
+      // 1. Create folders table
+      database.exec(`
+        CREATE TABLE IF NOT EXISTS folders (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            parent_id TEXT,
+            position INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE CASCADE
+        );
+      `)
+
+      // 2. Add folder_id to feeds
+      database.exec(`
+        ALTER TABLE feeds ADD COLUMN folder_id TEXT;
+      `)
+
+      // 3. Migrate categories to folders
+      const categories = database
+        .prepare(
+          "SELECT DISTINCT category FROM feeds WHERE category IS NOT NULL AND category != '未分類'"
+        )
+        .all() as { category: string }[]
+
+      const insertFolder = database.prepare('INSERT INTO folders (id, name) VALUES (?, ?)')
+      const updateFeed = database.prepare('UPDATE feeds SET folder_id = ? WHERE category = ?')
+
+      for (const cat of categories) {
+        const folderId = randomUUID()
+        insertFolder.run(folderId, cat.category)
+        updateFeed.run(folderId, cat.category)
+      }
+
+      database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationFeedFoldersName)
+      console.log(`[Database] Migration ${migrationFeedFoldersName} applied successfully`)
+    } catch (error) {
+      console.error(`[Database] Migration ${migrationFeedFoldersName} failed:`, error)
+    }
+  } else {
+    console.log(`[Database] Migration ${migrationFeedFoldersName} already applied`)
   }
 }
 
