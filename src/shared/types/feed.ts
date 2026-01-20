@@ -55,3 +55,32 @@ export interface SearchResult extends FeedItem {
   title_snippet?: string
   content_snippet?: string
 }
+
+export type HighlightColor = 'yellow' | 'green' | 'blue' | 'pink'
+
+export interface Highlight {
+  id: string
+  feed_item_id: string
+  text: string
+  note: string | null
+  color: HighlightColor
+  start_offset: number
+  end_offset: number
+  created_at: string
+}
+
+export interface CreateHighlightDTO {
+  id: string
+  feed_item_id: string
+  text: string
+  note?: string
+  color: HighlightColor
+  start_offset: number
+  end_offset: number
+}
+
+export interface UpdateHighlightDTO {
+  id: string
+  note?: string
+  color?: HighlightColor
+}

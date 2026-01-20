@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { Note, DbProject, Feed, FeedItem, ItemFilter, DbNote, Folder, SearchOptions, SearchResult } from './types'
+import { Note, DbProject, Feed, FeedItem, ItemFilter, DbNote, Folder, SearchOptions, SearchResult, CreateHighlightDTO, UpdateHighlightDTO, Highlight } from './types'
 import { IPCResult } from '@shared/types/ipc'
 
 declare global {
@@ -25,6 +25,13 @@ declare global {
         delete: (id: string) => Promise<IPCResult<void>>
         move: (id: string, newParentId: string | null) => Promise<IPCResult<void>>
         list: () => Promise<IPCResult<Folder[]>>
+      }
+      highlight: {
+        create: (data: CreateHighlightDTO) => Promise<IPCResult<void>>
+        update: (data: UpdateHighlightDTO) => Promise<IPCResult<void>>
+        delete: (id: string) => Promise<IPCResult<void>>
+        listByItem: (feedItemId: string) => Promise<IPCResult<Highlight[]>>
+        listAll: () => Promise<IPCResult<Highlight[]>>
       }
       dialog: {
         openFile: (options: any) => Promise<IPCResult<string | null>>

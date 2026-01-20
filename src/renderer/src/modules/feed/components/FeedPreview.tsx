@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import {
   Bookmark,
   Send,
@@ -14,19 +14,36 @@ import { cn } from '@/lib/utils'
 import { useAppStore } from '@/stores/app.store'
 import { useToastStore } from '@/stores/toast.store'
 import DOMPurify from 'dompurify'
+import { HighlightToolbar, HighlightMenu } from './HighlightToolbar'
+import { getSelectionOffsets } from '../utils/highlight-utils'
+import { useHighlightedContent } from '../hooks/useHighlightedContent'
 
 export const FeedPreview: React.FC = () => {
-  const { selectedItemId, items, saveItem, selectItem, saveQuickNote } = useFeedStore()
+  const { selectedItemId, items, saveItem, selectItem, saveQuickNote, highlights, createHighlight, updateHighlight, deleteHighlight } = useFeedStore()
   const { addTab } = useAppStore()
   const [quickNote, setQuickNote] = useState('')
 
+  // Highlight State
+  const [toolbarPosition, setToolbarPosition] = useState<{ top: number; left: number } | null>(null)
+  const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; text: string } | null>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  const [activeHighlightId, setActiveHighlightId] = useState<string | null>(null)
+  const [highlightMenuPosition, setHighlightMenuPosition] = useState<{ top: number; left: number } | null>(null)
+
+
   const itemIndex = items.findIndex((i) => i.id === selectedItemId)
   const item = items[itemIndex]
+  const itemHighlights = item && selectedItemId ? highlights.get(selectedItemId) : []
 
   // 當選擇的項目改變時，更新 Quick Note
-  React.useEffect(() => {
+  useEffect(() => {
     if (item) {
       setQuickNote(item.quickNote || '')
+      setToolbarPosition(null)
+      setSelectionRange(null)
+      setActiveHighlightId(null)
+      setHighlightMenuPosition(null)
     }
   }, [item?.id, item?.quickNote])
 
@@ -53,6 +70,103 @@ export const FeedPreview: React.FC = () => {
       ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target']
     })
   }, [item])
+
+  // Apply highlights
+  const contentWithHighlights = useHighlightedContent(sanitizedContent, itemHighlights)
+
+  // Handle Text Selection
+  const handleMouseUp = () => {
+    if (!contentRef.current) return
+
+    // Allow clicking on existing highlights to open menu
+    // We defer to check if a selection was made.
+    setTimeout(() => {
+        const offsets = getSelectionOffsets(contentRef.current!)
+        if (offsets && offsets.text.trim().length > 0) {
+            const selection = window.getSelection()
+            if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0)
+                const rect = range.getBoundingClientRect()
+                // Check if user is clicking inside an existing highlight?
+                // Actually if selection is non-empty, we prefer creation.
+                // If selection is empty (click), we handle that via event delegation.
+
+                setSelectionRange(offsets)
+                setToolbarPosition({
+                    top: rect.top,
+                    left: rect.left + rect.width / 2
+                })
+                // Close existing menu
+                setActiveHighlightId(null)
+                setHighlightMenuPosition(null)
+                return
+            }
+        }
+
+        // No valid selection, clear toolbar
+        setToolbarPosition(null)
+        setSelectionRange(null)
+    }, 10)
+  }
+
+  // Handle clicks on existing highlights
+  const handleContentClick = (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement
+      // Check if clicked on a highlight mark
+      if (target.tagName === 'MARK' && target.dataset.highlightId) {
+          e.stopPropagation() // Prevent clearing selection if any?
+          const id = target.dataset.highlightId
+          const rect = target.getBoundingClientRect()
+          setActiveHighlightId(id)
+          setHighlightMenuPosition({
+              top: rect.bottom,
+              left: rect.left + rect.width / 2
+          })
+          setToolbarPosition(null) // Close toolbar if open
+      } else {
+          // Clicked elsewhere, close menu
+          // But only if we didn't just select text (handled by mouseup)
+          // MouseUp fires before Click?
+          // Let's rely on state.
+          // Actually, if we click outside, we should close menu.
+          // Don't close immediately if we are selecting text.
+          if (!window.getSelection()?.toString()) {
+            setActiveHighlightId(null)
+            setHighlightMenuPosition(null)
+          }
+      }
+  }
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+          if (!item) return
+          if (toolbarPosition && selectionRange) {
+              if (e.key.toLowerCase() === 'h') {
+                  e.preventDefault()
+                  createHighlight(item.id, selectionRange.text, selectionRange.start, selectionRange.end, 'yellow')
+                  setToolbarPosition(null)
+                  setSelectionRange(null)
+                  window.getSelection()?.removeAllRanges()
+              }
+              if (e.key.toLowerCase() === 'n') {
+                  // Not easily implementable without opening the UI,
+                  // or we can auto-create yellow and open note.
+                  e.preventDefault()
+                  createHighlight(item.id, selectionRange.text, selectionRange.start, selectionRange.end, 'yellow')
+                  // We would need to then find the created highlight and open the menu.
+                  // Since ID is async/random, we might need to wait or predict ID.
+                  // For now, let's just do simple highlight.
+                  setToolbarPosition(null)
+                  setSelectionRange(null)
+                  window.getSelection()?.removeAllRanges()
+              }
+          }
+      }
+
+      window.addEventListener('keydown', handleKeyDown)
+      return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [item, toolbarPosition, selectionRange, createHighlight])
 
   if (!item) {
     return (
@@ -176,6 +290,9 @@ export const FeedPreview: React.FC = () => {
           </div>
 
           <div
+            ref={contentRef}
+            onMouseUp={handleMouseUp}
+            onClick={handleContentClick}
             className="prose prose-lg dark:prose-invert max-w-prose mx-auto
               leading-relaxed
               prose-p:my-6
@@ -183,10 +300,54 @@ export const FeedPreview: React.FC = () => {
               prose-headings:font-bold prose-a:text-primary prose-a:no-underline hover:prose-a:underline
               prose-pre:bg-muted prose-pre:text-muted-foreground prose-pre:border prose-pre:border-border prose-pre:rounded-lg
             "
-            dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+            dangerouslySetInnerHTML={{ __html: contentWithHighlights }}
           />
         </div>
       </div>
+
+      <HighlightToolbar
+        position={toolbarPosition}
+        onClose={() => {
+            setToolbarPosition(null)
+            setSelectionRange(null)
+            window.getSelection()?.removeAllRanges()
+        }}
+        onColorSelect={(color) => {
+            if (item && selectionRange) {
+                createHighlight(item.id, selectionRange.text, selectionRange.start, selectionRange.end, color)
+                setToolbarPosition(null)
+                setSelectionRange(null)
+                window.getSelection()?.removeAllRanges()
+            }
+        }}
+        onAddNote={() => {
+             // Create yellow highlight then open note?
+             if (item && selectionRange) {
+                // Ideally create and then open editing.
+                // For MVP, just create with default yellow.
+                createHighlight(item.id, selectionRange.text, selectionRange.start, selectionRange.end, 'yellow')
+                setToolbarPosition(null)
+                setSelectionRange(null)
+                window.getSelection()?.removeAllRanges()
+                // TODO: Automatically open menu for the new highlight?
+             }
+        }}
+      />
+
+      {activeHighlightId && (
+          <HighlightMenu
+            position={highlightMenuPosition}
+            note={itemHighlights?.find(h => h.id === activeHighlightId)?.note || null}
+            color={itemHighlights?.find(h => h.id === activeHighlightId)?.color || 'yellow'}
+            onUpdateColor={(c) => updateHighlight(activeHighlightId, undefined, c)}
+            onUpdateNote={(n) => updateHighlight(activeHighlightId, n, undefined)}
+            onDelete={() => {
+                if (item) deleteHighlight(activeHighlightId, item.id)
+                setActiveHighlightId(null)
+            }}
+            onClose={() => setActiveHighlightId(null)}
+          />
+      )}
 
       {/* 速記區 (Quick Note) */}
       <div
