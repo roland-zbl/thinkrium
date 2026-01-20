@@ -14,6 +14,7 @@ import { initSettingsIPC } from './ipc/settings.ipc'
 import { initNoteIPC } from './ipc/note.ipc'
 import { initProjectIPC } from './ipc/project.ipc'
 import { initFolderIPC } from './ipc/folder.ipc'
+import { initHighlightIPC } from './ipc/highlight.ipc'
 import { initScheduler, stopScheduler } from './services/scheduler.service'
 import { setupAntiHotlinkBypass } from './services/anti-hotlink.service'
 
@@ -103,6 +104,10 @@ app.whenReady().then(async () => {
     // 初始化 Folder IPC
     initFolderIPC()
     console.log('Folder IPC initialized')
+
+    // 初始化 Highlight IPC
+    initHighlightIPC()
+    console.log('Highlight IPC initialized')
 
     // 初始化背景排程
     initScheduler()

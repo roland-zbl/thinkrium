@@ -25,6 +25,13 @@ const api = {
       ipcRenderer.invoke('folder:move', { id, newParentId }),
     list: () => ipcRenderer.invoke('folder:list')
   },
+  highlight: {
+    create: (data: any) => ipcRenderer.invoke('highlight:create', data),
+    update: (data: any) => ipcRenderer.invoke('highlight:update', data),
+    delete: (id: string) => ipcRenderer.invoke('highlight:delete', id),
+    listByItem: (feedItemId: string) => ipcRenderer.invoke('highlight:list-by-item', feedItemId),
+    listAll: () => ipcRenderer.invoke('highlight:list-all')
+  },
   dialog: {
     openFile: (options: any) => ipcRenderer.invoke('dialog:openFile', options)
   },

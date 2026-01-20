@@ -371,6 +371,38 @@ function runMigrations(database: Database.Database): void {
   } else {
     console.log(`[Database] Migration ${migrationFeedSearchName} already applied`)
   }
+
+  // 008_highlights
+  const migrationHighlightsName = '008_highlights'
+  const existingHighlights = database
+    .prepare('SELECT id FROM _migrations WHERE name = ?')
+    .get(migrationHighlightsName)
+
+  if (!existingHighlights) {
+    console.log(`[Database] Applying migration: ${migrationHighlightsName}`)
+    try {
+      database.exec(`
+        CREATE TABLE IF NOT EXISTS highlights (
+          id TEXT PRIMARY KEY,
+          feed_item_id TEXT NOT NULL,
+          text TEXT NOT NULL,
+          note TEXT,
+          color TEXT DEFAULT 'yellow',
+          start_offset INTEGER NOT NULL,
+          end_offset INTEGER NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (feed_item_id) REFERENCES feed_items(id) ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS idx_highlights_feed_item_id ON highlights(feed_item_id);
+      `)
+      database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationHighlightsName)
+      console.log(`[Database] Migration ${migrationHighlightsName} applied successfully`)
+    } catch (error) {
+      console.error(`[Database] Migration ${migrationHighlightsName} failed:`, error)
+    }
+  } else {
+    console.log(`[Database] Migration ${migrationHighlightsName} already applied`)
+  }
 }
 
 /**
