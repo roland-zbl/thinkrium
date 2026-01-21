@@ -36,10 +36,10 @@ const mockApi = {
   },
   highlight: {
     listByItem: vi.fn().mockResolvedValue({ success: true, data: [] }),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-    listAll: vi.fn()
+    create: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    update: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    delete: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    listAll: vi.fn().mockResolvedValue({ success: true, data: [] })
   },
   on: vi.fn(),
   off: vi.fn()
@@ -70,6 +70,7 @@ describe('FeedStore', () => {
 
     // Default successful responses
     mockApi.folder.list.mockResolvedValue({ success: true, data: [] })
+    mockApi.feed.listItems.mockResolvedValue({ success: true, data: [] })
     mockApi.highlight.listByItem.mockResolvedValue({ success: true, data: [] })
   })
 
