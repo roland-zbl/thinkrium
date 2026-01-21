@@ -15,20 +15,51 @@ export const NotePreview: React.FC = () => {
     invokeIPC(window.api.settings.get('notes.rootDir')).then(setRootDir)
   }, [])
 
-  const transformImageUri = (src: string): string => {
-    if (!src || src.startsWith('http') || src.startsWith('file://')) return src
-    if (!rootDir) return src
-    // Convert backslashes to forward slashes for URL compatibility
-    const cleanRoot = rootDir.replace(/\\/g, '/')
-    const cleanSrc = src.replace(/\\/g, '/')
-    return `file://${cleanRoot}/${cleanSrc}`
-  }
-
   // Prefer activeNote (full details) if available and matching selected ID,
   // otherwise fallback to note from list (summary)
   const note = (activeNote && activeNote.id === selectedNoteId)
     ? activeNote
     : notes.find((n) => n.id === selectedNoteId)
+
+  const transformImageUri = (src: string): string => {
+    if (!src || src.startsWith('http') || src.startsWith('file://')) return src
+    if (!rootDir) return src
+
+    try {
+      const cleanRoot = rootDir.replace(/\\/g, '/')
+
+      // Legacy support: if path starts with 'attachments/', assume it is relative to vault root
+      if (src.startsWith('attachments/')) {
+        const cleanSrc = src.replace(/\\/g, '/')
+        return `file://${cleanRoot}/${cleanSrc}`
+      }
+
+      // If note has file_path, resolve relative to it (Standard Markdown)
+      if (note && note.file_path) {
+        // Get directory of the note (relative to root)
+        const normalizedPath = note.file_path.replace(/\\/g, '/')
+        // Check if file is in a subdirectory
+        const lastSlashIndex = normalizedPath.lastIndexOf('/')
+        const noteDir = lastSlashIndex !== -1 ? normalizedPath.substring(0, lastSlashIndex) : ''
+
+        // Construct base URL for the note's directory
+        // Ensure proper file protocol syntax
+        // If noteDir is empty (root file), baseUrl ends with cleanRoot/
+        const baseUrl = noteDir ? `file://${cleanRoot}/${noteDir}/` : `file://${cleanRoot}/`
+
+        // Use URL API to resolve relative paths (handles ../ correctly)
+        const url = new URL(src, baseUrl)
+        return url.href
+      }
+
+      // Fallback for simple concatenation
+      const cleanSrc = src.replace(/\\/g, '/')
+      return `file://${cleanRoot}/${cleanSrc}`
+    } catch (error) {
+      console.error('Failed to transform image URI:', error)
+      return src
+    }
+  }
 
   if (note && note.content) {
     console.log('[NotePreview] Content to render:', note.content.substring(0, 500))
