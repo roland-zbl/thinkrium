@@ -39,26 +39,22 @@ export class FolderService {
   deleteFolder(id: string): void {
     const db = this.getDb()
     const transaction = db.transaction(() => {
+      console.log('[FolderService] Deleting folder:', id)
       // 1. Move feeds in this folder to root (folder_id = NULL)
-      db.prepare('UPDATE feeds SET folder_id = NULL WHERE folder_id = ?').run(id)
+      const feedRes = db.prepare('UPDATE feeds SET folder_id = NULL WHERE folder_id = ?').run(id)
+      console.log('[FolderService] Moved feeds:', feedRes.changes)
 
-      // 2. Move subfolders to root (parent_id = NULL) - Or delete cascading?
-      // Requirement says: "all subscriptions within are moved to the root level (not deleted)"
-      // It doesn't specify what happens to subfolders.
-      // Existing typical behavior is move them up or delete them.
-      // SQL schema has ON DELETE CASCADE for parent_id.
-      // So if we delete the folder, subfolders will be deleted by SQLite constraint!
-      // But we probably want to preserve content.
-      // Let's assume we should move subfolders to parent of deleted folder (or root).
-
-      // Check requirement: "deleteFolder(id): 刪除資料夾（訂閱移至根層級）"
-      // It implies flattening.
-
-      // To prevent cascade delete of subfolders, we must update them first.
-      db.prepare('UPDATE folders SET parent_id = NULL WHERE parent_id = ?').run(id)
+      // 2. Move subfolders to root (parent_id = NULL)
+      const folderRes = db.prepare('UPDATE folders SET parent_id = NULL WHERE parent_id = ?').run(id)
+      console.log('[FolderService] Moved subfolders:', folderRes.changes)
 
       // 3. Delete the folder
-      db.prepare('DELETE FROM folders WHERE id = ?').run(id)
+      const delRes = db.prepare('DELETE FROM folders WHERE id = ?').run(id)
+      console.log('[FolderService] Deleted folder:', delRes.changes)
+      
+      if (delRes.changes === 0) {
+          console.warn('[FolderService] No folder deleted! ID might be wrong or missing.')
+      }
     })
 
     transaction()

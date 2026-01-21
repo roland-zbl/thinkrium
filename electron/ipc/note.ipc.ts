@@ -16,6 +16,7 @@ export function initNoteIPC(): void {
   ipcMain.handle('note:save', (_, input: SaveNoteInput) =>
     handleIPC(async () => {
       try {
+        console.log('[NoteIPC] Saving note content preview:', input.content.substring(0, 500))
         return await noteService.saveNote(input)
       } catch (error: any) {
         console.error('[NoteIPC] Failed to save note:', error)

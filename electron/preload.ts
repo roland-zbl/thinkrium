@@ -56,6 +56,12 @@ const api = {
     updateStatus: (id: string, status: string) =>
       ipcRenderer.invoke('project:update-status', id, status)
   },
+  on: (channel: string, callback: (event: Electron.IpcRendererEvent, ...args: any[]) => void) => {
+    const subscription = (_event: Electron.IpcRendererEvent, ...args: any[]) => callback(_event, ...args)
+    ipcRenderer.on(channel, subscription)
+    return () => ipcRenderer.removeListener(channel, subscription)
+  },
+  off: (channel: string, callback: (...args: any[]) => void) => ipcRenderer.removeListener(channel, callback),
   // E2E Testing flag - allows renderer to skip setup checks
   isE2ETesting: process.env.E2E_TESTING === 'true'
 }

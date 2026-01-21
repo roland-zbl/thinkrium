@@ -16,6 +16,7 @@ export interface Note {
   type?: string
   projects?: string[]
   content?: string
+  quick_note?: string
 }
 
 export interface DbNote {

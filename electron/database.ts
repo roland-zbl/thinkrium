@@ -11,7 +11,7 @@ let db: Database.Database | null = null
  * - 在 userData 目錄建立或打開 knowledge-base.db
  * - 執行 schema migration
  */
-export function initDatabase(filename?: string, skipSeed = false): Database.Database {
+export function initDatabase(filename?: string, _skipSeed = false): Database.Database {
   if (db) {
     return db
   }
@@ -57,9 +57,9 @@ export function initDatabase(filename?: string, skipSeed = false): Database.Data
   }
 
   // 開發階段：插入種子數據
-  if (!skipSeed) {
-    seedTestData(db)
-  }
+  // if (!skipSeed) {
+  //   seedTestData(db)
+  // }
 
   console.log('[Database] Database initialized successfully')
   return db

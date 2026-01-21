@@ -46,19 +46,5 @@ export function initSettingsIPC(): void {
     })
   )
 
-  // 選擇檔案
-  ipcMain.handle('dialog:openFile', (_, options: any) =>
-    handleIPC(async () => {
-      const focusedWindow = BrowserWindow.getFocusedWindow()
-      const { canceled, filePaths } = await dialog.showOpenDialog(focusedWindow!, {
-        properties: ['openFile'],
-        title: '選擇檔案',
-        ...options
-      })
-      if (canceled) {
-        return null
-      }
-      return filePaths[0]
-    })
-  )
+// dialog:openFile moved to dialog.ipc.ts
 }

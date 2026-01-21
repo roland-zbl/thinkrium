@@ -1,9 +1,14 @@
+import { BrowserWindow } from 'electron'
 import { getDatabase } from '../database'
 import { fetchFeed } from './rss.service'
-import { Feed } from '@shared/types'
+import { Feed } from '../../src/shared/types/feed'
 import { randomUUID } from 'crypto'
 
 let schedulerInterval: NodeJS.Timeout | null = null
+
+function sendToAll(channel: string, ...args: any[]) {
+  BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(channel, ...args))
+}
 
 /**
  * 初始化排程服務
@@ -32,6 +37,7 @@ export function stopScheduler(): void {
  */
 async function runScheduledFetch(): Promise<void> {
   console.log('[Scheduler] Starting background fetch...')
+  sendToAll('scheduler:fetch-start')
   const db = getDatabase()
 
   try {
@@ -47,6 +53,8 @@ async function runScheduledFetch(): Promise<void> {
     console.log('[Scheduler] Background fetch completed')
   } catch (error) {
     console.error('[Scheduler] Error during background fetch:', error)
+  } finally {
+    sendToAll('scheduler:fetch-end')
   }
 }
 

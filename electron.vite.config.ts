@@ -23,7 +23,7 @@ export default defineConfig({
     }
   },
   preload: {
-    plugins: [externalizeDepsPlugin()],
+    plugins: [externalizeDepsPlugin({ exclude: ['@electron-toolkit/preload'] })],
     resolve: {
       alias: {
         '@shared': resolve('src/shared')

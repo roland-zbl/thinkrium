@@ -4,13 +4,17 @@ import { FilterBar } from '@/modules/library/components/FilterBar'
 import { NoteTable } from '@/modules/library/components/NoteTable'
 import { NotePreview } from '@/modules/library/components/NotePreview'
 import { useLibraryStore } from './store/library.store'
+import { useAppStore } from '@/stores/app.store'
 
 export const LibraryView: React.FC = () => {
   const { selectedNoteId, fetchNotes } = useLibraryStore()
+  const { currentView } = useAppStore()
 
   React.useEffect(() => {
-    fetchNotes()
-  }, [fetchNotes])
+    if (currentView === 'library') {
+      fetchNotes()
+    }
+  }, [fetchNotes, currentView])
 
   return (
     <div className="h-full w-full overflow-hidden flex flex-col bg-background">

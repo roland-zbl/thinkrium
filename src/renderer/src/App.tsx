@@ -2,9 +2,16 @@ import React from 'react'
 import { AppShell } from './components/layout/AppShell'
 import { SetupDialog } from './components/SetupDialog'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { GlobalLoadingIndicator } from './modules/feed/components/GlobalLoadingIndicator'
+import { useFeedStore } from './modules/feed/store/feed.store'
+import { Toaster } from '@/components/ui/Toast'
 
 const App: React.FC = () => {
   const [isSetupComplete, setIsSetupComplete] = React.useState<boolean | null>(null)
+
+  React.useEffect(() => {
+    useFeedStore.getState().initSchedulerListeners()
+  }, [])
 
   React.useEffect(() => {
     const checkSetup = async () => {
@@ -42,6 +49,8 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <AppShell />
+      <GlobalLoadingIndicator />
+      <Toaster />
     </ErrorBoundary>
   )
 }

@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger
 } from '@radix-ui/react-dropdown-menu'
 
+import { CreateFolderDialog } from './CreateFolderDialog'
+
 export const SubscriptionSidebar: React.FC = () => {
   const {
     subscriptions,
@@ -32,6 +34,7 @@ export const SubscriptionSidebar: React.FC = () => {
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
+  const [isCreateFolderDialogOpen, setIsCreateFolderDialogOpen] = useState(false)
   const [moveDialogState, setMoveDialogState] = useState<{ isOpen: boolean; subscriptionId: string | null }>({
     isOpen: false,
     subscriptionId: null
@@ -61,7 +64,7 @@ export const SubscriptionSidebar: React.FC = () => {
   }
 
   const handleMoveFeed = (subscriptionId: string) => {
-     setMoveDialogState({ isOpen: true, subscriptionId })
+    setMoveDialogState({ isOpen: true, subscriptionId })
   }
 
   // Wrap moveFeedToFolder to handle triggering dialog if target is not specified?
@@ -69,25 +72,25 @@ export const SubscriptionSidebar: React.FC = () => {
   // If we want FolderNode to open the dialog, we need to pass a handler that opens the dialog.
 
   const onMoveFeedRequest = (feedId: string, folderId: string | null) => {
-      // If folderId is explicitly null (Move to Root) or provided, we execute move.
-      // But if we want to open dialog, we need a different signal.
-      // However, FolderNode implementation currently has a hardcoded "Move to Root" menu item calling onMoveFeed(id, null).
-      // We should change FolderNode to have "Move to..." which triggers this dialog.
-      // For now, let's pass a handler that checks.
+    // If folderId is explicitly null (Move to Root) or provided, we execute move.
+    // But if we want to open dialog, we need a different signal.
+    // However, FolderNode implementation currently has a hardcoded "Move to Root" menu item calling onMoveFeed(id, null).
+    // We should change FolderNode to have "Move to..." which triggers this dialog.
+    // For now, let's pass a handler that checks.
 
-      // Wait, FolderNode was implemented to take `onMoveFeed: (feedId, folderId) => void`.
-      // I should update FolderNode to instead take `onRequestMove: (feedId) => void`
-      // OR interpret `folderId === undefined` as request to move?
+    // Wait, FolderNode was implemented to take `onMoveFeed: (feedId, folderId) => void`.
+    // I should update FolderNode to instead take `onRequestMove: (feedId) => void`
+    // OR interpret `folderId === undefined` as request to move?
 
-      // Let's keep `moveFeedToFolder` (direct action) passed to FolderNode for "Move to Root" if we keep it,
-      // but ideally we replace "Move to Root" with "Move..." opening the dialog.
+    // Let's keep `moveFeedToFolder` (direct action) passed to FolderNode for "Move to Root" if we keep it,
+    // but ideally we replace "Move to Root" with "Move..." opening the dialog.
 
-      // Let's update `FolderNode` to accept `onMoveRequest`.
-      if (folderId !== undefined) {
-          moveFeedToFolder(feedId, folderId)
-      } else {
-          setMoveDialogState({ isOpen: true, subscriptionId: feedId })
-      }
+    // Let's update `FolderNode` to accept `onMoveRequest`.
+    if (folderId !== undefined) {
+      moveFeedToFolder(feedId, folderId)
+    } else {
+      setMoveDialogState({ isOpen: true, subscriptionId: feedId })
+    }
   }
 
   const handleCreateFolder = () => {
@@ -105,11 +108,11 @@ export const SubscriptionSidebar: React.FC = () => {
         </span>
         <div className="flex items-center gap-1">
           <button
-            onClick={handleCreateFolder}
+            onClick={() => setIsCreateFolderDialogOpen(true)}
             className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded text-muted-foreground transition-colors"
-            title="New Folder"
+            title="新增資料夾"
           >
-             <FolderPlus size={18} />
+            <FolderPlus size={18} />
           </button>
 
           <DropdownMenu>
@@ -169,100 +172,101 @@ export const SubscriptionSidebar: React.FC = () => {
 
         {/* Folder Tree */}
         <div className="mt-2">
-           {rootFolders.map(folder => (
-               <FolderNode
-                  key={folder.id}
-                  folder={folder}
-                  depth={0}
-                  allFolders={folders}
-                  allSubscriptions={subscriptions}
-                  onRename={renameFolder}
-                  onDelete={deleteFolder}
-                  onCreateSubfolder={createFolder}
-                  onMoveFeed={(id, folderId) => {
-                      if (folderId === null) moveFeedToFolder(id, null)
-                      else setMoveDialogState({ isOpen: true, subscriptionId: id })
-                  }}
-               />
-           ))}
+          {rootFolders.map(folder => (
+            <FolderNode
+              key={folder.id}
+              folder={folder}
+              depth={0}
+              allFolders={folders}
+              allSubscriptions={subscriptions}
+              onRename={renameFolder}
+              onDelete={deleteFolder}
+              onCreateSubfolder={createFolder}
+              onMoveFeed={(id, folderId) => {
+                if (folderId === null) moveFeedToFolder(id, null)
+                else setMoveDialogState({ isOpen: true, subscriptionId: id })
+              }}
+            />
+          ))}
         </div>
 
         {/* Root Subscriptions */}
         <div className="mt-2">
-            {rootSubscriptions.map((sub) => (
-                <div
-                  key={sub.id}
-                  className={cn(
-                    'flex items-center justify-between px-2 py-1.5 text-sm transition-colors cursor-pointer group rounded-sm mx-2',
-                    activeSubscriptionId === sub.id
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'
-                  )}
-                   // Root items indent same as folders (depth 0, padding 8px) + icon space
-                   style={{ paddingLeft: '8px' }}
-                  onClick={() => setActiveSubscription(sub.id)}
-                >
-                  <div className="flex items-center gap-3 truncate flex-1 min-w-0">
-                     {sub.icon_url ? (
-                        <img src={sub.icon_url} className="w-4 h-4 rounded-sm" />
-                    ) : (
-                        <div className="w-4 h-4 rounded-sm bg-muted shrink-0" />
-                    )}
-                    <span className="truncate">{sub.name}</span>
-                  </div>
+          {rootSubscriptions.map((sub) => (
+            <div
+              key={sub.id}
+              className={cn(
+                'flex items-center justify-between px-2 py-1.5 text-sm transition-colors cursor-pointer group rounded-sm mx-2',
+                activeSubscriptionId === sub.id
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'
+              )}
+              // Root items indent same as folders (depth 0, padding 8px) + icon space
+              style={{ paddingLeft: '8px' }}
+              onClick={() => setActiveSubscription(sub.id)}
+            >
+              <div className="flex items-center gap-3 truncate flex-1 min-w-0">
+                {sub.icon_url ? (
+                  <img src={sub.icon_url} className="w-4 h-4 rounded-sm" />
+                ) : (
+                  <div className="w-4 h-4 rounded-sm bg-muted shrink-0" />
+                )}
+                <span className="truncate">{sub.name}</span>
+              </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    {sub.unreadCount > 0 && (
-                      <span className="text-xs bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary min-w-[20px] text-center">
-                        {sub.unreadCount}
-                      </span>
-                    )}
+              <div className="flex items-center gap-2 shrink-0">
+                {sub.unreadCount > 0 && (
+                  <span className="text-xs bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary min-w-[20px] text-center">
+                    {sub.unreadCount}
+                  </span>
+                )}
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded text-muted-foreground transition-all"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreHorizontal size={14} />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        className="z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
-                        align="end"
-                      >
-                         <DropdownMenuItem
-                          className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
-                          onClick={(e) => {
-                              e.stopPropagation()
-                              setMoveDialogState({ isOpen: true, subscriptionId: sub.id })
-                          }}
-                        >
-                           <FolderPlus className="mr-2 h-4 w-4" />
-                           <span>Move to...</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-destructive focus:text-destructive-foreground"
-                          onClick={(e) => handleDeleteFeed(e, sub.id)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          <span>Delete</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              ))}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded text-muted-foreground transition-all"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreHorizontal size={14} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+                    align="end"
+                  >
+                    <DropdownMenuItem
+                      className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setMoveDialogState({ isOpen: true, subscriptionId: sub.id })
+                      }}
+                    >
+                      <FolderPlus className="mr-2 h-4 w-4" />
+                      <span>Move to...</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-destructive focus:text-destructive-foreground"
+                      onClick={(e) => handleDeleteFeed(e, sub.id)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Delete</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
       <AddSubscriptionDialog isOpen={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} />
       <ImportOpmlDialog isOpen={isImportDialogOpen} onClose={() => setIsImportDialogOpen(false)} />
+      <CreateFolderDialog isOpen={isCreateFolderDialogOpen} onClose={() => setIsCreateFolderDialogOpen(false)} />
       {moveDialogState.subscriptionId && (
         <MoveSubscriptionDialog
-            isOpen={moveDialogState.isOpen}
-            onClose={() => setMoveDialogState({ ...moveDialogState, isOpen: false })}
-            subscriptionId={moveDialogState.subscriptionId}
+          isOpen={moveDialogState.isOpen}
+          onClose={() => setMoveDialogState({ ...moveDialogState, isOpen: false })}
+          subscriptionId={moveDialogState.subscriptionId}
         />
       )}
     </div>

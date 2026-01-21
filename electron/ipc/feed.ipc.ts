@@ -3,7 +3,7 @@ import { Feed, FeedItem, ItemFilter } from '@shared/types'
 import { feedService } from '../services/feed.service'
 import { opmlService } from '../services/opml.service'
 import { handleIPC } from '../utils/ipc-wrapper'
-import { readFileSync, writeFileSync } from 'fs'
+// import { readFileSync, writeFileSync } from 'fs' // Removed sync imports
 import { randomUUID } from 'crypto'
 
 /**
@@ -13,8 +13,9 @@ export function initFeedIPC(): void {
   // --- OPML Import/Export ---
 
   ipcMain.handle('feed:import-opml', (_, filePath: string) =>
-    handleIPC(() => {
-      const content = readFileSync(filePath, 'utf-8')
+    handleIPC(async () => {
+      const { readFile } = await import('fs/promises')
+      const content = await readFile(filePath, 'utf-8')
       const feeds = opmlService.parseOpml(content)
       const result = {
         added: 0,
@@ -67,7 +68,8 @@ export function initFeedIPC(): void {
       })
 
       if (filePath) {
-        writeFileSync(filePath, opmlContent, 'utf-8')
+        const { writeFile } = await import('fs/promises')
+        await writeFile(filePath, opmlContent, 'utf-8')
         return true
       }
       return false

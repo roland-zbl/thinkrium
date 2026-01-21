@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify'
 import { create } from 'zustand'
 import { ItemFilter, FeedItem as DbFeedItem, Folder, SearchOptions, SearchResult, Highlight, HighlightColor } from '@/types'
 import { turndown } from '@/lib/turndown'
@@ -73,10 +74,14 @@ interface FeedState {
   // Search State
   searchQuery: string
   isSearching: boolean
-  searchResults: FeedItem[]
+  searchResults: SearchResult[]
   searchScope: 'all' | 'current'
 
+  // State
+  isFetching: boolean
+
   // Actions
+  initSchedulerListeners: () => void
   fetchSubscriptions: () => Promise<void>
   fetchFolders: () => Promise<void>
   fetchItems: () => Promise<void>
@@ -87,7 +92,7 @@ interface FeedState {
   setActiveSubscription: (id: string | null) => void
   setActiveFolder: (id: string | null) => void
   markAsRead: (id: string) => Promise<void>
-  saveItem: (id: string) => Promise<string | undefined>
+  saveItem: (id: string, note?: string) => Promise<string | undefined>
   toggleAutoHideRead: () => void
   saveQuickNote: (itemId: string, note: string) => Promise<void>
   importOpml: (filePath: string) => Promise<{ added: number; skipped: number; errors: string[] } | undefined>
@@ -129,6 +134,21 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   isSearching: false,
   searchResults: [],
   searchScope: 'all',
+  isFetching: false,
+
+  initSchedulerListeners: () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const api = (window as any).api
+    if (api && api.on) {
+        api.on('scheduler:fetch-start', () => {
+            useFeedStore.setState({ isFetching: true })
+        })
+        api.on('scheduler:fetch-end', () => {
+            useFeedStore.setState({ isFetching: false })
+            useFeedStore.getState().fetchItems()
+        })
+    }
+  },
 
   fetchFolders: async () => {
     try {
@@ -145,6 +165,9 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       // But log the error.
       const feeds = await invokeIPC(window.api.feed.listFeeds(), { showErrorToast: false })
       const folders = await invokeIPC(window.api.folder.list(), { showErrorToast: false })
+
+      console.log('[Store] Fetched feeds:', feeds)
+      console.log('[Store] Fetched folders:', folders)
 
       // 需要計算未讀數，這裡暫時簡化，後續可以優化 SQL
       const subscriptions = feeds.map((f) => ({
@@ -217,16 +240,16 @@ export const useFeedStore = create<FeedState>((set, get) => ({
 
       // 轉換 DB 格式到 Store 格式
       const feedItems: FeedItem[] = items.map((i: DbFeedItem) => {
-        const cleanSummary = stripHtml(i.content || '').substring(0, 150)
-        const thumbnail = extractFirstImage(i.content || '')
+        const cleanSummary = i.content ? stripHtml(i.content).substring(0, 150) : ''
+        const thumbnail = i.content ? extractFirstImage(i.content) : undefined
         return {
           id: i.id,
           title: i.title,
           source: get().subscriptions.find((s) => s.id === i.feed_id)?.name || 'Unknown',
           date: i.published_at,
-          status: i.status,
+          status: i.status as any,
           summary: cleanSummary,
-          content: i.content,
+          content: i.content, // Keep raw content
           feed_id: i.feed_id,
           link: i.url,
           thumbnail,
@@ -394,7 +417,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     }
   },
 
-  saveItem: async (id) => {
+  saveItem: async (id, personalNote) => {
     const item = get().items.find((i) => i.id === id)
     if (!item) return undefined
 
@@ -408,7 +431,8 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         sourceUrl: item.id,
         sourceType: 'rss',
         sourceItemId: item.id,
-        tags: ['rss']
+        tags: ['rss'],
+        personalNote: personalNote || item.quickNote
       }), { showErrorToast: false })
 
       set((state) => ({

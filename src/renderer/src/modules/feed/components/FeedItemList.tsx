@@ -11,7 +11,8 @@ export const FeedItemList: React.FC = () => {
     filter,
     selectedItemId,
     selectItem,
-    recentlyReadIds
+    recentlyReadIds,
+    autoHideRead
   } = useFeedStore()
   const parentRef = useRef<HTMLDivElement>(null)
 
@@ -21,15 +22,30 @@ export const FeedItemList: React.FC = () => {
     return items.filter((item) => {
       // 使用 feed_id 直接比對，而非透過 source 名稱
       const matchSub = activeSubscriptionId ? item.feed_id === activeSubscriptionId : true
-      const matchStatus =
-        filter === 'all'
-          ? true
-          : filter === 'unread'
-            ? item.status === 'unread' || recentlyReadIds.has(item.id)
-            : item.status === 'saved'
+
+      let matchStatus = true
+      if (filter === 'unread') {
+        matchStatus = item.status === 'unread' || recentlyReadIds.has(item.id)
+      } else if (filter === 'saved') {
+        matchStatus = item.status === 'saved'
+      } else {
+        // filter === 'all'
+        // If autoHideRead is strictly for 'unread' filter, then this block is mostly pass-through.
+        // BUT if user expects 'Checkmark' button (autoHideRead) to work in 'All' view too?
+        // Usually 'All' means All history.
+        // However, if the button is a toggle "Hide Read", it should probably apply.
+        // Let's assume user wants 'Hide Read' behavior globally if enabled?
+        // The Store says `toggleAutoHideRead`.
+        // Let's check `autoHideRead` logic in store... it only affects `recentlyReadIds`.
+        // If I change it here to filter read items, it matches user expectation.
+        if (autoHideRead) {
+          matchStatus = item.status === 'unread' || recentlyReadIds.has(item.id)
+        }
+      }
+
       return matchSub && matchStatus
     })
-  }, [items, activeSubscriptionId, filter, recentlyReadIds])
+  }, [items, activeSubscriptionId, filter, recentlyReadIds, autoHideRead])
 
   const virtualizer = useVirtualizer({
     count: filteredItems.length,

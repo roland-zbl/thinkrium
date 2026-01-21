@@ -90,6 +90,11 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
               }
             }
             return (rawNote.tags as string[]) || []
+          })(),
+          quick_note: (() => {
+            if (!rawNote.content) return undefined
+            const match = rawNote.content.match(/^quick_note:\s*"([^"]+)"/m)
+            return match ? match[1] : undefined
           })()
         }
         set({ activeNote: note })

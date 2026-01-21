@@ -119,7 +119,9 @@ export async function fetchFeed(url: string): Promise<ParsedFeed> {
           link: item.link,
           content: fullContent,
           creator: item.creator || item.author || '',
-          pubDate: item.pubDate || item.isoDate
+          pubDate: (item.pubDate || item.isoDate) 
+            ? new Date(item.pubDate || item.isoDate!).toISOString() 
+            : new Date().toISOString()
         }
       })
     }

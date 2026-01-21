@@ -14,7 +14,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
+  DropdownMenuPortal
 } from '@radix-ui/react-dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useFeedStore, Subscription } from '../store/feed.store'
@@ -130,46 +131,48 @@ export const FolderNode: React.FC<FolderNodeProps> = ({
                 <MoreHorizontal size={14} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
-              align="start"
-            >
-              <DropdownMenuItem
-                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  const name = prompt('Enter new name:', folder.name)
-                  if (name && name !== folder.name) onRename(folder.id, name)
-                }}
+            <DropdownMenuPortal>
+              <DropdownMenuContent
+                className="z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+                align="start"
               >
-                <Edit2 className="mr-2 h-4 w-4" />
-                <span>Rename</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
-                onClick={(e) => {
+                <DropdownMenuItem
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    const name = prompt('Enter new name:', folder.name)
+                    if (name && name !== folder.name) onRename(folder.id, name)
+                  }}
+                >
+                  <Edit2 className="mr-2 h-4 w-4" />
+                  <span>Rename</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                  onClick={(e) => {
                     e.stopPropagation()
                     const name = prompt('Enter subfolder name:')
-                    if(name) onCreateSubfolder(name, folder.id)
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                <span>New Subfolder</span>
-              </DropdownMenuItem>
+                    if (name) onCreateSubfolder(name, folder.id)
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span>New Subfolder</span>
+                </DropdownMenuItem>
 
-               <DropdownMenuSeparator className="my-1 h-px bg-muted" />
+                <DropdownMenuSeparator className="my-1 h-px bg-muted" />
 
-              <DropdownMenuItem
-                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-destructive focus:text-destructive-foreground"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (confirm('Are you sure you want to delete this folder? Subscriptions will be moved to root.')) onDelete(folder.id)
-                }}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                <span>Delete</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
+                <DropdownMenuItem
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-destructive focus:text-destructive-foreground"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (confirm('Are you sure you want to delete this folder? Subscriptions will be moved to root.')) onDelete(folder.id)
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  <span>Delete</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenuPortal>
           </DropdownMenu>
         </div>
       </div>
@@ -191,56 +194,56 @@ export const FolderNode: React.FC<FolderNodeProps> = ({
           ))}
           {childSubscriptions.map((sub) => (
             <div
-                key={sub.id}
-                className={cn(
-                    'flex items-center justify-between px-2 py-1.5 text-sm transition-colors cursor-pointer group rounded-sm mx-2',
-                    activeSubscriptionId === sub.id
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'
-                )}
-                style={{ paddingLeft: `${(depth + 1) * 12 + 24}px` }}
-                onClick={(e) => {
-                    e.stopPropagation()
-                    setActiveSubscription(sub.id)
-                }}
+              key={sub.id}
+              className={cn(
+                'flex items-center justify-between px-2 py-1.5 text-sm transition-colors cursor-pointer group rounded-sm mx-2',
+                activeSubscriptionId === sub.id
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'
+              )}
+              style={{ paddingLeft: `${(depth + 1) * 12 + 24}px` }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setActiveSubscription(sub.id)
+              }}
             >
-                <div className="flex items-center gap-2 truncate flex-1 min-w-0">
-                    {sub.icon_url ? (
-                        <img src={sub.icon_url} className="w-4 h-4 rounded-sm" />
-                    ) : (
-                        <div className="w-4 h-4 rounded-sm bg-muted shrink-0" />
-                    )}
-                    <span className="truncate">{sub.name}</span>
-                </div>
-                 {sub.unreadCount > 0 && (
-                      <span className="text-xs bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary min-w-[20px] text-center shrink-0">
-                        {sub.unreadCount}
-                      </span>
+              <div className="flex items-center gap-2 truncate flex-1 min-w-0">
+                {sub.icon_url ? (
+                  <img src={sub.icon_url} className="w-4 h-4 rounded-sm" />
+                ) : (
+                  <div className="w-4 h-4 rounded-sm bg-muted shrink-0" />
                 )}
+                <span className="truncate">{sub.name}</span>
+              </div>
+              {sub.unreadCount > 0 && (
+                <span className="text-xs bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary min-w-[20px] text-center shrink-0">
+                  {sub.unreadCount}
+                </span>
+              )}
 
-                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded text-muted-foreground transition-all"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreHorizontal size={14} />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
-                      align="start"
-                    >
-                      <DropdownMenuItem
-                        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            onMoveFeed(sub.id, null) // Move to root
-                        }}
-                      >
-                         <span>Move to Root</span>
-                      </DropdownMenuItem>
-                      {/* Simple "Move to..." logic could be complex (submenu for folders).
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded text-muted-foreground transition-all"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreHorizontal size={14} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+                  align="start"
+                >
+                  <DropdownMenuItem
+                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onMoveFeed(sub.id, null) // Move to root
+                    }}
+                  >
+                    <span>Move to Root</span>
+                  </DropdownMenuItem>
+                  {/* Simple "Move to..." logic could be complex (submenu for folders).
                           For MVP, maybe just "Move to Root" is enough if D&D is optional?
                           Or we can list top-level folders?
                           Let's stick to simple "Move to Root" here and rely on D&D or better UI later
@@ -249,8 +252,8 @@ export const FolderNode: React.FC<FolderNodeProps> = ({
                           This implies selecting a folder.
                           Ideally, we show a dialog or a submenu.
                       */}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ))}
         </div>

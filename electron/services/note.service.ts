@@ -250,13 +250,21 @@ export class NoteService {
       `source_url: "${frontmatter.source_url || ''}"`,
       `source_type: ${frontmatter.source_type}`,
       `tags: [${(frontmatter.tags || []).map((t: string) => `"${t}"`).join(', ')}]`,
-      `aliases: [${(frontmatter.aliases || []).map((a: string) => `"${a}"`).join(', ')}]`,
-      '---'
+      `aliases: [${(frontmatter.aliases || []).map((a: string) => `"${a}"`).join(', ')}]`
     ]
+
+    if (personalNote) {
+       // Escape double quotes and remove newlines for simple frontmatter string, 
+       // or use block scalar if multiline. For simplicity here:
+       const safeNote = personalNote.replace(/"/g, '\\"').replace(/\n/g, ' ')
+       yamlLines.push(`quick_note: "${safeNote}"`)
+    }
+
+    yamlLines.push('---')
 
     const yaml = yamlLines.join('\n')
 
-    return `${yaml}\n\n## 原文內容\n\n${content}\n\n${personalNote ? `## 個人筆記\n\n${personalNote}` : ''}`
+    return `${yaml}\n\n## 原文內容\n\n${content}`
   }
 
   private sanitizeFileName(name: string): string {

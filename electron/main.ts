@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 // icon import 僅在打包時使用，開發階段可選
@@ -15,6 +15,7 @@ import { initNoteIPC } from './ipc/note.ipc'
 import { initProjectIPC } from './ipc/project.ipc'
 import { initFolderIPC } from './ipc/folder.ipc'
 import { initHighlightIPC } from './ipc/highlight.ipc'
+import { initDialogIPC } from './ipc/dialog.ipc'
 import { initScheduler, stopScheduler } from './services/scheduler.service'
 import { setupAntiHotlinkBypass } from './services/anti-hotlink.service'
 
@@ -28,8 +29,8 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-      webSecurity: !is.dev // 僅開發環境關閉
+      sandbox: true,
+      webSecurity: true // 強制開啟 Web 安全性
     }
   })
 
@@ -109,10 +110,18 @@ app.whenReady().then(async () => {
     initHighlightIPC()
     console.log('Highlight IPC initialized')
 
+    // 初始化 Dialog IPC
+    initDialogIPC()
+    console.log('Dialog IPC initialized')
+
     // 初始化背景排程
     initScheduler()
   } catch (error) {
     console.error('Failed to initialize database:', error)
+    dialog.showErrorBox(
+      'Initialization Error',
+      `Failed to initialize database (and skipping IPC init): ${error}\n\nPlease report this error.`
+    )
   }
 
   // Set app user model id for windows

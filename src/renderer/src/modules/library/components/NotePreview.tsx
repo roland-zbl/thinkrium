@@ -15,6 +15,10 @@ export const NotePreview: React.FC = () => {
     ? activeNote
     : notes.find((n) => n.id === selectedNoteId)
 
+  if (note && note.content) {
+    console.log('[NotePreview] Content to render:', note.content.substring(0, 500))
+  }
+
   if (!note) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-muted-foreground bg-white/40 dark:bg-black/20 backdrop-blur">
@@ -26,7 +30,7 @@ export const NotePreview: React.FC = () => {
 
   return (
     <div
-      className="h-full flex flex-col border-l relative bg-card border-border"
+      className="h-full flex flex-col border-l relative bg-card border-border min-h-0"
     >
       {/* 工具欄 */}
       <div
@@ -85,6 +89,17 @@ export const NotePreview: React.FC = () => {
           </div>
         </div>
 
+        {note.quick_note && (
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
+            <h4 className="text-[10px] uppercase font-bold text-yellow-600 dark:text-yellow-400 tracking-wider mb-2">
+              速記 (Quick Note)
+            </h4>
+            <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
+              {note.quick_note}
+            </p>
+          </div>
+        )}
+
         <div className="py-6 space-y-4">
           <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
             關聯專案
@@ -112,11 +127,13 @@ export const NotePreview: React.FC = () => {
           </h4>
           <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed">
             {note.content ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {note.content.replace(/^---[\s\S]+?---\n*/, '')}
+              </ReactMarkdown>
             ) : (
-               <p className="text-muted-foreground italic">
-                 {activeNote && activeNote.id === selectedNoteId ? '(無內容)' : '正在載入內容...'}
-               </p>
+              <p className="text-muted-foreground italic">
+                {activeNote && activeNote.id === selectedNoteId ? '(無內容)' : '正在載入內容...'}
+              </p>
             )}
           </div>
         </div>
