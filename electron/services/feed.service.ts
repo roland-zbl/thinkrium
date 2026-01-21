@@ -112,6 +112,22 @@ export class FeedService {
     ).run(itemId)
   }
 
+  markItemAsSaved(itemId: string): void {
+    this.getDb().prepare(`
+      UPDATE feed_items
+      SET status = 'saved', read_at = COALESCE(read_at, CURRENT_TIMESTAMP)
+      WHERE id = ?
+    `).run(itemId)
+  }
+
+  markItemAsUnsaved(itemId: string): void {
+    this.getDb().prepare(`
+      UPDATE feed_items
+      SET status = 'read'
+      WHERE id = ?
+    `).run(itemId)
+  }
+
   saveQuickNote(itemId: string, note: string): void {
     this.getDb().prepare(
       `

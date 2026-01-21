@@ -129,6 +129,20 @@ export function initFeedIPC(): void {
     })
   )
 
+  // 標記為已保存
+  ipcMain.handle('feed:items:mark-saved', (_, itemId: string) =>
+    handleIPC((): void => {
+      feedService.markItemAsSaved(itemId)
+    })
+  )
+
+  // 取消保存
+  ipcMain.handle('feed:items:mark-unsaved', (_, itemId: string) =>
+    handleIPC((): void => {
+      feedService.markItemAsUnsaved(itemId)
+    })
+  )
+
   // 保存 Quick Note
   ipcMain.handle('feed:save-quick-note', (_, { itemId, note }: { itemId: string; note: string }) =>
     handleIPC((): void => {

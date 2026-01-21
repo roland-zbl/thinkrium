@@ -105,4 +105,32 @@ describe('Feed Service', () => {
     expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining('quick_note = ?'))
     expect(stmtMock.run).toHaveBeenCalledWith(note, itemId)
   })
+
+  it('markItemAsSaved should update status to saved', () => {
+    const stmtMock = {
+      run: vi.fn()
+    }
+    vi.spyOn(db, 'prepare').mockReturnValue(stmtMock as any)
+
+    const itemId = 'item-123'
+    feedService.markItemAsSaved(itemId)
+
+    expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining('UPDATE feed_items'))
+    expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining("status = 'saved'"))
+    expect(stmtMock.run).toHaveBeenCalledWith(itemId)
+  })
+
+  it('markItemAsUnsaved should update status to read', () => {
+    const stmtMock = {
+      run: vi.fn()
+    }
+    vi.spyOn(db, 'prepare').mockReturnValue(stmtMock as any)
+
+    const itemId = 'item-123'
+    feedService.markItemAsUnsaved(itemId)
+
+    expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining('UPDATE feed_items'))
+    expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining("status = 'read'"))
+    expect(stmtMock.run).toHaveBeenCalledWith(itemId)
+  })
 })

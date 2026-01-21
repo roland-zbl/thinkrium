@@ -260,6 +260,15 @@ export const FeedPreview: React.FC = () => {
           >
             <FolderPlus size={20} />
           </button>
+          {item.status === 'saved' && (
+            <button
+              onClick={() => unsaveItem(item.id)}
+              className="p-2 hover:text-destructive text-muted-foreground transition-colors"
+              title="取消保存"
+            >
+              <Bookmark size={20} className="fill-current" />
+            </button>
+          )}
           <button
             onClick={handleSave}
             className={cn(

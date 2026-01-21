@@ -92,6 +92,7 @@ interface FeedState {
   setActiveFolder: (id: string | null) => void
   markAsRead: (id: string) => Promise<void>
   saveItem: (id: string, note?: string) => Promise<string | undefined>
+  unsaveItem: (id: string) => Promise<void>
   toggleAutoHideRead: () => void
   saveQuickNote: (itemId: string, note: string) => Promise<void>
   importOpml: (filePath: string) => Promise<{ added: number; skipped: number; errors: string[] } | undefined>
@@ -416,6 +417,27 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     }
   },
 
+  unsaveItem: async (id) => {
+    try {
+      await invokeIPC(window.api.feed.markAsUnsaved(id), { showErrorToast: false })
+      set((state) => ({
+        items: state.items.map((i) => (i.id === id ? { ...i, status: 'read' } : i))
+      }))
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Item unsaved'
+      })
+    } catch (error) {
+      console.error('Failed to unsave item:', error)
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to unsave item',
+        description: msg
+      })
+    }
+  },
+
   saveItem: async (id, personalNote) => {
     const item = get().items.find((i) => i.id === id)
     if (!item) return undefined
@@ -437,6 +459,8 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       set((state) => ({
         items: state.items.map((i) => (i.id === id ? { ...i, status: 'saved' } : i))
       }))
+
+      await invokeIPC(window.api.feed.markAsSaved(id), { showErrorToast: false })
 
       useToastStore.getState().addToast({
         type: 'success',
