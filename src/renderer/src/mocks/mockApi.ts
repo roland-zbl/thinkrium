@@ -90,7 +90,7 @@ export const mockApi = {
       console.log('[MockAPI] Fetching feed:', feedId)
       return success({ count: Math.floor(Math.random() * 10) })
     },
-    saveQuickNote: async (itemId: string, note: string) => {
+    saveQuickNote: async (_itemId: string, _note: string) => {
         await delay(100)
         return success(undefined)
     },

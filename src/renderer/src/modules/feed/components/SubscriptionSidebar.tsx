@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, ListFilter, Hash, Trash2, MoreHorizontal, FileUp, FileDown, FolderPlus } from 'lucide-react'
+import { Plus, ListFilter, Trash2, MoreHorizontal, FileUp, FileDown, FolderPlus } from 'lucide-react'
 import { useFeedStore } from '../store/feed.store'
 import { cn } from '@/lib/utils'
 import { AddSubscriptionDialog } from './AddSubscriptionDialog'
@@ -63,42 +63,6 @@ export const SubscriptionSidebar: React.FC = () => {
     }
   }
 
-  const handleMoveFeed = (subscriptionId: string) => {
-    setMoveDialogState({ isOpen: true, subscriptionId })
-  }
-
-  // Wrap moveFeedToFolder to handle triggering dialog if target is not specified?
-  // Actually FolderNode uses onMoveFeed prop.
-  // If we want FolderNode to open the dialog, we need to pass a handler that opens the dialog.
-
-  const onMoveFeedRequest = (feedId: string, folderId: string | null) => {
-    // If folderId is explicitly null (Move to Root) or provided, we execute move.
-    // But if we want to open dialog, we need a different signal.
-    // However, FolderNode implementation currently has a hardcoded "Move to Root" menu item calling onMoveFeed(id, null).
-    // We should change FolderNode to have "Move to..." which triggers this dialog.
-    // For now, let's pass a handler that checks.
-
-    // Wait, FolderNode was implemented to take `onMoveFeed: (feedId, folderId) => void`.
-    // I should update FolderNode to instead take `onRequestMove: (feedId) => void`
-    // OR interpret `folderId === undefined` as request to move?
-
-    // Let's keep `moveFeedToFolder` (direct action) passed to FolderNode for "Move to Root" if we keep it,
-    // but ideally we replace "Move to Root" with "Move..." opening the dialog.
-
-    // Let's update `FolderNode` to accept `onMoveRequest`.
-    if (folderId !== undefined) {
-      moveFeedToFolder(feedId, folderId)
-    } else {
-      setMoveDialogState({ isOpen: true, subscriptionId: feedId })
-    }
-  }
-
-  const handleCreateFolder = () => {
-    const name = prompt('Enter folder name:')
-    if (name) {
-      createFolder(name)
-    }
-  }
 
   return (
     <div className="h-full flex flex-col bg-card border-border select-none">

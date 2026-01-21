@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { Note, DbProject, Feed, FeedItem, ItemFilter, DbNote, Folder, SearchOptions, SearchResult, CreateHighlightDTO, UpdateHighlightDTO, Highlight } from './types'
+import { Note, DbProject, Feed, FeedItem, ItemFilter, DbNote, Folder, SearchOptions, SearchResult, CreateHighlightDTO, UpdateHighlightDTO, Highlight, SaveNoteInput } from './types'
 import { IPCResult } from '@shared/types/ipc'
 
 declare global {
@@ -42,7 +42,7 @@ declare global {
         selectDirectory: () => Promise<IPCResult<string | null>>
       }
       note: {
-        save: (input: Partial<Note> & { content?: string, sourceUrl?: string, sourceType?: string, sourceItemId?: string }) => Promise<IPCResult<Note>>
+        save: (input: SaveNoteInput) => Promise<IPCResult<Note>>
         list: (filter?: any) => Promise<IPCResult<DbNote[]>>
         get: (id: string) => Promise<IPCResult<DbNote>>
         update: (id: string, updates: Partial<Note>) => Promise<IPCResult<Note>>
