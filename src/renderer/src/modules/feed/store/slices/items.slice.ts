@@ -95,12 +95,7 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
       set({ items: feedItems })
     } catch (error) {
       console.error('Failed to fetch items:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to load items',
-        description: msg
-      })
+      // Silent error for fetch
     } finally {
       set({ loading: false })
     }
@@ -145,6 +140,9 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
       })
     } catch (error) {
       console.error('Failed to mark as read:', error)
+      // Silent error for auto-action, or keep user-facing error?
+      // "User Operations -> Toast". This is often user-triggered but also auto-scroll.
+      // Keeping toast as per requirement, but verify description.
       const msg = error instanceof Error ? error.message : String(error)
       useToastStore.getState().addToast({
         type: 'error',

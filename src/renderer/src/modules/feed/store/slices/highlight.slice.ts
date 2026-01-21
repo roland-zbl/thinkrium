@@ -49,10 +49,11 @@ export const createHighlightSlice: StateCreator<FeedState, [], [], HighlightSlic
         color,
         start_offset: start,
         end_offset: end
-      }))
+      }), { showErrorToast: false })
     } catch (error) {
       console.error('Failed to create highlight:', error)
-      useToastStore.getState().addToast({ type: 'error', title: 'Failed to create highlight' })
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({ type: 'error', title: 'Failed to create highlight', description: msg })
       // Revert optimism
       set((state) => {
         const newMap = new Map(state.highlights)
@@ -89,10 +90,11 @@ export const createHighlightSlice: StateCreator<FeedState, [], [], HighlightSlic
     })
 
     try {
-      await invokeIPC(window.api.highlight.update({ id, note, color }))
+      await invokeIPC(window.api.highlight.update({ id, note, color }), { showErrorToast: false })
     } catch (error) {
       console.error('Failed to update highlight:', error)
-      useToastStore.getState().addToast({ type: 'error', title: 'Failed to update highlight' })
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({ type: 'error', title: 'Failed to update highlight', description: msg })
       // Revert
       set((state) => {
         const newMap = new Map(state.highlights)
@@ -117,10 +119,11 @@ export const createHighlightSlice: StateCreator<FeedState, [], [], HighlightSlic
      })
 
      try {
-       await invokeIPC(window.api.highlight.delete(id))
+       await invokeIPC(window.api.highlight.delete(id), { showErrorToast: false })
      } catch (error) {
        console.error('Failed to delete highlight:', error)
-       useToastStore.getState().addToast({ type: 'error', title: 'Failed to delete highlight' })
+       const msg = error instanceof Error ? error.message : String(error)
+       useToastStore.getState().addToast({ type: 'error', title: 'Failed to delete highlight', description: msg })
        // Revert
        if (highlight) {
           set((state) => {

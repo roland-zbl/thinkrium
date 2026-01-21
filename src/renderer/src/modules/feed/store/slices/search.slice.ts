@@ -86,10 +86,11 @@ export const createSearchSlice: StateCreator<FeedState, [], [], SearchSlice> = (
       set({ searchResults: feedItems })
     } catch (error) {
       console.error('Search failed:', error)
+      const msg = error instanceof Error ? error.message : String(error)
       useToastStore.getState().addToast({
         type: 'error',
         title: 'Search failed',
-        description: error instanceof Error ? error.message : String(error)
+        description: msg
       })
     } finally {
       set({ loading: false })
