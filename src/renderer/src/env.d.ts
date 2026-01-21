@@ -11,6 +11,8 @@ declare global {
         removeFeed: (feedId: string) => Promise<IPCResult<void>>
         listItems: (filter: ItemFilter) => Promise<IPCResult<FeedItem[]>>
         markAsRead: (itemId: string) => Promise<IPCResult<void>>
+        markAsSaved: (itemId: string) => Promise<IPCResult<void>>
+        markAsUnsaved: (itemId: string) => Promise<IPCResult<void>>
         validateFeed: (url: string) => Promise<IPCResult<{ valid: boolean; title?: string; error?: string; icon?: string }>>
         fetchFeed: (feedId: string) => Promise<IPCResult<{ count: number }>>
         saveQuickNote: (itemId: string, note: string) => Promise<IPCResult<void>>
