@@ -13,6 +13,8 @@ const api = {
     markAsUnsaved: (itemId: string) => ipcRenderer.invoke('feed:items:mark-unsaved', itemId),
     validateFeed: (url: string) => ipcRenderer.invoke('feed:validate', url),
     fetchFeed: (feedId: string) => ipcRenderer.invoke('feed:fetch', feedId),
+    saveQuickNote: (itemId: string, note: string) =>
+      ipcRenderer.invoke('feed:save-quick-note', { itemId, note }),
     importOpml: (filePath: string) => ipcRenderer.invoke('feed:import-opml', filePath),
     exportOpml: () => ipcRenderer.invoke('feed:export-opml'),
     moveFeedToFolder: (feedId: string, folderId: string | null) =>
