@@ -31,14 +31,7 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
       set({ subscriptions, folders })
     } catch (error) {
       console.error('Failed to fetch subscriptions:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      // Only toast if it's not a common network glitch? Or always?
-      // User asked for friendly messages.
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to refresh feeds',
-        description: msg
-      })
+      // Silent error for fetch
     }
   },
 

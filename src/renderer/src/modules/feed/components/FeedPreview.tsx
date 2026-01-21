@@ -7,7 +7,8 @@ import {
   FileText,
   FolderPlus,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Send
 } from 'lucide-react'
 import { useFeedStore } from '../store/feed.store'
 import { cn } from '@/lib/utils'
@@ -19,7 +20,7 @@ import { getSelectionOffsets } from '../utils/highlight-utils'
 import { useHighlightedContent } from '../hooks/useHighlightedContent'
 
 export const FeedPreview: React.FC = () => {
-  const { selectedItemId, items, saveItem, selectItem, saveQuickNote, highlights, createHighlight, updateHighlight, deleteHighlight } = useFeedStore()
+  const { selectedItemId, items, saveItem, unsaveItem, selectItem, saveQuickNote, highlights, createHighlight, updateHighlight, deleteHighlight } = useFeedStore()
   const { addTab } = useAppStore()
   const [quickNote, setQuickNote] = useState('')
 
