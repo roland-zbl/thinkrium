@@ -1,5 +1,5 @@
 import { net } from 'electron'
-import { join, dirname } from 'path'
+import { join, dirname, relative } from 'path'
 import { mkdir, writeFile, unlink, rm, readFile } from 'fs/promises'
 import { existsSync } from 'fs'
 import TurndownService from 'turndown'
@@ -14,6 +14,14 @@ export class NoteService {
     this.turndown = new TurndownService({
       headingStyle: 'atx',
       codeBlockStyle: 'fenced'
+    })
+
+    // 確保段落之間有正確的空行
+    this.turndown.addRule('paragraph', {
+      filter: 'p',
+      replacement: function (content) {
+        return '\n\n' + content + '\n\n'
+      }
     })
   }
 
@@ -58,7 +66,7 @@ export class NoteService {
     const processedHtml = await this.localizeImages(
       input.content,
       absoluteAttachmentsPath,
-      attachmentsPath
+      absoluteNoteDir
     )
     const markdownContent = this.turndown.turndown(processedHtml)
 
@@ -200,7 +208,7 @@ export class NoteService {
   private async localizeImages(
     html: string,
     absoluteDestDir: string,
-    relativeDestDir: string
+    absoluteNoteDir: string
   ): Promise<string> {
     const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi
     let match
@@ -228,8 +236,11 @@ export class NoteService {
           const filePath = join(absoluteDestDir, item.fileName)
           await writeFile(filePath, Buffer.from(buffer))
 
-          // 替換 HTML 中的 URL 為相對路徑
-          const relativePath = join(relativeDestDir, item.fileName).replace(/\\/g, '/')
+          // 替換 HTML 中的 URL 為相對路徑 (相對於筆記文件)
+          // absoluteNoteDir: /path/to/notes/2023/12
+          // filePath: /path/to/notes/attachments/uuid/image.jpg
+          // relativePath: ../../attachments/uuid/image.jpg
+          const relativePath = relative(absoluteNoteDir, filePath).replace(/\\/g, '/')
           processedHtml = processedHtml.replace(item.url, relativePath)
         }
       } catch (error) {
