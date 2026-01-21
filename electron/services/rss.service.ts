@@ -4,7 +4,12 @@ import { ParsedFeed, RSSItem } from '../types/rss'
 // 自訂欄位以抓取更多內容
 type CustomFeed = { feedUrl: string }
 // CustomItem 繼承 RSSItem 以確保類型兼容，但 rss-parser 的泛型需要明確指定擴充欄位
-type CustomItem = RSSItem & { 'content:encoded': string; description: string }
+type CustomItem = RSSItem & {
+  'content:encoded': string
+  description: string
+  'media:content'?: { $: { url: string; medium?: string; type?: string } } | { $: { url: string; medium?: string; type?: string } }[]
+  enclosure?: { url: string; type: string }
+}
 
 const parser: Parser<CustomFeed, CustomItem> = new Parser({
   timeout: 20000,
@@ -30,7 +35,9 @@ const parser: Parser<CustomFeed, CustomItem> = new Parser({
   customFields: {
     item: [
       ['content:encoded', 'contentEncoded'],
-      ['description', 'description']
+      ['description', 'description'],
+      ['media:content', 'media:content', { keepArray: false }], // rss-parser behavior
+      ['enclosure', 'enclosure']
     ]
   }
 })
@@ -100,13 +107,44 @@ export async function fetchFeed(url: string): Promise<ParsedFeed> {
       title: feed.title,
       items: feed.items.map((item) => {
         // 優先抓取完整內容
-        const fullContent =
+        let fullContent =
           item.contentEncoded ||
           item['content:encoded'] ||
           item.content ||
           item.description ||
           item.contentSnippet ||
           ''
+
+        // 嘗試從 enclosure 或 media:content 提取圖片
+        let imageUrl: string | undefined
+
+        // 1. Check enclosure
+        if (item.enclosure && item.enclosure.url && item.enclosure.type?.startsWith('image/')) {
+          imageUrl = item.enclosure.url
+        }
+        // 2. Check media:content
+        else if (item['media:content']) {
+          // media:content can be an object or array (if multiple sizes)
+          // rss-parser with keepArray: false might return single object, but let's be safe
+          const media = item['media:content'] as any
+          if (Array.isArray(media)) {
+             const found = media.find((m: any) => m.$?.medium === 'image' || m.$?.type?.startsWith('image/'))
+             if (found && found.$?.url) imageUrl = found.$.url
+          } else {
+             if (media.$ && (media.$.medium === 'image' || media.$.type?.startsWith('image/') || media.$.url)) {
+                // Some feeds just have url attribute on media:content
+                imageUrl = media.$.url
+             }
+          }
+        }
+
+        // 如果找到了圖片，且內容中還沒有這張圖片，則將其添加到內容開頭
+        if (imageUrl && !fullContent.includes(imageUrl)) {
+           // 簡單防呆：確保不是明顯的重複（有些 feed 會在 description 裡放縮圖）
+           // 這裡我們直接加在最前面，並設定樣式讓它自適應
+           console.log(`[RSS Service] Found extra image for "${item.title}", prepending...`)
+           fullContent = `<img src="${imageUrl}" alt="Cover Image" style="display:block; max-width:100%; margin-bottom: 1em;" /><br/>${fullContent}`
+        }
 
         // 記錄內容長度以便調試
         console.log(

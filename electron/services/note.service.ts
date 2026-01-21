@@ -23,6 +23,42 @@ export class NoteService {
         return '\n\n' + content + '\n\n'
       }
     })
+
+    // Handle div as paragraph break usually
+    this.turndown.addRule('div', {
+        filter: 'div',
+        replacement: function (content) {
+            return '\n' + content + '\n'
+        }
+    })
+
+    // Handle br
+    this.turndown.addRule('br', {
+        filter: 'br',
+        replacement: function (_content) {
+            return '  \n'
+        }
+    })
+
+    // Handle images to ensure proper URL encoding (fixes spacing issues in filenames)
+    this.turndown.addRule('img', {
+        filter: 'img',
+        replacement: (_content, node) => {
+            const img = node as HTMLImageElement
+            const alt = (img.alt || '').replace(/\[/g, '\\[').replace(/\]/g, '\\]')
+            const src = img.getAttribute('src') || ''
+            const title = img.title || ''
+
+            if (!src) return ''
+
+            // Clean string and encode URI components just in case, but keep protocol
+            // Usually src is already a file path or URL.
+            // If it's a local file path with spaces, we need to encode it for markdown link
+            const cleanSrc = src.trim().replace(/\s/g, '%20').replace(/\(/g, '%28').replace(/\)/g, '%29')
+
+            return '![' + alt + '](' + cleanSrc + (title ? ' "' + title.trim() + '"' : '') + ')'
+        }
+    })
   }
 
   /**
@@ -58,16 +94,15 @@ export class NoteService {
       await mkdir(absoluteNoteDir, { recursive: true })
     }
 
-    // 2. 處理圖片並轉換 HTML 為 Markdown
-    // 使用 UUID 作為圖片資料夾名稱，避免中文和特殊字符造成路徑問題
-    const attachmentsPath = join('attachments', id)
-    const absoluteAttachmentsPath = join(rootDir, attachmentsPath)
-
-    const processedHtml = await this.localizeImages(
-      input.content,
-      absoluteAttachmentsPath,
-      absoluteNoteDir
-    )
+    // 2. 轉換 HTML 為 Markdown
+    // [Changed] Disable localizeImages based on user feedback. Keep external links.
+    // Use input.content directly.
+    const processedHtml = input.content
+    // const processedHtml = await this.localizeImages(
+    //   input.content,
+    //   absoluteAttachmentsPath,
+    //   absoluteNoteDir
+    // )
     const markdownContent = this.turndown.turndown(processedHtml)
 
     // 3. 生成 Markdown 文件內容

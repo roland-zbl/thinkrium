@@ -1,10 +1,10 @@
 import { StateCreator } from 'zustand'
-import { FeedState, FeedItem, ItemsSlice, Subscription } from '../types'
+import { FeedState, FeedItem, ItemsSlice } from '../types'
 import { ItemFilter, FeedItem as DbFeedItem } from '@/types'
 import { useToastStore } from '@/stores/toast.store'
 import { invokeIPC } from '@/utils/ipc'
-import { turndown } from '@/lib/turndown'
-import { stripHtml, extractFirstImage, isMarkdown } from '../utils'
+
+import { stripHtml, extractFirstImage } from '../utils'
 
 export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (set, get) => ({
   items: [],
@@ -157,19 +157,16 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
     if (!item) return undefined
 
     try {
-      // Convert HTML to Markdown, or keep as Markdown if already is
-      let markdown = ''
+      // Don't convert to Markdown here. The backend NoteService handles HTML->Markdown conversion
+      // and image downloading. Passing HTML allows the backend to process images correctly.
+      let contentToSave = ''
       if (item.content) {
-        if (isMarkdown(item.content)) {
-          markdown = item.content
-        } else {
-          markdown = turndown.turndown(item.content)
-        }
+         contentToSave = item.content
       }
 
       const note = await invokeIPC(window.api.note.save({
         title: item.title,
-        content: markdown, // Save as Markdown
+        content: contentToSave, // Pass raw content (HTML or MD) to backend
         sourceUrl: item.id,
         sourceType: 'feed',
         sourceItemId: item.id,
