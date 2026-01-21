@@ -4,7 +4,7 @@ import { ItemFilter, FeedItem as DbFeedItem } from '@/types'
 import { useToastStore } from '@/stores/toast.store'
 import { invokeIPC } from '@/utils/ipc'
 import { turndown } from '@/lib/turndown'
-import { stripHtml, extractFirstImage } from '../utils'
+import { stripHtml, extractFirstImage, isMarkdown } from '../utils'
 
 export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (set, get) => ({
   items: [],
@@ -157,8 +157,15 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
     if (!item) return undefined
 
     try {
-      // Convert HTML to Markdown
-      const markdown = item.content ? turndown.turndown(item.content) : ''
+      // Convert HTML to Markdown, or keep as Markdown if already is
+      let markdown = ''
+      if (item.content) {
+        if (isMarkdown(item.content)) {
+          markdown = item.content
+        } else {
+          markdown = turndown.turndown(item.content)
+        }
+      }
 
       const note = await invokeIPC(window.api.note.save({
         title: item.title,
