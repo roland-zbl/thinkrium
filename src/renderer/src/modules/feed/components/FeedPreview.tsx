@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react'
 import {
   Bookmark,
-  Save,
   ExternalLink,
   X,
   FileText,
