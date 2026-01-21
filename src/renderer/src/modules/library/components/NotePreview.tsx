@@ -1,13 +1,28 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Edit3, FolderPlus, X, FileText, Share2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useLibraryStore } from '../store/library.store'
 import { useAppStore } from '@/stores/app.store'
+import { invokeIPC } from '@/utils/ipc'
 
 export const NotePreview: React.FC = () => {
   const { selectedNoteId, notes, activeNote, selectNote } = useLibraryStore()
   const { addTab } = useAppStore()
+  const [rootDir, setRootDir] = useState<string | null>(null)
+
+  useEffect(() => {
+    invokeIPC(window.api.settings.get('notes.rootDir')).then(setRootDir)
+  }, [])
+
+  const transformImageUri = (src: string): string => {
+    if (!src || src.startsWith('http') || src.startsWith('file://')) return src
+    if (!rootDir) return src
+    // Convert backslashes to forward slashes for URL compatibility
+    const cleanRoot = rootDir.replace(/\\/g, '/')
+    const cleanSrc = src.replace(/\\/g, '/')
+    return `file://${cleanRoot}/${cleanSrc}`
+  }
 
   // Prefer activeNote (full details) if available and matching selected ID,
   // otherwise fallback to note from list (summary)
@@ -127,7 +142,18 @@ export const NotePreview: React.FC = () => {
           </h4>
           <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed">
             {note.content ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  img: ({ src, alt }) => (
+                    <img
+                      src={transformImageUri(src || '')}
+                      alt={alt}
+                      className="max-w-full rounded"
+                    />
+                  )
+                }}
+              >
                 {note.content.replace(/^---[\s\S]+?---\n*/, '')}
               </ReactMarkdown>
             ) : (
