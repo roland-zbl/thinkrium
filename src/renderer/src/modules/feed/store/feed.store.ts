@@ -1,4 +1,3 @@
-import DOMPurify from 'dompurify'
 import { create } from 'zustand'
 import { ItemFilter, FeedItem as DbFeedItem, Folder, SearchOptions, SearchResult, Highlight, HighlightColor } from '@/types'
 import { turndown } from '@/lib/turndown'
@@ -74,7 +73,7 @@ interface FeedState {
   // Search State
   searchQuery: string
   isSearching: boolean
-  searchResults: SearchResult[]
+  searchResults: FeedItem[]
   searchScope: 'all' | 'current'
 
   // State
@@ -429,7 +428,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         title: item.title,
         content: markdown, // Save as Markdown
         sourceUrl: item.id,
-        sourceType: 'rss',
+        sourceType: 'feed',
         sourceItemId: item.id,
         tags: ['rss'],
         personalNote: personalNote || item.quickNote

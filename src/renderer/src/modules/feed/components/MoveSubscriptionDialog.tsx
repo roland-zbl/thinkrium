@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X, Folder as FolderIcon } from 'lucide-react'
 import { useFeedStore } from '../store/feed.store'
 import { Folder } from '@/types'
-import { cn } from '@/lib/utils'
 
 interface MoveSubscriptionDialogProps {
   isOpen: boolean

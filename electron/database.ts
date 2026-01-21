@@ -56,51 +56,8 @@ export function initDatabase(filename?: string, _skipSeed = false): Database.Dat
       console.error('[Database] Failed to verify feed_items_fts existence:', e);
   }
 
-  // 開發階段：插入種子數據
-  // if (!skipSeed) {
-  //   seedTestData(db)
-  // }
-
   console.log('[Database] Database initialized successfully')
   return db
-}
-
-/**
- * 插入測試數據 (Seed Data)
- */
-function seedTestData(database: Database.Database): void {
-  const feedCount = database.prepare('SELECT COUNT(*) as count FROM feeds').get() as {
-    count: number
-  }
-  if (feedCount.count === 0) {
-    console.log('[Database] Seeding test data...')
-
-    // Seed user name
-    database
-      .prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)`)
-      .run('user.name', 'Roland')
-
-    const feedId = 'seed-feed-1'
-    database
-      .prepare(
-        `
-            INSERT INTO feeds (id, type, url, title)
-            VALUES (?, 'rss', 'https://example.com/feed', '開發測試頻道')
-        `
-      )
-      .run(feedId)
-
-    database
-      .prepare(
-        `
-            INSERT INTO feed_items (id, feed_id, guid, title, content, published_at, status)
-            VALUES (?, ?, ?, 'IPC 通訊測試成功', '看到這段文字代表從渲染進程透過 IPC 向主進程 SQLite 資料庫請求資料成功！這是一個重大的里程碑。', CURRENT_TIMESTAMP, 'unread')
-        `
-      )
-      .run('seed-item-1', feedId, 'guid-seed-1')
-
-    console.log('[Database] Seed data inserted.')
-  }
 }
 
 /**
