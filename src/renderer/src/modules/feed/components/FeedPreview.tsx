@@ -15,9 +15,11 @@ import { cn } from '@/lib/utils'
 import { useAppStore } from '@/stores/app.store'
 import { useToastStore } from '@/stores/toast.store'
 import DOMPurify from 'dompurify'
+import { marked } from 'marked'
 import { HighlightToolbar, HighlightMenu } from './HighlightToolbar'
 import { getSelectionOffsets } from '../utils/highlight-utils'
 import { useHighlightedContent } from '../hooks/useHighlightedContent'
+import { isMarkdown } from '../store/utils'
 
 export const FeedPreview: React.FC = () => {
   const { selectedItemId, items, saveItem, unsaveItem, selectItem, saveQuickNote, highlights, createHighlight, updateHighlight, deleteHighlight } = useFeedStore()
@@ -65,8 +67,15 @@ export const FeedPreview: React.FC = () => {
   const sanitizedContent = useMemo(() => {
     if (!item) return ''
     const contentToSanitize = item.content || item.summary || ''
+
+    // 如果內容是 Markdown，先轉換為 HTML
+    let htmlContent = contentToSanitize
+    if (isMarkdown(contentToSanitize)) {
+      htmlContent = marked.parse(contentToSanitize) as string
+    }
+
     // 設定 DOMPurify 允許標籤與屬性，確保圖片、連結等正常顯示
-    return DOMPurify.sanitize(contentToSanitize, {
+    return DOMPurify.sanitize(htmlContent, {
       ADD_TAGS: ['iframe', 'mark'],
       ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target', 'style', 'width', 'height', 'data-src', 'data-original', 'class']
     })
