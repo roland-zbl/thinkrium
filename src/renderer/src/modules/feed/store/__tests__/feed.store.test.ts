@@ -2,17 +2,75 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useFeedStore } from '../feed.store'
 import { act } from '@testing-library/react'
 
+// Mock window.api structure
+const mockApi = {
+  feed: {
+    listFeeds: vi.fn(),
+    addFeed: vi.fn(),
+    removeFeed: vi.fn(),
+    listItems: vi.fn(),
+    markAsRead: vi.fn(),
+    markAsSaved: vi.fn(),
+    markAsUnsaved: vi.fn(),
+    validateFeed: vi.fn(),
+    fetchFeed: vi.fn(),
+    saveQuickNote: vi.fn(),
+    importOpml: vi.fn(),
+    exportOpml: vi.fn(),
+    moveFeedToFolder: vi.fn(),
+    search: vi.fn()
+  },
+  folder: {
+    list: vi.fn().mockResolvedValue({ success: true, data: [] }),
+    create: vi.fn(),
+    rename: vi.fn(),
+    delete: vi.fn(),
+    move: vi.fn()
+  },
+  note: {
+    save: vi.fn(),
+    list: vi.fn(),
+    get: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn()
+  },
+  highlight: {
+    listByItem: vi.fn().mockResolvedValue({ success: true, data: [] }),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    listAll: vi.fn()
+  },
+  on: vi.fn(),
+  off: vi.fn()
+}
+
+// Assign to window
+Object.defineProperty(window, 'api', {
+  value: mockApi,
+  writable: true
+})
+
 describe('FeedStore', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
+
     // Reset store state before each test
     useFeedStore.setState({
       items: [],
       subscriptions: [],
+      folders: [],
       selectedItemId: null,
       activeSubscriptionId: null,
+      activeFolderId: null,
       filter: 'all',
-      loading: false
+      loading: false,
+      highlights: new Map()
     })
+
+    // Default successful responses
+    mockApi.folder.list.mockResolvedValue({ success: true, data: [] })
+    mockApi.highlight.listByItem.mockResolvedValue({ success: true, data: [] })
   })
 
   describe('Initial State', () => {
@@ -90,8 +148,7 @@ describe('FeedStore', () => {
     })
 
     it('should mark unread item as read when selected', async () => {
-      const mockMarkAsRead = vi.fn().mockResolvedValue({ success: true, data: undefined })
-      window.api.feed.markAsRead = mockMarkAsRead
+      mockApi.feed.markAsRead.mockResolvedValue({ success: true, data: undefined })
 
       useFeedStore.setState({
         items: [
@@ -113,7 +170,7 @@ describe('FeedStore', () => {
         await useFeedStore.getState().selectItem('item-1')
       })
 
-      expect(mockMarkAsRead).toHaveBeenCalledWith('item-1')
+      expect(mockApi.feed.markAsRead).toHaveBeenCalledWith('item-1')
     })
   })
 
@@ -122,7 +179,7 @@ describe('FeedStore', () => {
       const mockFeeds = [
         { id: 'feed-1', title: 'Feed 1', url: 'http://example.com/feed1', icon_url: null }
       ]
-      window.api.feed.listFeeds = vi.fn().mockResolvedValue({ success: true, data: mockFeeds })
+      mockApi.feed.listFeeds.mockResolvedValue({ success: true, data: mockFeeds })
 
       await act(async () => {
         await useFeedStore.getState().fetchSubscriptions()
@@ -137,27 +194,22 @@ describe('FeedStore', () => {
 
   describe('addFeed', () => {
     it('should validate, add feed, and refresh lists', async () => {
-      const mockValidate = vi.fn().mockResolvedValue({ success: true, data: { valid: true, title: 'New Feed' } })
-      const mockAddFeed = vi.fn().mockResolvedValue({ success: true, data: undefined })
-      const mockFetchFeed = vi.fn().mockResolvedValue({ success: true, data: { count: 5 } })
-
-      window.api.feed.validateFeed = mockValidate
-      window.api.feed.addFeed = mockAddFeed
-      window.api.feed.fetchFeed = mockFetchFeed
+      mockApi.feed.validateFeed.mockResolvedValue({ success: true, data: { valid: true, title: 'New Feed' } })
+      mockApi.feed.addFeed.mockResolvedValue({ success: true, data: undefined })
+      mockApi.feed.fetchFeed.mockResolvedValue({ success: true, data: { count: 5 } })
+      mockApi.feed.listFeeds.mockResolvedValue({ success: true, data: [] }) // for fetchSubscriptions
 
       await act(async () => {
         await useFeedStore.getState().addFeed('http://example.com/feed')
       })
 
-      expect(mockValidate).toHaveBeenCalledWith('http://example.com/feed')
-      expect(mockAddFeed).toHaveBeenCalled()
-      expect(mockFetchFeed).toHaveBeenCalled()
+      expect(mockApi.feed.validateFeed).toHaveBeenCalledWith('http://example.com/feed')
+      expect(mockApi.feed.addFeed).toHaveBeenCalled()
+      expect(mockApi.feed.fetchFeed).toHaveBeenCalled()
     })
 
     it('should throw error if feed validation fails', async () => {
-      // Logic for validation failure:
-      // Case 1: IPC success, but valid=false.
-      window.api.feed.validateFeed = vi.fn().mockResolvedValue({
+      mockApi.feed.validateFeed.mockResolvedValue({
         success: true,
         data: {
           valid: false,
@@ -175,12 +227,12 @@ describe('FeedStore', () => {
 
   describe('removeFeed', () => {
     it('should remove feed and associated items from state', async () => {
-      window.api.feed.removeFeed = vi.fn().mockResolvedValue({ success: true, data: undefined })
+      mockApi.feed.removeFeed.mockResolvedValue({ success: true, data: undefined })
 
       useFeedStore.setState({
         subscriptions: [
-          { id: 'feed-1', name: 'Feed 1', category: '未分類', unreadCount: 0, url: 'http://...' },
-          { id: 'feed-2', name: 'Feed 2', category: '未分類', unreadCount: 0, url: 'http://...' }
+          { id: 'feed-1', name: 'Feed 1', category: '未分類', unreadCount: 0, url: 'http://...', folder_id: null },
+          { id: 'feed-2', name: 'Feed 2', category: '未分類', unreadCount: 0, url: 'http://...', folder_id: null }
         ],
         items: [
           {
@@ -242,8 +294,7 @@ describe('FeedStore', () => {
 
   describe('saveQuickNote', () => {
     it('should save quick note via IPC and update local state', async () => {
-      const mockSaveQuickNote = vi.fn().mockResolvedValue({ success: true, data: undefined })
-      window.api.feed.saveQuickNote = mockSaveQuickNote
+      mockApi.feed.saveQuickNote.mockResolvedValue({ success: true, data: undefined })
 
       useFeedStore.setState({
         items: [
@@ -265,9 +316,71 @@ describe('FeedStore', () => {
         await useFeedStore.getState().saveQuickNote('item-1', 'My Note')
       })
 
-      expect(mockSaveQuickNote).toHaveBeenCalledWith('item-1', 'My Note')
+      expect(mockApi.feed.saveQuickNote).toHaveBeenCalledWith('item-1', 'My Note')
       const item = useFeedStore.getState().items.find((i) => i.id === 'item-1')
       expect(item?.quickNote).toBe('My Note')
+    })
+  })
+
+  describe('saveItem', () => {
+    it('should use quickNote when personalNote is missing', async () => {
+      mockApi.note.save.mockResolvedValue({ success: true, data: { id: 'note-1' } })
+      mockApi.feed.markAsSaved.mockResolvedValue({ success: true, data: undefined })
+
+      useFeedStore.setState({
+        items: [
+          {
+            id: 'item-with-note',
+            title: 'Item With Note',
+            source: 'Source',
+            date: null,
+            status: 'read',
+            summary: '',
+            content: 'Content',
+            feed_id: 'feed-1',
+            link: null,
+            quickNote: 'Existing Quick Note'
+          }
+        ]
+      })
+
+      await act(async () => {
+        await useFeedStore.getState().saveItem('item-with-note')
+      })
+
+      expect(mockApi.note.save).toHaveBeenCalledWith(expect.objectContaining({
+        personalNote: 'Existing Quick Note'
+      }))
+    })
+
+    it('should prefer explicit personalNote over quickNote', async () => {
+      mockApi.note.save.mockResolvedValue({ success: true, data: { id: 'note-1' } })
+      mockApi.feed.markAsSaved.mockResolvedValue({ success: true, data: undefined })
+
+      useFeedStore.setState({
+        items: [
+          {
+            id: 'item-with-note',
+            title: 'Item With Note',
+            source: 'Source',
+            date: null,
+            status: 'read',
+            summary: '',
+            content: 'Content',
+            feed_id: 'feed-1',
+            link: null,
+            quickNote: 'Existing Quick Note'
+          }
+        ]
+      })
+
+      await act(async () => {
+        await useFeedStore.getState().saveItem('item-with-note', 'Override Note')
+      })
+
+      expect(mockApi.note.save).toHaveBeenCalledWith(expect.objectContaining({
+        personalNote: 'Override Note'
+      }))
     })
   })
 })

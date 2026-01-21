@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react'
 import {
   Bookmark,
-  Send,
+  Save,
   ExternalLink,
   X,
   FileText,
@@ -382,7 +382,7 @@ export const FeedPreview: React.FC = () => {
                 saveQuickNote(item.id, quickNote)
                 useToastStore.getState().addToast({
                   type: 'success',
-                  title: 'Quick Note 已保存'
+                  title: '速記已暫存'
                 })
               }
             }}
