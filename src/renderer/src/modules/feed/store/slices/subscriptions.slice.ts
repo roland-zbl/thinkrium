@@ -109,6 +109,26 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
     }
   },
 
+  updateSubscription: async (id, updates) => {
+    try {
+      await invokeIPC(window.api.feed.updateFeed(id, updates), { showErrorToast: false })
+      await get().fetchSubscriptions()
+      useToastStore.getState().addToast({
+        type: 'success',
+        title: 'Feed updated'
+      })
+    } catch (error) {
+      console.error('Failed to update feed:', error)
+      const msg = error instanceof Error ? error.message : String(error)
+      useToastStore.getState().addToast({
+        type: 'error',
+        title: 'Failed to update feed',
+        description: msg
+      })
+      throw error
+    }
+  },
+
   setFilter: (filter) => {
     set({ filter, recentlyReadIds: new Set() })
     get().fetchItems()

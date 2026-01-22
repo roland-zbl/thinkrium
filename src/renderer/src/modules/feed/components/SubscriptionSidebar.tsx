@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, ListFilter, Trash2, MoreHorizontal, FileUp, FileDown, FolderPlus } from 'lucide-react'
+import { Plus, ListFilter, Trash2, MoreHorizontal, FileUp, FileDown, FolderPlus, Edit2 } from 'lucide-react'
 import { useFeedStore } from '../store/feed.store'
 import { cn } from '@/lib/utils'
 import { AddSubscriptionDialog } from './AddSubscriptionDialog'
 import { ImportOpmlDialog } from './ImportOpmlDialog'
 import { MoveSubscriptionDialog } from './MoveSubscriptionDialog'
+import { EditSubscriptionDialog } from './EditSubscriptionDialog'
 import { FolderNode } from './FolderNode'
 import {
   DropdownMenu,
@@ -35,6 +36,10 @@ export const SubscriptionSidebar: React.FC = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
   const [isCreateFolderDialogOpen, setIsCreateFolderDialogOpen] = useState(false)
+  const [editDialogState, setEditDialogState] = useState<{ isOpen: boolean; subscriptionId: string | null }>({
+    isOpen: false,
+    subscriptionId: null
+  })
   const [moveDialogState, setMoveDialogState] = useState<{ isOpen: boolean; subscriptionId: string | null }>({
     isOpen: false,
     subscriptionId: null
@@ -150,6 +155,7 @@ export const SubscriptionSidebar: React.FC = () => {
                 if (folderId === null) moveFeedToFolder(id, null)
                 else setMoveDialogState({ isOpen: true, subscriptionId: id })
               }}
+              onEdit={(id) => setEditDialogState({ isOpen: true, subscriptionId: id })}
             />
           ))}
         </div>
@@ -202,6 +208,16 @@ export const SubscriptionSidebar: React.FC = () => {
                       className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                       onClick={(e) => {
                         e.stopPropagation()
+                        setEditDialogState({ isOpen: true, subscriptionId: sub.id })
+                      }}
+                    >
+                      <Edit2 className="mr-2 h-4 w-4" />
+                      <span>Edit</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                      onClick={(e) => {
+                        e.stopPropagation()
                         setMoveDialogState({ isOpen: true, subscriptionId: sub.id })
                       }}
                     >
@@ -226,6 +242,13 @@ export const SubscriptionSidebar: React.FC = () => {
       <AddSubscriptionDialog isOpen={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} />
       <ImportOpmlDialog isOpen={isImportDialogOpen} onClose={() => setIsImportDialogOpen(false)} />
       <CreateFolderDialog isOpen={isCreateFolderDialogOpen} onClose={() => setIsCreateFolderDialogOpen(false)} />
+      {editDialogState.subscriptionId && (
+        <EditSubscriptionDialog
+          isOpen={editDialogState.isOpen}
+          onClose={() => setEditDialogState({ ...editDialogState, isOpen: false })}
+          subscriptionId={editDialogState.subscriptionId}
+        />
+      )}
       {moveDialogState.subscriptionId && (
         <MoveSubscriptionDialog
           isOpen={moveDialogState.isOpen}

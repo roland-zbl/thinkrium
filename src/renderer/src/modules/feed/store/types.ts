@@ -1,4 +1,4 @@
-import { FeedItem as DbFeedItem, Folder, Highlight, HighlightColor, SearchResult } from '@/types'
+import { Folder, Highlight, HighlightColor } from '@/types'
 
 export interface FeedItem {
   id: string
@@ -49,6 +49,7 @@ export interface SubscriptionsSlice {
 
   fetchSubscriptions: () => Promise<void>
   addFeed: (url: string, name?: string, category?: string) => Promise<void>
+  updateSubscription: (id: string, updates: { title?: string; url?: string; folder_id?: string | null }) => Promise<void>
   removeFeed: (id: string) => Promise<void>
   setFilter: (filter: 'all' | 'unread' | 'saved') => void
   setActiveSubscription: (id: string | null) => void

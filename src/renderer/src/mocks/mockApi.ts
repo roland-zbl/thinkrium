@@ -83,7 +83,37 @@ export const mockApi = {
       await delay(500)
       // 模擬驗證成功
       console.log('[MockAPI] Validating feed:', url)
-      return success({ valid: true, title: `Feed from ${new URL(url).hostname}` })
+      try {
+        const hostname = new URL(url).hostname
+        return success({ valid: true, title: `Feed from ${hostname}`, icon: `https://www.google.com/s2/favicons?domain=${hostname}` })
+      } catch {
+        return success({ valid: true, title: 'Valid Feed' })
+      }
+    },
+    getFeed: async (feedId: string) => {
+      await delay(50)
+      const feed = subscriptions.find(s => s.id === feedId)
+      if (feed) {
+        return success({
+          id: feed.id,
+          title: feed.name,
+          url: `https://example.com/${feed.id}/feed.xml`,
+          icon_url: null,
+          folder_id: null,
+          unreadCount: feed.unreadCount
+        })
+      }
+      return fail('Feed not found')
+    },
+    updateFeed: async (id: string, updates: any) => {
+      await delay(100)
+      const feed = subscriptions.find(s => s.id === id)
+      if (feed) {
+        if (updates.title) feed.name = updates.title
+        console.log('[MockAPI] Feed updated:', id, updates)
+        return success(undefined)
+      }
+      return fail('Feed not found')
     },
     fetchFeed: async (feedId: string) => {
       await delay(200)

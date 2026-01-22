@@ -9,6 +9,8 @@ declare global {
         listFeeds: () => Promise<IPCResult<Feed[]>>
         addFeed: (feed: Partial<Feed>) => Promise<IPCResult<void>>
         removeFeed: (feedId: string) => Promise<IPCResult<void>>
+        getFeed: (feedId: string) => Promise<IPCResult<Feed>>
+        updateFeed: (id: string, updates: { title?: string; url?: string; folder_id?: string | null }) => Promise<IPCResult<void>>
         listItems: (filter: ItemFilter) => Promise<IPCResult<FeedItem[]>>
         markAsRead: (itemId: string) => Promise<IPCResult<void>>
         markAsSaved: (itemId: string) => Promise<IPCResult<void>>

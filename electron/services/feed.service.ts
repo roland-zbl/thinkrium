@@ -1,7 +1,7 @@
 import { Database } from 'better-sqlite3'
 import { getDatabase } from '../database'
 import { Feed, FeedItem, ItemFilter } from '../../src/shared/types/feed'
-import { fetchFeed, validateFeed, resolveIcon } from './rss.service'
+import { fetchFeed, validateFeed } from './rss.service'
 import { randomUUID } from 'crypto'
 
 export interface SearchOptions {
@@ -65,6 +65,62 @@ export class FeedService {
 
   deleteFeed(feedId: string): void {
     this.getDb().prepare('DELETE FROM feeds WHERE id = ?').run(feedId)
+  }
+
+  getFeed(feedId: string): Feed | undefined {
+    return this.getDb().prepare('SELECT * FROM feeds WHERE id = ?').get(feedId) as Feed | undefined
+  }
+
+  async updateFeed(
+    feedId: string,
+    updates: { title?: string; url?: string; folder_id?: string | null }
+  ): Promise<void> {
+    const feed = this.getFeed(feedId)
+    if (!feed) throw new Error('Feed not found')
+
+    const newValues: Partial<Feed> = { ...updates }
+
+    // If URL is changing, re-validate
+    if (updates.url && updates.url !== feed.url) {
+      console.log(`[FeedService] URL changed for ${feed.title}, validating new URL: ${updates.url}`)
+      const validation = await validateFeed(updates.url)
+
+      // If validation successful (didn't throw), update icon if available
+      if (validation.icon) {
+        newValues.icon_url = validation.icon
+      }
+
+      // If title wasn't explicitly updated, maybe update it from feed?
+      // Requirement says "Name input (pre-filled with current name)", so likely user controls title.
+      // But if user didn't provide title in updates (updates.title undefined), keep old title.
+    }
+
+    const setClauses: string[] = []
+    const params: any[] = []
+
+    if (newValues.title !== undefined) {
+      setClauses.push('title = ?')
+      params.push(newValues.title)
+    }
+    if (newValues.url !== undefined) {
+      setClauses.push('url = ?')
+      params.push(newValues.url)
+    }
+    if (newValues.folder_id !== undefined) {
+      setClauses.push('folder_id = ?')
+      params.push(newValues.folder_id)
+    }
+    if (newValues.icon_url !== undefined) {
+      setClauses.push('icon_url = ?')
+      params.push(newValues.icon_url)
+    }
+
+    if (setClauses.length === 0) return
+
+    params.push(feedId)
+    const sql = `UPDATE feeds SET ${setClauses.join(', ')} WHERE id = ?`
+
+    this.getDb().prepare(sql).run(...params)
   }
 
   getFeedItems(filter: ItemFilter = {}): FeedItem[] {
