@@ -19,8 +19,9 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: [
+          '"Noto Sans TC"',
+          '"Noto Sans SC"',
           'Inter',
-          'Noto Sans TC',
           'PingFang TC',
           'Microsoft JhengHei',
           'system-ui',
