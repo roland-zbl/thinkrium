@@ -48,7 +48,7 @@ const parser: Parser<CustomFeed, CustomItem> = new Parser({
  */
 export async function resolveIcon(
   feedUrl: string,
-  feed: Parser.Output<CustomFeed>
+  feed: CustomFeed & { image?: { url?: string }; link?: string; items?: CustomItem[] }
 ): Promise<string | undefined> {
   // 1. 優先使用 feed 內定義的 image
   if (feed.image?.url) {

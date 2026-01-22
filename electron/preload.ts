@@ -1,15 +1,28 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import {
+  Feed,
+  UpdateFeedDTO,
+  ItemFilter,
+  CreateHighlightDTO,
+  UpdateHighlightDTO,
+  OpenDialogOptions,
+  SaveNoteInput,
+  NoteFilter,
+  NoteUpdate,
+  DbProject
+} from '@shared/types'
 
 // Custom APIs for renderer
 const api = {
   feed: {
     listFeeds: () => ipcRenderer.invoke('feed:list'),
-    addFeed: (feed: any) => ipcRenderer.invoke('feed:add', feed),
+    addFeed: (feed: Partial<Feed>) => ipcRenderer.invoke('feed:add', feed),
     removeFeed: (feedId: string) => ipcRenderer.invoke('feed:remove', feedId),
     getFeed: (feedId: string) => ipcRenderer.invoke('feed:get', feedId),
-    updateFeed: (id: string, updates: any) => ipcRenderer.invoke('feed:update', { id, updates }),
-    listItems: (filter: any) => ipcRenderer.invoke('feed:items:list', filter),
+    updateFeed: (id: string, updates: UpdateFeedDTO) =>
+      ipcRenderer.invoke('feed:update', { id, updates }),
+    listItems: (filter: ItemFilter) => ipcRenderer.invoke('feed:items:list', filter),
     markAsRead: (itemId: string) => ipcRenderer.invoke('feed:items:mark-read', itemId),
     markAsSaved: (itemId: string) => ipcRenderer.invoke('feed:items:mark-saved', itemId),
     markAsUnsaved: (itemId: string) => ipcRenderer.invoke('feed:items:mark-unsaved', itemId),
@@ -32,14 +45,14 @@ const api = {
     list: () => ipcRenderer.invoke('folder:list')
   },
   highlight: {
-    create: (data: any) => ipcRenderer.invoke('highlight:create', data),
-    update: (data: any) => ipcRenderer.invoke('highlight:update', data),
+    create: (data: CreateHighlightDTO) => ipcRenderer.invoke('highlight:create', data),
+    update: (data: UpdateHighlightDTO) => ipcRenderer.invoke('highlight:update', data),
     delete: (id: string) => ipcRenderer.invoke('highlight:delete', id),
     listByItem: (feedItemId: string) => ipcRenderer.invoke('highlight:list-by-item', feedItemId),
     listAll: () => ipcRenderer.invoke('highlight:list-all')
   },
   dialog: {
-    openFile: (options: any) => ipcRenderer.invoke('dialog:openFile', options)
+    openFile: (options: OpenDialogOptions) => ipcRenderer.invoke('dialog:openFile', options)
   },
   settings: {
     get: (key: string) => ipcRenderer.invoke('settings:get', key),
@@ -47,15 +60,15 @@ const api = {
     selectDirectory: () => ipcRenderer.invoke('settings:selectDirectory')
   },
   note: {
-    save: (input: any) => ipcRenderer.invoke('note:save', input),
-    list: (filter?: any) => ipcRenderer.invoke('note:list', filter),
+    save: (input: SaveNoteInput) => ipcRenderer.invoke('note:save', input),
+    list: (filter?: NoteFilter) => ipcRenderer.invoke('note:list', filter),
     get: (id: string) => ipcRenderer.invoke('note:get', id),
-    update: (id: string, updates: any) => ipcRenderer.invoke('note:update', id, updates),
+    update: (id: string, updates: NoteUpdate) => ipcRenderer.invoke('note:update', id, updates),
     delete: (id: string) => ipcRenderer.invoke('note:delete', id),
     sync: () => ipcRenderer.invoke('note:sync')
   },
   project: {
-    create: (project: any) => ipcRenderer.invoke('project:create', project),
+    create: (project: Partial<DbProject>) => ipcRenderer.invoke('project:create', project),
     list: () => ipcRenderer.invoke('project:list'),
     addItem: (projectId: string, noteId: string) =>
       ipcRenderer.invoke('project:add-item', projectId, noteId),
@@ -63,12 +76,17 @@ const api = {
     updateStatus: (id: string, status: string) =>
       ipcRenderer.invoke('project:update-status', id, status)
   },
-  on: (channel: string, callback: (event: Electron.IpcRendererEvent, ...args: any[]) => void) => {
-    const subscription = (_event: Electron.IpcRendererEvent, ...args: any[]) => callback(_event, ...args)
+  on: (
+    channel: string,
+    callback: (event: Electron.IpcRendererEvent, ...args: unknown[]) => void
+  ) => {
+    const subscription = (_event: Electron.IpcRendererEvent, ...args: unknown[]) =>
+      callback(_event, ...args)
     ipcRenderer.on(channel, subscription)
     return () => ipcRenderer.removeListener(channel, subscription)
   },
-  off: (channel: string, callback: (...args: any[]) => void) => ipcRenderer.removeListener(channel, callback),
+  off: (channel: string, callback: (...args: unknown[]) => void) =>
+    ipcRenderer.removeListener(channel, callback),
   // E2E Testing flag - allows renderer to skip setup checks
   isE2ETesting: process.env.E2E_TESTING === 'true'
 }

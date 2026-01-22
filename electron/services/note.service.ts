@@ -240,6 +240,7 @@ export class NoteService {
   /**
    * 將 HTML 中的圖片下載並存儲到本地
    */
+  // @ts-ignore: Keep for future use
   private async localizeImages(
     html: string,
     absoluteDestDir: string,
