@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Note, DbNote, SaveNoteInput } from '@/types'
+import { Note, SaveNoteInput } from '@/types'
 import { invokeIPC } from '@/utils/ipc'
 import { useToastStore } from '@/stores/toast.store'
 import { parseDbNote } from '@/utils/transform'
@@ -54,27 +54,31 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
         content: '', // Empty content for new note
         sourceType: 'manual'
       }
+      // invokeIPC handles Toast/Log on error.
       const newNote = await invokeIPC(window.api.note.save(input))
+
       // Refetch notes to update the list
       await get().fetchNotes()
       // Select the new note
       get().selectNote(newNote.id)
-    } catch (error) {
-      console.error('Failed to create note:', error)
+    } catch {
+      // Error handled by invokeIPC
     }
   },
   deleteNote: async (id: string) => {
     try {
-      await invokeIPC(window.api.note.delete(id), { showErrorToast: false })
+      // invokeIPC handles Toast/Log on error.
+      await invokeIPC(window.api.note.delete(id))
       set({ selectedNoteId: null, activeNote: null })
       await get().fetchNotes()
-    } catch (error) {
-      console.error('Failed to delete note:', error)
+    } catch {
+      // Error handled by invokeIPC
     }
   },
   syncNotes: async () => {
     try {
-      const result = await invokeIPC(window.api.note.sync(), { showErrorToast: false })
+      // invokeIPC handles Toast/Log on error.
+      const result = await invokeIPC(window.api.note.sync())
       if (result.removed > 0) {
         useToastStore.getState().addToast({
           type: 'info',
@@ -83,8 +87,8 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
         })
         await get().fetchNotes()
       }
-    } catch (error) {
-      console.error('Failed to sync notes:', error)
+    } catch {
+      // Error handled by invokeIPC
     }
   },
   setFilter: (key, value) =>
@@ -117,25 +121,25 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
 
   fetchNote: async (id: string) => {
     try {
-      const rawNote = await invokeIPC(window.api.note.get(id), { showErrorToast: false })
+      // Fetch operations: silent=true (no toast), logs handled by invokeIPC
+      const rawNote = await invokeIPC(window.api.note.get(id), { silent: true })
       if (rawNote) {
         set({ activeNote: parseDbNote(rawNote) })
       }
-    } catch (error) {
-      console.error('Failed to fetch note details:', error)
-      // Silent error for fetch
+    } catch {
+      // Error handled by invokeIPC (logged)
     }
   },
 
   fetchNotes: async () => {
     try {
-      const rawNotes = await invokeIPC(window.api.note.list(), { showErrorToast: false })
+      // Fetch operations: silent=true (no toast), logs handled by invokeIPC
+      const rawNotes = await invokeIPC(window.api.note.list(), { silent: true })
       // 轉換 API 返回的格式為 Note 介面格式
       const notes: Note[] = rawNotes.map(parseDbNote)
       set({ notes })
-    } catch (error) {
-      console.error('Failed to fetch notes:', error)
-      // Silent error for fetch
+    } catch {
+       // Error handled by invokeIPC (logged)
     }
   }
 }))
