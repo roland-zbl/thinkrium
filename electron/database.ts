@@ -3,6 +3,7 @@ import { app } from 'electron'
 import { join } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 import { randomUUID } from 'crypto'
+import log from './utils/logger'
 
 let db: Database.Database | null = null
 
@@ -22,14 +23,14 @@ export function initDatabase(filename?: string, _skipSeed = false): Database.Dat
     const userDataPath = app.getPath('userData')
     dbPath = join(userDataPath, 'knowledge-base.db')
 
-    console.log('[Database] Initializing database at:', dbPath)
+    log.info('[Database] Initializing database at:', dbPath)
 
     // 確保目錄存在
     if (!existsSync(userDataPath)) {
       mkdirSync(userDataPath, { recursive: true })
     }
   } else {
-    console.log('[Database] Initializing database at:', dbPath)
+    log.info('[Database] Initializing database at:', dbPath)
   }
 
   // 創建或打開資料庫
@@ -48,15 +49,15 @@ export function initDatabase(filename?: string, _skipSeed = false): Database.Dat
   try {
       const ftsCheck = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='feed_items_fts'").get();
       if (ftsCheck) {
-          console.log('[Database] Verified: feed_items_fts table exists.');
+          log.info('[Database] Verified: feed_items_fts table exists.');
       } else {
-          console.error('[Database] WARNING: feed_items_fts table does NOT exist after migration.');
+          log.error('[Database] WARNING: feed_items_fts table does NOT exist after migration.');
       }
   } catch (e) {
-      console.error('[Database] Failed to verify feed_items_fts existence:', e);
+      log.error('[Database] Failed to verify feed_items_fts existence:', e);
   }
 
-  console.log('[Database] Database initialized successfully')
+  log.info('[Database] Database initialized successfully')
   return db
 }
 
@@ -76,7 +77,7 @@ export function getDatabase(): Database.Database {
  */
 export function closeDatabase(): void {
   if (db) {
-    console.log('[Database] Closing database connection')
+    log.info('[Database] Closing database connection')
     db.close()
     db = null
   }
@@ -86,7 +87,7 @@ export function closeDatabase(): void {
  * 執行資料庫 migration
  */
 function runMigrations(database: Database.Database): void {
-  console.log('[Database] Running migrations...')
+  log.info('[Database] Running migrations...')
 
   // 建立 migrations 資料表（如果不存在）
   database.exec(`
@@ -102,7 +103,7 @@ function runMigrations(database: Database.Database): void {
   const existing = database.prepare('SELECT id FROM _migrations WHERE name = ?').get(migrationName)
 
   if (!existing) {
-    console.log(`[Database] Applying migration: ${migrationName}`)
+    log.info(`[Database] Applying migration: ${migrationName}`)
 
     // 內嵌的初始 schema
     const schema = getInitialSchema()
@@ -110,9 +111,9 @@ function runMigrations(database: Database.Database): void {
 
     // 記錄 migration
     database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationName)
-    console.log(`[Database] Migration ${migrationName} applied successfully`)
+    log.info(`[Database] Migration ${migrationName} applied successfully`)
   } else {
-    console.log(`[Database] Migration ${migrationName} already applied`)
+    log.info(`[Database] Migration ${migrationName} already applied`)
   }
 
   // 檢查並執行 002_notes_schema
@@ -122,15 +123,15 @@ function runMigrations(database: Database.Database): void {
     .get(migrationNoteName)
 
   if (!existingNote) {
-    console.log(`[Database] Applying migration: ${migrationNoteName}`)
+    log.info(`[Database] Applying migration: ${migrationNoteName}`)
 
     const schema = getNoteSchema()
     database.exec(schema)
 
     database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationNoteName)
-    console.log(`[Database] Migration ${migrationNoteName} applied successfully`)
+    log.info(`[Database] Migration ${migrationNoteName} applied successfully`)
   } else {
-    console.log(`[Database] Migration ${migrationNoteName} already applied`)
+    log.info(`[Database] Migration ${migrationNoteName} already applied`)
   }
 
   // 檢查並執行 003_projects_schema
@@ -140,15 +141,15 @@ function runMigrations(database: Database.Database): void {
     .get(migrationProjectName)
 
   if (!existingProject) {
-    console.log(`[Database] Applying migration: ${migrationProjectName}`)
+    log.info(`[Database] Applying migration: ${migrationProjectName}`)
 
     const schema = getProjectSchema()
     database.exec(schema)
 
     database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationProjectName)
-    console.log(`[Database] Migration ${migrationProjectName} applied successfully`)
+    log.info(`[Database] Migration ${migrationProjectName} applied successfully`)
   } else {
-    console.log(`[Database] Migration ${migrationProjectName} already applied`)
+    log.info(`[Database] Migration ${migrationProjectName} already applied`)
   }
 
   // 檢查並執行 004_schema_updates
@@ -158,7 +159,7 @@ function runMigrations(database: Database.Database): void {
     .get(migrationSchemaUpdateName)
 
   if (!existingSchemaUpdate) {
-    console.log(`[Database] Applying migration: ${migrationSchemaUpdateName}`)
+    log.info(`[Database] Applying migration: ${migrationSchemaUpdateName}`)
 
     // 執行 schema updates
     try {
@@ -167,12 +168,12 @@ function runMigrations(database: Database.Database): void {
         ALTER TABLE feeds ADD COLUMN category TEXT DEFAULT '未分類';
       `)
       database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationSchemaUpdateName)
-      console.log(`[Database] Migration ${migrationSchemaUpdateName} applied successfully`)
+      log.info(`[Database] Migration ${migrationSchemaUpdateName} applied successfully`)
     } catch (error) {
-      console.error(`[Database] Migration ${migrationSchemaUpdateName} failed:`, error)
+      log.error(`[Database] Migration ${migrationSchemaUpdateName} failed:`, error)
     }
   } else {
-    console.log(`[Database] Migration ${migrationSchemaUpdateName} already applied`)
+    log.info(`[Database] Migration ${migrationSchemaUpdateName} already applied`)
   }
 
   // 檢查並執行 005_add_quick_note
@@ -182,18 +183,18 @@ function runMigrations(database: Database.Database): void {
     .get(migrationQuickNoteName)
 
   if (!existingQuickNote) {
-    console.log(`[Database] Applying migration: ${migrationQuickNoteName}`)
+    log.info(`[Database] Applying migration: ${migrationQuickNoteName}`)
     try {
       database.exec(`
         ALTER TABLE feed_items ADD COLUMN quick_note TEXT;
       `)
       database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationQuickNoteName)
-      console.log(`[Database] Migration ${migrationQuickNoteName} applied successfully`)
+      log.info(`[Database] Migration ${migrationQuickNoteName} applied successfully`)
     } catch (error) {
-      console.error(`[Database] Migration ${migrationQuickNoteName} failed:`, error)
+      log.error(`[Database] Migration ${migrationQuickNoteName} failed:`, error)
     }
   } else {
-    console.log(`[Database] Migration ${migrationQuickNoteName} already applied`)
+    log.info(`[Database] Migration ${migrationQuickNoteName} already applied`)
   }
 
   // 006_feed_folders
@@ -203,7 +204,7 @@ function runMigrations(database: Database.Database): void {
     .get(migrationFeedFoldersName)
 
   if (!existingFeedFolders) {
-    console.log(`[Database] Applying migration: ${migrationFeedFoldersName}`)
+    log.info(`[Database] Applying migration: ${migrationFeedFoldersName}`)
     try {
       // 1. Create folders table
       database.exec(`
@@ -239,12 +240,12 @@ function runMigrations(database: Database.Database): void {
       }
 
       database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationFeedFoldersName)
-      console.log(`[Database] Migration ${migrationFeedFoldersName} applied successfully`)
+      log.info(`[Database] Migration ${migrationFeedFoldersName} applied successfully`)
     } catch (error) {
-      console.error(`[Database] Migration ${migrationFeedFoldersName} failed:`, error)
+      log.error(`[Database] Migration ${migrationFeedFoldersName} failed:`, error)
     }
   } else {
-    console.log(`[Database] Migration ${migrationFeedFoldersName} already applied`)
+    log.info(`[Database] Migration ${migrationFeedFoldersName} already applied`)
   }
 
   // 007_feed_search
@@ -254,7 +255,7 @@ function runMigrations(database: Database.Database): void {
     .get(migrationFeedSearchName)
 
   if (!existingFeedSearch) {
-    console.log(`[Database] Applying migration: ${migrationFeedSearchName}`)
+    log.info(`[Database] Applying migration: ${migrationFeedSearchName}`)
     try {
       // 1. Create FTS virtual table
       // Note: content_rowid='rowid' links to the implicit rowid of feed_items
@@ -290,12 +291,12 @@ function runMigrations(database: Database.Database): void {
       database.exec("INSERT INTO feed_items_fts(feed_items_fts) VALUES('rebuild')")
 
       database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationFeedSearchName)
-      console.log(`[Database] Migration ${migrationFeedSearchName} applied successfully`)
+      log.info(`[Database] Migration ${migrationFeedSearchName} applied successfully`)
     } catch (error) {
-      console.error(`[Database] Migration ${migrationFeedSearchName} failed:`, error)
+      log.error(`[Database] Migration ${migrationFeedSearchName} failed:`, error)
       // Fallback: If trigram is not supported, try standard tokenizer
       if (String(error).includes('tokenizer')) {
-        console.log('[Database] Retrying migration with standard tokenizer...')
+        log.info('[Database] Retrying migration with standard tokenizer...')
         try {
            database.exec(`
             CREATE VIRTUAL TABLE IF NOT EXISTS feed_items_fts USING fts5(
@@ -319,14 +320,14 @@ function runMigrations(database: Database.Database): void {
             INSERT INTO feed_items_fts(feed_items_fts) VALUES('rebuild');
            `)
            database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationFeedSearchName)
-           console.log(`[Database] Migration ${migrationFeedSearchName} applied successfully (fallback)`)
+           log.info(`[Database] Migration ${migrationFeedSearchName} applied successfully (fallback)`)
         } catch (retryError) {
-           console.error(`[Database] Migration ${migrationFeedSearchName} failed even with fallback:`, retryError)
+           log.error(`[Database] Migration ${migrationFeedSearchName} failed even with fallback:`, retryError)
         }
       }
     }
   } else {
-    console.log(`[Database] Migration ${migrationFeedSearchName} already applied`)
+    log.info(`[Database] Migration ${migrationFeedSearchName} already applied`)
   }
 
   // 008_highlights
@@ -336,7 +337,7 @@ function runMigrations(database: Database.Database): void {
     .get(migrationHighlightsName)
 
   if (!existingHighlights) {
-    console.log(`[Database] Applying migration: ${migrationHighlightsName}`)
+    log.info(`[Database] Applying migration: ${migrationHighlightsName}`)
     try {
       database.exec(`
         CREATE TABLE IF NOT EXISTS highlights (
@@ -353,12 +354,12 @@ function runMigrations(database: Database.Database): void {
         CREATE INDEX IF NOT EXISTS idx_highlights_feed_item_id ON highlights(feed_item_id);
       `)
       database.prepare('INSERT INTO _migrations (name) VALUES (?)').run(migrationHighlightsName)
-      console.log(`[Database] Migration ${migrationHighlightsName} applied successfully`)
+      log.info(`[Database] Migration ${migrationHighlightsName} applied successfully`)
     } catch (error) {
-      console.error(`[Database] Migration ${migrationHighlightsName} failed:`, error)
+      log.error(`[Database] Migration ${migrationHighlightsName} failed:`, error)
     }
   } else {
-    console.log(`[Database] Migration ${migrationHighlightsName} already applied`)
+    log.info(`[Database] Migration ${migrationHighlightsName} already applied`)
   }
 }
 

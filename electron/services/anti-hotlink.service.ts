@@ -1,4 +1,5 @@
 import { session } from 'electron'
+import log from '../utils/logger'
 
 /**
  * 設置圖片防盜鏈繞過
@@ -26,7 +27,7 @@ export function setupAntiHotlinkBypass(): void {
         if (domainRefererMap[hostname]) {
           // 設置正確的 Referer
           details.requestHeaders['Referer'] = domainRefererMap[hostname]
-          console.log(`[Anti-Hotlink] Modified Referer for ${hostname}`)
+          log.info(`[Anti-Hotlink] Modified Referer for ${hostname}`)
         }
       } catch (e) {
         // 忽略無效的 URL
@@ -36,5 +37,5 @@ export function setupAntiHotlinkBypass(): void {
     }
   )
 
-  console.log('[Anti-Hotlink] Bypass configured for:', Object.keys(domainRefererMap).join(', '))
+  log.info('[Anti-Hotlink] Bypass configured for:', Object.keys(domainRefererMap).join(', '))
 }

@@ -18,9 +18,10 @@ import { initHighlightIPC } from './ipc/highlight.ipc'
 import { initDialogIPC } from './ipc/dialog.ipc'
 import { initScheduler, stopScheduler } from './services/scheduler.service'
 import { setupAntiHotlinkBypass } from './services/anti-hotlink.service'
+import log from './utils/logger'
 
 function createWindow(): void {
-  console.log('Creating window...')
+  log.info('Creating window...')
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
@@ -35,16 +36,16 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
-    console.log('Window ready to show')
+    log.info('Window ready to show')
     mainWindow.show()
   })
 
   mainWindow.webContents.on('did-finish-load', () => {
-    console.log('Content finished loading')
+    log.info('Content finished loading')
   })
 
   mainWindow.webContents.on('did-fail-load', (_, errorCode, errorDescription) => {
-    console.error('Failed to load:', errorCode, errorDescription)
+    log.error('Failed to load:', errorCode, errorDescription)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -55,13 +56,13 @@ function createWindow(): void {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    console.log('Loading URL:', process.env['ELECTRON_RENDERER_URL'])
+    log.info('Loading URL:', process.env['ELECTRON_RENDERER_URL'])
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']).catch((err) => {
-      console.error('Failed to load URL, falling back to file:', err)
+      log.error('Failed to load URL, falling back to file:', err)
       mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
     })
   } else {
-    console.log('Loading file...')
+    log.info('Loading file...')
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
@@ -70,54 +71,54 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  console.log('App ready')
+  log.info('App ready')
 
   // 設置使用系統代理（讓圖片請求能通過用戶的代理程式）
   const { session } = await import('electron')
   await session.defaultSession.setProxy({ mode: 'system' })
-  console.log('System proxy enabled')
+  log.info('System proxy enabled')
 
   // 設置防盜鏈繞過（修改圖片請求的 Referer）
   setupAntiHotlinkBypass()
-  console.log('Anti-hotlink bypass enabled')
+  log.info('Anti-hotlink bypass enabled')
 
   // 初始化資料庫
   try {
     initDatabase()
-    console.log('Database initialized')
+    log.info('Database initialized')
 
     // 初始化 Feed IPC
     initFeedIPC()
-    console.log('Feed IPC initialized')
+    log.info('Feed IPC initialized')
 
     // 初始化 Settings IPC
     initSettingsIPC()
-    console.log('Settings IPC initialized')
+    log.info('Settings IPC initialized')
 
     // 初始化 Note IPC
     initNoteIPC()
-    console.log('Note IPC initialized')
+    log.info('Note IPC initialized')
 
     // 初始化 Project IPC
     initProjectIPC()
-    console.log('Project IPC initialized')
+    log.info('Project IPC initialized')
 
     // 初始化 Folder IPC
     initFolderIPC()
-    console.log('Folder IPC initialized')
+    log.info('Folder IPC initialized')
 
     // 初始化 Highlight IPC
     initHighlightIPC()
-    console.log('Highlight IPC initialized')
+    log.info('Highlight IPC initialized')
 
     // 初始化 Dialog IPC
     initDialogIPC()
-    console.log('Dialog IPC initialized')
+    log.info('Dialog IPC initialized')
 
     // 初始化背景排程
     initScheduler()
   } catch (error) {
-    console.error('Failed to initialize database:', error)
+    log.error('Failed to initialize database:', error)
     dialog.showErrorBox(
       'Initialization Error',
       `Failed to initialize database (and skipping IPC init): ${error}\n\nPlease report this error.`
@@ -135,7 +136,7 @@ app.whenReady().then(async () => {
   })
 
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('ping', () => log.info('pong'))
 
   createWindow()
 

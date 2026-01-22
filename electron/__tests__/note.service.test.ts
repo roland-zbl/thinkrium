@@ -55,6 +55,7 @@ vi.mock('turndown', () => {
   return {
     default: class {
       turndown = vi.fn((html) => `Markdown of ${html}`)
+      addRule = vi.fn()
     }
   }
 })

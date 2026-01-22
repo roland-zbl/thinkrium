@@ -3,6 +3,7 @@ import { getDatabase } from '../database'
 import { fetchFeed } from './rss.service'
 import { Feed } from '../../src/shared/types/feed'
 import { randomUUID } from 'crypto'
+import log from '../utils/logger'
 
 let schedulerInterval: NodeJS.Timeout | null = null
 
@@ -19,7 +20,7 @@ export function initScheduler(): void {
 
   // 每 15 分鐘執行一次
   schedulerInterval = setInterval(runScheduledFetch, 15 * 60 * 1000)
-  console.log('[Scheduler] Background fetch scheduler started (15m interval)')
+  log.info('[Scheduler] Background fetch scheduler started (15m interval)')
 }
 
 /**
@@ -36,7 +37,7 @@ export function stopScheduler(): void {
  * 執行排程抓取
  */
 async function runScheduledFetch(): Promise<void> {
-  console.log('[Scheduler] Starting background fetch...')
+  log.info('[Scheduler] Starting background fetch...')
   sendToAll('scheduler:fetch-start')
   const db = getDatabase()
 
@@ -50,9 +51,9 @@ async function runScheduledFetch(): Promise<void> {
       await fetchFeedAndSave(db, feed)
     }
 
-    console.log('[Scheduler] Background fetch completed')
+    log.info('[Scheduler] Background fetch completed')
   } catch (error) {
-    console.error('[Scheduler] Error during background fetch:', error)
+    log.error('[Scheduler] Error during background fetch:', error)
   } finally {
     sendToAll('scheduler:fetch-end')
   }
@@ -60,7 +61,7 @@ async function runScheduledFetch(): Promise<void> {
 
 async function fetchFeedAndSave(db: any, feed: Feed): Promise<void> {
   try {
-    console.log(`[Scheduler] Fetching ${feed.title}...`)
+    log.info(`[Scheduler] Fetching ${feed.title}...`)
     const result = await fetchFeed(feed.url)
 
     const items = result.items.map((item) => ({
@@ -90,13 +91,13 @@ async function fetchFeedAndSave(db: any, feed: Feed): Promise<void> {
     })
 
     transaction(items)
-    console.log(
+    log.info(
       `[Scheduler] Fetched ${items.length} items from ${feed.title}, inserted ${insertedCount} new items.`
     )
 
     // 更新最後抓取時間
     db.prepare('UPDATE feeds SET last_fetched = CURRENT_TIMESTAMP WHERE id = ?').run(feed.id)
   } catch (error) {
-    console.error(`[Scheduler] Failed to fetch ${feed.title}:`, error)
+    log.error(`[Scheduler] Failed to fetch ${feed.title}:`, error)
   }
 }

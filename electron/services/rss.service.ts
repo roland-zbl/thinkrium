@@ -1,5 +1,6 @@
 import Parser from 'rss-parser'
 import { ParsedFeed, RSSItem } from '../types/rss'
+import log from '../utils/logger'
 
 // 自訂欄位以抓取更多內容
 type CustomFeed = { feedUrl: string }
@@ -115,10 +116,10 @@ export async function resolveIcon(
 export async function validateFeed(
   url: string
 ): Promise<{ valid: boolean; title?: string; icon?: string; error?: string }> {
-  console.log(`[RSS Service] Validating: ${url}`)
+  log.info(`[RSS Service] Validating: ${url}`)
   try {
     const feed = await parser.parseURL(url)
-    console.log(
+    log.info(
       `[RSS Service] Validation success: ${feed.title}, items: ${feed.items?.length || 0}`
     )
 
@@ -130,7 +131,7 @@ export async function validateFeed(
       icon
     }
   } catch (error: any) {
-    console.error('[RSS Service] Validation error:', error.message)
+    log.error('[RSS Service] Validation error:', error.message)
 
     // 提供更友善的錯誤訊息
     let friendlyError = error.message || '無法解析該訂閱源'
@@ -156,10 +157,10 @@ export async function validateFeed(
  * 優先使用完整內容 (content:encoded > content > description > contentSnippet)
  */
 export async function fetchFeed(url: string): Promise<ParsedFeed> {
-  console.log(`[RSS Service] Fetching: ${url}`)
+  log.info(`[RSS Service] Fetching: ${url}`)
   try {
     const feed = await parser.parseURL(url)
-    console.log(`[RSS Service] Fetched ${feed.items?.length || 0} items from ${feed.title}`)
+    log.info(`[RSS Service] Fetched ${feed.items?.length || 0} items from ${feed.title}`)
 
     return {
       title: feed.title,
@@ -200,12 +201,12 @@ export async function fetchFeed(url: string): Promise<ParsedFeed> {
         if (imageUrl && !fullContent.includes(imageUrl)) {
            // 簡單防呆：確保不是明顯的重複（有些 feed 會在 description 裡放縮圖）
            // 這裡我們直接加在最前面，並設定樣式讓它自適應
-           console.log(`[RSS Service] Found extra image for "${item.title}", prepending...`)
+           log.info(`[RSS Service] Found extra image for "${item.title}", prepending...`)
            fullContent = `<img src="${imageUrl}" alt="Cover Image" style="display:block; max-width:100%; margin-bottom: 1em;" /><br/>${fullContent}`
         }
 
         // 記錄內容長度以便調試
-        console.log(
+        log.info(
           `[RSS Service] Item "${item.title?.substring(0, 30)}..." content length: ${fullContent.length}`
         )
 
@@ -222,7 +223,7 @@ export async function fetchFeed(url: string): Promise<ParsedFeed> {
       })
     }
   } catch (error: any) {
-    console.error('[RSS Service] Fetch error:', error.message)
+    log.error('[RSS Service] Fetch error:', error.message)
     throw new Error(`抓取失敗: ${error.message}`)
   }
 }

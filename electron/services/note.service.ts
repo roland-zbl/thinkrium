@@ -6,6 +6,7 @@ import TurndownService from 'turndown'
 import { getDatabase } from '../database'
 import { SaveNoteInput, Note, NoteUpdate } from '@shared/types'
 import { randomUUID } from 'crypto'
+import log from '../utils/logger'
 
 export class NoteService {
   private turndown: TurndownService
@@ -280,7 +281,7 @@ export class NoteService {
           processedHtml = processedHtml.replace(item.url, relativePath)
         }
       } catch (error) {
-        console.error(`Failed to download image: ${item.url}`, error)
+        log.error(`Failed to download image: ${item.url}`, error)
       }
     }
 
@@ -353,7 +354,7 @@ export class NoteService {
         if (!existsSync(fullPath)) {
           db.prepare('DELETE FROM notes WHERE id = ?').run(note.id)
           removed++
-          console.log(`[NoteService] Removed orphan note: ${note.id}`)
+          log.info(`[NoteService] Removed orphan note: ${note.id}`)
         }
       }
     }
