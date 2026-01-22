@@ -51,7 +51,8 @@ const api = {
     list: (filter?: any) => ipcRenderer.invoke('note:list', filter),
     get: (id: string) => ipcRenderer.invoke('note:get', id),
     update: (id: string, updates: any) => ipcRenderer.invoke('note:update', id, updates),
-    delete: (id: string) => ipcRenderer.invoke('note:delete', id)
+    delete: (id: string) => ipcRenderer.invoke('note:delete', id),
+    sync: () => ipcRenderer.invoke('note:sync')
   },
   project: {
     create: (project: any) => ipcRenderer.invoke('project:create', project),

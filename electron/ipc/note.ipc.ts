@@ -95,4 +95,11 @@ export function initNoteIPC(): void {
       }
     })
   )
+
+  // 同步檔案系統
+  ipcMain.handle('note:sync', () =>
+    handleIPC(async () => {
+      return await noteService.syncWithFileSystem()
+    })
+  )
 }
