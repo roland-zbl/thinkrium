@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Note, DbNote, SaveNoteInput } from '@/types'
+import { Note, SaveNoteInput } from '@/types'
 import { invokeIPC } from '@/utils/ipc'
 import { useToastStore } from '@/stores/toast.store'
 import { parseDbNote } from '@/utils/transform'

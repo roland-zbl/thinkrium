@@ -52,12 +52,8 @@ describe('transform.ts', () => {
         title: 'Test Note',
         content: 'content',
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z',
         tags: '["tag1"]',
-        type: 'note',
-        is_deleted: 0,
-        is_archived: 0,
-        is_favorite: 0
+        type: 'note'
       }
 
       const note = parseDbNote(dbNote)
@@ -72,11 +68,7 @@ describe('transform.ts', () => {
             id: '1',
             title: 'Test',
             content: 'quick_note: "my note"\nOther content',
-            created_at: '2023-01-01',
-            updated_at: '2023-01-01',
-            is_deleted: 0,
-            is_archived: 0,
-            is_favorite: 0
+            created_at: '2023-01-01'
         }
         const note = parseDbNote(dbNote)
         expect(note.quick_note).toBe('my note')
@@ -93,9 +85,10 @@ describe('transform.ts', () => {
             status: 'unread',
             feed_id: 'feed1',
             url: 'http://example.com',
-            uuid: 'uuid-1',
-            created_at: '2023-01-01',
-            updated_at: '2023-01-01'
+            guid: 'uuid-1',
+            fetched_at: '2023-01-01',
+            read_at: null,
+            author: null
         }
 
         const feedItem = parseFeedItem(item, 'Source A')
@@ -116,10 +109,10 @@ describe('transform.ts', () => {
             url: 'http://example.com',
             title_snippet: '<b>Highlighted</b> Title',
             content_snippet: '<b>Highlighted</b> Content',
-            rank: 1,
-            uuid: 'uuid-1',
-            created_at: '2023-01-01',
-            updated_at: '2023-01-01'
+            guid: 'uuid-1',
+            fetched_at: '2023-01-01',
+            read_at: null,
+            author: null
         }
 
         const feedItem = parseFeedItem(item, 'Source A')
