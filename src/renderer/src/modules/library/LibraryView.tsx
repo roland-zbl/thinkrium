@@ -7,14 +7,14 @@ import { useLibraryStore } from './store/library.store'
 import { useAppStore } from '@/stores/app.store'
 
 export const LibraryView: React.FC = () => {
-  const { selectedNoteId, fetchNotes } = useLibraryStore()
+  const { selectedNoteId, fetchNotes, syncNotes } = useLibraryStore()
   const { currentView } = useAppStore()
 
   React.useEffect(() => {
     if (currentView === 'library') {
-      fetchNotes()
+      syncNotes().then(() => fetchNotes())
     }
-  }, [fetchNotes, currentView])
+  }, [fetchNotes, syncNotes, currentView])
 
   return (
     <div className="h-full w-full overflow-hidden flex flex-col bg-background">

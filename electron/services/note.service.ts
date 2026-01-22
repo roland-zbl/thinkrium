@@ -330,6 +330,35 @@ export class NoteService {
   private stripMarkdown(md: string): string {
     return md.replace(/[#*`_~[\]()]/g, '').substring(0, 2000)
   }
+
+  /**
+   * 同步資料庫與檔案系統
+   * 移除資料庫中存在但檔案系統中不存在的筆記
+   */
+  async syncWithFileSystem(): Promise<{ removed: number }> {
+    const rootDir = await this.getRootDir()
+    if (!rootDir) return { removed: 0 }
+
+    const db = getDatabase()
+    const notes = db.prepare('SELECT id, file_path FROM notes').all() as {
+      id: string
+      file_path: string
+    }[]
+
+    let removed = 0
+    for (const note of notes) {
+      if (note.file_path) {
+        const fullPath = join(rootDir, note.file_path)
+        if (!existsSync(fullPath)) {
+          db.prepare('DELETE FROM notes WHERE id = ?').run(note.id)
+          removed++
+          console.log(`[NoteService] Removed orphan note: ${note.id}`)
+        }
+      }
+    }
+
+    return { removed }
+  }
 }
 
 export const noteService = new NoteService()

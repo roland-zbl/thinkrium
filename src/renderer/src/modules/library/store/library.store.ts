@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { format } from 'date-fns'
 import { Note, DbNote, SaveNoteInput } from '@/types'
 import { invokeIPC } from '@/utils/ipc'
+import { useToastStore } from '@/stores/toast.store'
 
 
 interface LibraryState {
@@ -21,6 +22,7 @@ interface LibraryState {
   selectNote: (id: string | null) => void
   createNote: (title: string) => Promise<void>
   deleteNote: (id: string) => Promise<void>
+  syncNotes: () => Promise<void>
   setFilter: (key: keyof LibraryState['filters'], value: string) => void
   resetFilters: () => void
   getFilteredNotes: () => Note[]
@@ -68,6 +70,21 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
       await get().fetchNotes()
     } catch (error) {
       console.error('Failed to delete note:', error)
+    }
+  },
+  syncNotes: async () => {
+    try {
+      const result = await invokeIPC(window.api.note.sync(), { showErrorToast: false })
+      if (result.removed > 0) {
+        useToastStore.getState().addToast({
+          type: 'info',
+          title: '資料庫已同步',
+          description: `已清理 ${result.removed} 筆孤立記錄`
+        })
+        await get().fetchNotes()
+      }
+    } catch (error) {
+      console.error('Failed to sync notes:', error)
     }
   },
   setFilter: (key, value) =>
