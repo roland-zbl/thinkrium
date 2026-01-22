@@ -1,6 +1,7 @@
 import { Database } from 'better-sqlite3'
 import { getDatabase } from '../database'
 import { randomUUID } from 'crypto'
+import log from '../utils/logger'
 
 export interface DbFolder {
   id: string
@@ -39,21 +40,21 @@ export class FolderService {
   deleteFolder(id: string): void {
     const db = this.getDb()
     const transaction = db.transaction(() => {
-      console.log('[FolderService] Deleting folder:', id)
+      log.info('[FolderService] Deleting folder:', id)
       // 1. Move feeds in this folder to root (folder_id = NULL)
       const feedRes = db.prepare('UPDATE feeds SET folder_id = NULL WHERE folder_id = ?').run(id)
-      console.log('[FolderService] Moved feeds:', feedRes.changes)
+      log.info('[FolderService] Moved feeds:', feedRes.changes)
 
       // 2. Move subfolders to root (parent_id = NULL)
       const folderRes = db.prepare('UPDATE folders SET parent_id = NULL WHERE parent_id = ?').run(id)
-      console.log('[FolderService] Moved subfolders:', folderRes.changes)
+      log.info('[FolderService] Moved subfolders:', folderRes.changes)
 
       // 3. Delete the folder
       const delRes = db.prepare('DELETE FROM folders WHERE id = ?').run(id)
-      console.log('[FolderService] Deleted folder:', delRes.changes)
+      log.info('[FolderService] Deleted folder:', delRes.changes)
       
       if (delRes.changes === 0) {
-          console.warn('[FolderService] No folder deleted! ID might be wrong or missing.')
+          log.warn('[FolderService] No folder deleted! ID might be wrong or missing.')
       }
     })
 

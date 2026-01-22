@@ -65,7 +65,7 @@ describe('Folder Service', () => {
 
   it('deleteFolder should move contents to root and delete folder', () => {
     const stmtMock = {
-      run: vi.fn()
+      run: vi.fn().mockReturnValue({ changes: 1 })
     }
     vi.spyOn(db, 'prepare').mockReturnValue(stmtMock as any)
 

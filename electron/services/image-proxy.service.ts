@@ -1,4 +1,5 @@
 import { protocol, net } from 'electron'
+import log from '../utils/logger'
 
 /**
  * 註冊自定義協議用於代理圖片請求
@@ -29,7 +30,7 @@ export function handleImageProxyProtocol(): void {
       // image-proxy://img.gamelook.com.cn/2025/12/CJFH8.jpg
       const originalUrl = request.url.replace('image-proxy://', 'http://')
 
-      console.log('[Image Proxy] Fetching:', originalUrl)
+      log.info('[Image Proxy] Fetching:', originalUrl)
 
       // 從原始 URL 中提取域名作為 Referer
       const urlObj = new URL(originalUrl)
@@ -46,15 +47,15 @@ export function handleImageProxyProtocol(): void {
       })
 
       if (!response.ok) {
-        console.error('[Image Proxy] Failed:', response.status, response.statusText)
+        log.error('[Image Proxy] Failed:', response.status, response.statusText)
         // 返回一個透明 1x1 PNG 作為佔位圖
         return new Response(null, { status: response.status })
       }
 
-      console.log('[Image Proxy] Success:', originalUrl)
+      log.info('[Image Proxy] Success:', originalUrl)
       return response
     } catch (error) {
-      console.error('[Image Proxy] Error:', error)
+      log.error('[Image Proxy] Error:', error)
       return new Response(null, { status: 500 })
     }
   })

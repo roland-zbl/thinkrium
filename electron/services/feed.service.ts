@@ -3,6 +3,7 @@ import { getDatabase } from '../database'
 import { Feed, FeedItem, ItemFilter } from '../../src/shared/types/feed'
 import { fetchFeed, validateFeed } from './rss.service'
 import { randomUUID } from 'crypto'
+import log from '../utils/logger'
 
 export interface SearchOptions {
   feedId?: string
@@ -82,7 +83,7 @@ export class FeedService {
 
     // If URL is changing, re-validate
     if (updates.url && updates.url !== feed.url) {
-      console.log(`[FeedService] URL changed for ${feed.title}, validating new URL: ${updates.url}`)
+      log.info(`[FeedService] URL changed for ${feed.title}, validating new URL: ${updates.url}`)
       const validation = await validateFeed(updates.url)
 
       // If validation successful (didn't throw), update icon if available
@@ -216,7 +217,7 @@ export class FeedService {
     const feed = db.prepare('SELECT * FROM feeds WHERE id = ?').get(feedId) as Feed
     if (!feed) throw new Error('訂閱源不存在')
 
-    console.log(`[FeedService] Fetching feed: ${feed.title} (${feed.url})`)
+    log.info(`[FeedService] Fetching feed: ${feed.title} (${feed.url})`)
 
     // 如果圖示缺失，嘗試補全
     if (!feed.icon_url) {
@@ -224,10 +225,10 @@ export class FeedService {
         const validation = await validateFeed(feed.url)
         if (validation.icon) {
           db.prepare('UPDATE feeds SET icon_url = ? WHERE id = ?').run(validation.icon, feedId)
-          console.log(`[FeedService] Updated missing icon for ${feed.title}: ${validation.icon}`)
+          log.info(`[FeedService] Updated missing icon for ${feed.title}: ${validation.icon}`)
         }
       } catch (e) {
-        console.error(`[FeedService] Failed to update icon for ${feed.title}:`, e)
+        log.error(`[FeedService] Failed to update icon for ${feed.title}:`, e)
       }
     }
 
@@ -262,7 +263,7 @@ export class FeedService {
     // Regex for CJK characters range
     const hasCJK = /[\u4e00-\u9fa5]/.test(query)
     if (results.length === 0 && hasCJK) {
-      console.log('[FeedService] FTS returned 0 results for CJK query, falling back to LIKE')
+      log.info('[FeedService] FTS returned 0 results for CJK query, falling back to LIKE')
       results = this.likeSearch(query, options)
     }
 
@@ -307,7 +308,7 @@ export class FeedService {
     try {
       return this.getDb().prepare(sql).all(...params) as SearchResult[]
     } catch (error) {
-      console.error('[FeedService] FTS search failed:', error)
+      log.error('[FeedService] FTS search failed:', error)
       return []
     }
   }
