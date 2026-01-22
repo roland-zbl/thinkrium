@@ -1,4 +1,4 @@
-# Thinkrium 技術債清理任務
+# Thinkrium 技術債清理與 UX 改進任務
 
 > 根據 2026-01-22 Code Review 結果整理
 > 適用於 Jules AI 自動執行
@@ -8,108 +8,118 @@
 ## 🎯 執行順序建議
 
 ```
-Phase 1: 基礎設施（建議先執行）
-├── 1. refactor-preload-types     [1.5h] - Type Safety
-├── 2. refactor-duplicate-logic   [1.5h] - 抽取重複邏輯
-├── 3. unify-error-handling       [2h]   - 統一錯誤處理
-└── 4. add-logging-system         [1h]   - 日誌系統
+Phase 1: 基礎設施（已完成 ✅）
+├── ✅ refactor-preload-types
+├── ✅ refactor-duplicate-logic
+├── ✅ unify-error-handling
+└── ✅ add-logging-system
 
-Phase 2: 功能開發（基礎完成後）
-└── ... 新功能開發 ...
+Phase 2: UX 改進（待執行）
+├── 5. improve-loading-ux      [2h]   - 品牌化載入 + Skeleton
+├── 6. improve-empty-states    [1.5h] - 空狀態引導設計
+├── 7. unify-visual-feedback   [1h]   - 統一 hover/focus 樣式
+├── 8. add-micro-animations    [2h]   - 頁面/列表動畫
+└── 9. apply-virtual-list      [2h]   - 虛擬列表效能
 ```
 
 ---
 
-## 📋 Phase 1: 基礎設施修復
+## 📋 Phase 2: UX 改進
 
-### Task 1: Refactor Preload Types
+### Task 5: Improve Loading UX
 
-**OpenSpec**: `openspec/changes/refactor-preload-types/`
-
-**背景**：`electron/preload.ts` 中約 15 處使用 `any` 類型，導致 IDE 自動補全失效。
+**OpenSpec**: `openspec/changes/improve-loading-ux/`
 
 **目標**：
-1. 將所有 `any` 替換為 `@shared/types` 的具體類型
-2. 更新 `env.d.ts` 中的 API 類型聲明
+1. 建立品牌化 SplashScreen 元件
+2. 建立 Skeleton 元件用於資料載入狀態
+3. 為 FeedItemList 加入 Skeleton placeholder
 
 **涉及檔案**：
-- `electron/preload.ts`
-- `src/renderer/src/env.d.ts`
+- `src/renderer/src/App.tsx`
+- `src/renderer/src/components/SplashScreen.tsx` (NEW)
+- `src/renderer/src/components/ui/Skeleton.tsx` (NEW)
+- `src/renderer/src/modules/feed/components/FeedItemList.tsx`
 
 **驗收標準**：
-- [ ] 執行 `npm run typecheck` 無錯誤
-- [ ] IDE 中 `window.api.*` 自動補全正常
+- [ ] SplashScreen 包含 Logo 與載入動畫
+- [ ] Skeleton 具有 pulse 動畫效果
+- [ ] 資料載入時顯示 Skeleton 而非空白
 
 ---
 
-### Task 2: Refactor Duplicate Logic
+### Task 6: Improve Empty States
 
-**OpenSpec**: `openspec/changes/refactor-duplicate-logic/`
-
-**背景**：日期格式化、tags 解析邏輯在多處重複。
+**OpenSpec**: `openspec/changes/improve-empty-states/`
 
 **目標**：
-1. 建立 `src/renderer/src/utils/transform.ts`
-2. 實作 `parseTags()`, `formatNoteDate()`, `parseDbNote()`
-3. 重構 `library.store.ts` 與 `items.slice.ts`
+1. 重新設計 EmptyState 元件，支援圖標、CTA 按鈕
+2. 為 Feed、Library、Project 各模組提供專屬配置
 
 **涉及檔案**：
-- `src/renderer/src/utils/transform.ts` (NEW)
-- `src/renderer/src/modules/library/store/library.store.ts`
-- `src/renderer/src/modules/feed/store/slices/items.slice.ts`
+- `src/renderer/src/components/ui/EmptyState.tsx`
+- `src/renderer/src/modules/feed/components/FeedItemList.tsx`
+- `src/renderer/src/modules/library/LibraryView.tsx`
 
 **驗收標準**：
-- [ ] 無重複的資料轉換邏輯
-- [ ] 所有測試通過
+- [ ] 空狀態包含引導圖標與說明文字
+- [ ] CTA 按鈕功能正常
 
 ---
 
-### Task 3: Unify Error Handling
+### Task 7: Unify Visual Feedback
 
-**OpenSpec**: `openspec/changes/unify-error-handling/`
-
-**背景**：錯誤處理方式不一致（console.error / Toast / throw）。
+**OpenSpec**: `openspec/changes/unify-visual-feedback/`
 
 **目標**：
-1. 建立 `AppError` 自定義錯誤類別
-2. 強化 `invokeIPC` 工具函數
-3. 統一所有 store 的錯誤處理
+1. 在 index.css 定義統一的 focus ring 樣式
+2. 確保所有可互動元素有一致的 hover 過渡
 
 **涉及檔案**：
-- `src/renderer/src/utils/errors.ts` (NEW)
-- `src/renderer/src/utils/ipc.ts`
-- `src/renderer/src/modules/feed/store/slices/items.slice.ts`
-- `src/renderer/src/modules/library/store/library.store.ts`
-- `src/renderer/src/modules/project/store/project.store.ts`
+- `src/renderer/src/index.css`
+- `src/renderer/src/components/ui/button.tsx`
+- `src/renderer/src/modules/feed/components/FeedItemCard.tsx`
 
 **驗收標準**：
-- [ ] 用戶操作失敗時顯示具體錯誤訊息
-- [ ] 開發者可透過 `silent` 選項靜默處理
+- [ ] 鍵盤 Tab 導航時 focus ring 清晰可見
+- [ ] hover 過渡平滑（150ms）
 
 ---
 
-### Task 4: Add Logging System
+### Task 8: Add Micro Animations
 
-**OpenSpec**: `openspec/changes/add-logging-system/`
-
-**背景**：目前使用 `console.log/error`，無法追蹤生產問題。
+**OpenSpec**: `openspec/changes/add-micro-animations/`
 
 **目標**：
-1. 安裝 `electron-log` 套件
-2. 建立 `electron/utils/logger.ts`
-3. 替換關鍵位置的 console 調用
+1. 頁面切換淡入淡出效果
+2. 列表項目 staggered fadeIn
+3. Toast 進出動畫優化
 
 **涉及檔案**：
-- `package.json` (new dependency)
-- `electron/utils/logger.ts` (NEW)
-- `electron/main.ts`
-- `electron/database.ts`
-- `electron/services/*.ts`
+- `tailwind.config.js`
+- `src/renderer/src/components/layout/MainContent.tsx`
+- `src/renderer/src/components/ui/Toast.tsx`
 
 **驗收標準**：
-- [ ] 開發環境日誌輸出至 console
-- [ ] 生產環境日誌寫入 `{userData}/logs/`
-- [ ] 錯誤日誌包含 stack trace
+- [ ] 視圖切換有淡入效果
+- [ ] 動畫流暢無卡頓
+
+---
+
+### Task 9: Apply Virtual List
+
+**OpenSpec**: `openspec/changes/apply-virtual-list/`
+
+**目標**：
+1. 將 FeedItemList 改為虛擬列表渲染
+2. 確保鍵盤導航（J/K）正常
+
+**涉及檔案**：
+- `src/renderer/src/modules/feed/components/FeedItemList.tsx`
+
+**驗收標準**：
+- [ ] 500+ 項目時捲動流暢（>55 FPS）
+- [ ] 鍵盤導航自動捲動到選中項目
 
 ---
 
@@ -127,11 +137,8 @@ Phase 2: 功能開發（基礎完成後）
 
 ```bash
 # 檢視 change 詳情
-openspec show refactor-preload-types
-
-# 驗證 change 格式
-openspec validate refactor-preload-types --strict
+openspec show improve-loading-ux
 
 # 完成後歸檔
-openspec archive refactor-preload-types --yes
+openspec archive improve-loading-ux --yes
 ```
