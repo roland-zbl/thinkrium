@@ -1,7 +1,9 @@
-import React from 'react'
-import { Filter, RotateCcw, ChevronDown } from 'lucide-react'
+import React, { useState } from 'react'
+import { Filter, ChevronDown, Plus, Trash2 } from 'lucide-react'
 import { useLibraryStore } from '../store/library.store'
 import { cn } from '@/lib/utils'
+import { CreateNoteDialog } from './CreateNoteDialog'
+import { DeleteNoteDialog } from './DeleteNoteDialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +12,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export const FilterBar: React.FC = () => {
-  const { filters, setFilter, resetFilters } = useLibraryStore()
+  const { filters, setFilter, selectedNoteId } = useLibraryStore()
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
   const filterConfigs = [
     { key: 'type', label: '類型', options: ['全部', 'daily', 'note'] },
@@ -66,13 +70,26 @@ export const FilterBar: React.FC = () => {
         ))}
       </div>
 
-      <button
-        onClick={resetFilters}
-        className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
-      >
-        <RotateCcw size={14} />
-        <span className="text-xs font-medium">重置</span>
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setIsCreateOpen(true)}
+          className="flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded text-xs font-medium transition-colors"
+        >
+          <Plus size={14} />
+          新增筆記
+        </button>
+        <button
+          onClick={() => setIsDeleteOpen(true)}
+          disabled={!selectedNoteId}
+          className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-50 disabled:hover:text-muted-foreground disabled:hover:bg-transparent px-3 py-1.5 rounded text-xs font-medium transition-colors"
+        >
+          <Trash2 size={14} />
+          刪除筆記
+        </button>
+      </div>
+
+      <CreateNoteDialog isOpen={isCreateOpen} onOpenChange={setIsCreateOpen} />
+      <DeleteNoteDialog isOpen={isDeleteOpen} onOpenChange={setIsDeleteOpen} />
     </div>
   )
 }

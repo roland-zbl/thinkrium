@@ -155,7 +155,8 @@ export const mockApi = {
         date: new Date().toISOString().split('T')[0],
         type: 'note',
         projects: [],
-        tags: input.tags || []
+        tags: input.tags || [],
+        created_at: new Date().toISOString() // Ensure created_at is present
       }
       notes.push(newNote)
       console.log('[MockAPI] Note saved:', newNote)

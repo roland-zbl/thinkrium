@@ -171,7 +171,7 @@ export const NotePreview: React.FC = () => {
           <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
             內容預覽
           </h4>
-          <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed">
+          <div className="prose prose-lg dark:prose-invert max-w-none text-base leading-relaxed">
             {note.content ? (
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
