@@ -104,6 +104,22 @@ export function initFeedIPC(): void {
     })
   )
 
+  // 獲取單個訂閱源
+  ipcMain.handle('feed:get', (_, feedId: string) =>
+    handleIPC((): Feed | undefined => {
+      return feedService.getFeed(feedId)
+    })
+  )
+
+  // 更新訂閱源
+  ipcMain.handle(
+    'feed:update',
+    (_, { id, updates }: { id: string; updates: { title?: string; url?: string; folder_id?: string | null } }) =>
+      handleIPC(async (): Promise<void> => {
+        await feedService.updateFeed(id, updates)
+      })
+  )
+
   // 移動訂閱源到資料夾
   ipcMain.handle(
     'feed:move-to-folder',

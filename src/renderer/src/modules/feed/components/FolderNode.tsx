@@ -30,6 +30,7 @@ interface FolderNodeProps {
   onDelete: (id: string) => void
   onCreateSubfolder: (name: string, parentId: string) => void
   onMoveFeed: (feedId: string, folderId: string | null) => void
+  onEdit: (feedId: string) => void
 }
 
 export const FolderNode: React.FC<FolderNodeProps> = ({
@@ -40,7 +41,8 @@ export const FolderNode: React.FC<FolderNodeProps> = ({
   onRename,
   onDelete,
   onCreateSubfolder,
-  onMoveFeed
+  onMoveFeed,
+  onEdit
 }) => {
   const { activeFolderId, setActiveFolder, activeSubscriptionId, setActiveSubscription } =
     useFeedStore()
@@ -190,6 +192,7 @@ export const FolderNode: React.FC<FolderNodeProps> = ({
               onDelete={onDelete}
               onCreateSubfolder={onCreateSubfolder}
               onMoveFeed={onMoveFeed}
+              onEdit={onEdit}
             />
           ))}
           {childSubscriptions.map((sub) => (
@@ -234,6 +237,15 @@ export const FolderNode: React.FC<FolderNodeProps> = ({
                   className="z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
                   align="start"
                 >
+                  <DropdownMenuItem
+                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEdit(sub.id)
+                    }}
+                  >
+                    <span>Edit</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                     onClick={(e) => {
