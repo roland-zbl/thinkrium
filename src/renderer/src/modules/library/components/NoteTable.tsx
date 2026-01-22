@@ -113,9 +113,9 @@ export const NoteTable: React.FC = () => {
                     <Calendar size={14} />
                     {note.date}
                   </div>
-                  <div className="flex-1 px-2 font-medium truncate flex items-center gap-2 text-base">
+                  <div className="flex-1 px-2 font-medium truncate flex items-center gap-2 text-lg">
                     <FileText
-                      size={18}
+                      size={20}
                       className={
                         isActive
                           ? 'text-primary'

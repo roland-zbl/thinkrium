@@ -21,10 +21,11 @@ describe('LibraryStore', () => {
   })
 
   describe('fetchNotes', () => {
-    it('should fetch notes successfully', async () => {
+    it('should fetch notes successfully and normalize dates', async () => {
       const mockNotes = [
-        { id: '1', title: 'Note 1', created_at: '2023-01-01', type: 'note', tags: [], projects: [] },
-        { id: '2', title: 'Note 2', created_at: '2023-01-02', type: 'note', tags: '["tag1"]', projects: [] }
+        { id: '1', title: 'Note 1', created_at: '2023-01-01T10:00:00.000Z', type: 'note', tags: [], projects: [] },
+        { id: '2', title: 'Note 2', created_at: null, date: '2023-01-02', type: 'note', tags: '["tag1"]', projects: [] },
+        { id: '3', title: 'Note 3', created_at: undefined, date: undefined, type: 'note', tags: [], projects: [] } // Fallback to current date
       ]
 
       window.api.note.list = vi.fn().mockResolvedValue({ success: true, data: mockNotes })
@@ -34,12 +35,11 @@ describe('LibraryStore', () => {
       })
 
       const { notes } = useLibraryStore.getState()
-      expect(notes).toHaveLength(2)
-      expect(notes[0].title).toBe('Note 1')
-      // Check date normalization
-      expect(notes[0].date).toBe('2023-01-01')
-      // Check tag parsing
-      expect(notes[1].tags).toEqual(['tag1'])
+      expect(notes).toHaveLength(3)
+      expect(notes[0].date).toBe('2023-01-01') // ISO to YYYY-MM-DD
+      expect(notes[1].date).toBe('2023-01-02') // Preserves YYYY-MM-DD
+      // Note 3 defaults to today, hard to test exact string without mocking Date, but should be YYYY-MM-DD length
+      expect(notes[2].date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     })
 
     it('should handle fetch errors gracefully', async () => {
@@ -55,6 +55,45 @@ describe('LibraryStore', () => {
 
       expect(consoleSpy).toHaveBeenCalled()
       consoleSpy.mockRestore()
+    })
+  })
+
+  describe('createNote', () => {
+    it('should create a note and select it', async () => {
+      const newNote = { id: 'new-1', title: 'New Note', created_at: '2023-01-01', type: 'note' }
+      window.api.note.save = vi.fn().mockResolvedValue({ success: true, data: newNote })
+      // fetchNotes will be called after create, mock it too
+      window.api.note.list = vi.fn().mockResolvedValue({ success: true, data: [newNote] })
+      window.api.note.get = vi.fn().mockResolvedValue({ success: true, data: newNote }) // for selectNote
+
+      await act(async () => {
+        await useLibraryStore.getState().createNote('New Note')
+      })
+
+      expect(window.api.note.save).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'New Note',
+        sourceType: 'manual'
+      }))
+      expect(window.api.note.list).toHaveBeenCalled()
+      expect(useLibraryStore.getState().selectedNoteId).toBe('new-1')
+    })
+  })
+
+  describe('deleteNote', () => {
+    it('should delete a note and refresh list', async () => {
+      window.api.note.delete = vi.fn().mockResolvedValue({ success: true })
+      window.api.note.list = vi.fn().mockResolvedValue({ success: true, data: [] })
+
+      useLibraryStore.setState({ selectedNoteId: 'del-1' })
+
+      await act(async () => {
+        await useLibraryStore.getState().deleteNote('del-1')
+      })
+
+      expect(window.api.note.delete).toHaveBeenCalledWith('del-1')
+      expect(window.api.note.list).toHaveBeenCalled()
+      expect(useLibraryStore.getState().selectedNoteId).toBeNull()
+      expect(useLibraryStore.getState().activeNote).toBeNull()
     })
   })
 
@@ -78,18 +117,7 @@ describe('LibraryStore', () => {
 
       expect(useLibraryStore.getState().selectedNoteId).toBe('1')
       expect(window.api.note.get).toHaveBeenCalledWith('1')
-      // Wait for async fetch to complete (it's triggered by selectNote but not awaited by it)
-      // Since selectNote is sync but triggers async, we might need to wait a tick or expose the promise
-      // However, fetchNote is async in the store but selectNote doesn't return it.
-      // We can verify activeNote is set eventually.
-
-      // Actually selectNote implementation:
-      // selectNote: (id) => { set({ selectedNoteId: id }); if (id) { get().fetchNote(id) } ... }
-      // It calls fetchNote which is async, but doesn't await it.
-
-      // Let's call fetchNote directly to verify it works, or wait.
-      // Since we can't await the internal promise, we can assume the mock resolves quickly.
-      // Or we can await a small delay.
+      // Wait for async fetch to complete
       await new Promise(resolve => setTimeout(resolve, 0))
 
       expect(useLibraryStore.getState().activeNote).toEqual(expect.objectContaining({

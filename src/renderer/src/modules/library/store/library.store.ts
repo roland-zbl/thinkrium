@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import { Note, DbNote } from '@/types'
+import { format } from 'date-fns'
+import { Note, DbNote, SaveNoteInput } from '@/types'
 import { invokeIPC } from '@/utils/ipc'
 
 
@@ -18,6 +19,8 @@ interface LibraryState {
   fetchNotes: () => Promise<void>
   fetchNote: (id: string) => Promise<void>
   selectNote: (id: string | null) => void
+  createNote: (title: string) => Promise<void>
+  deleteNote: (id: string) => Promise<void>
   setFilter: (key: keyof LibraryState['filters'], value: string) => void
   resetFilters: () => void
   getFilteredNotes: () => Note[]
@@ -40,6 +43,31 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
       get().fetchNote(id)
     } else {
       set({ activeNote: null })
+    }
+  },
+  createNote: async (title: string) => {
+    try {
+      const input: SaveNoteInput = {
+        title,
+        content: '', // Empty content for new note
+        sourceType: 'manual'
+      }
+      const newNote = await invokeIPC(window.api.note.save(input))
+      // Refetch notes to update the list
+      await get().fetchNotes()
+      // Select the new note
+      get().selectNote(newNote.id)
+    } catch (error) {
+      console.error('Failed to create note:', error)
+    }
+  },
+  deleteNote: async (id: string) => {
+    try {
+      await invokeIPC(window.api.note.delete(id), { showErrorToast: false })
+      set({ selectedNoteId: null, activeNote: null })
+      await get().fetchNotes()
+    } catch (error) {
+      console.error('Failed to delete note:', error)
     }
   },
   setFilter: (key, value) =>
@@ -77,7 +105,14 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
         const note: Note = {
           id: rawNote.id,
           title: rawNote.title,
-          date: rawNote.created_at || rawNote.date || new Date().toISOString().split('T')[0],
+          date: (() => {
+            const d = rawNote.created_at || rawNote.date
+            try {
+              return d ? format(new Date(d), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
+            } catch {
+              return format(new Date(), 'yyyy-MM-dd')
+            }
+          })(),
           type: rawNote.source_type || rawNote.type || 'note',
           projects: rawNote.projects || [],
           content: rawNote.content,
@@ -112,7 +147,14 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
       const notes: Note[] = rawNotes.map((n: DbNote) => ({
         id: n.id,
         title: n.title,
-        date: n.created_at || n.date || new Date().toISOString().split('T')[0],
+        date: (() => {
+          const d = n.created_at || n.date
+          try {
+            return d ? format(new Date(d), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
+          } catch {
+            return format(new Date(), 'yyyy-MM-dd')
+          }
+        })(),
         type: n.source_type || n.type || 'note',
         projects: n.projects || [],
         tags: (() => {
