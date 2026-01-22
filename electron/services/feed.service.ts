@@ -1,7 +1,7 @@
 import { Database } from 'better-sqlite3'
 import { getDatabase } from '../database'
 import { Feed, FeedItem, ItemFilter } from '../../src/shared/types/feed'
-import { fetchFeed, validateFeed } from './rss.service'
+import { fetchFeed, validateFeed, resolveIcon } from './rss.service'
 import { randomUUID } from 'crypto'
 
 export interface SearchOptions {
@@ -161,6 +161,20 @@ export class FeedService {
     if (!feed) throw new Error('訂閱源不存在')
 
     console.log(`[FeedService] Fetching feed: ${feed.title} (${feed.url})`)
+
+    // 如果圖示缺失，嘗試補全
+    if (!feed.icon_url) {
+      try {
+        const validation = await validateFeed(feed.url)
+        if (validation.icon) {
+          db.prepare('UPDATE feeds SET icon_url = ? WHERE id = ?').run(validation.icon, feedId)
+          console.log(`[FeedService] Updated missing icon for ${feed.title}: ${validation.icon}`)
+        }
+      } catch (e) {
+        console.error(`[FeedService] Failed to update icon for ${feed.title}:`, e)
+      }
+    }
+
     const result = await fetchFeed(feed.url)
 
     const items = result.items.map((item) => ({

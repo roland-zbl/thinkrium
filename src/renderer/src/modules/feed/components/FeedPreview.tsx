@@ -19,6 +19,7 @@ import { HighlightToolbar, HighlightMenu } from './HighlightToolbar'
 import { getSelectionOffsets } from '../utils/highlight-utils'
 import { useHighlightedContent } from '../hooks/useHighlightedContent'
 import { isMarkdown } from '../store/utils'
+import { formatAbsoluteDate } from '@/utils/date'
 
 export const FeedPreview: React.FC = () => {
   const { selectedItemId, items, saveItem, unsaveItem, selectItem, saveQuickNote, highlights, createHighlight, updateHighlight, deleteHighlight } = useFeedStore()
@@ -298,7 +299,7 @@ export const FeedPreview: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-4 leading-snug text-foreground">{item.title}</h2>
           <div className="text-sm text-muted-foreground mb-8 flex items-center gap-2">
-            <span>{item.date ? new Date(item.date).toLocaleString() : ''}</span>
+            <span>{formatAbsoluteDate(item.date)}</span>
             {item.source && (
               <>
                 <span>•</span>

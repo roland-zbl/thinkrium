@@ -3,35 +3,12 @@ import { Bookmark, Clock } from 'lucide-react'
 import { useDraggable } from '@dnd-kit/core'
 import { FeedItem } from '../store/feed.store'
 import { cn } from '@/lib/utils'
+import { formatRelativeTime } from '@/utils/date'
 
 interface Props {
   item: FeedItem
   isActive: boolean
   onClick: () => void
-}
-
-// Helper: Format date to relative time (e.g., "2 小時前")
-function formatRelativeTime(dateStr: string | null): string {
-  if (!dateStr) return ''
-
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return '剛剛'
-  if (diffMins < 60) return `${diffMins} 分鐘前`
-  if (diffHours < 24) return `${diffHours} 小時前`
-  if (diffDays < 7) return `${diffDays} 天前`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} 週前`
-
-  // For older dates, show formatted date
-  return date.toLocaleDateString('zh-TW', {
-    month: 'short',
-    day: 'numeric'
-  })
 }
 
 export const FeedItemCard: React.FC<Props> = ({ item, isActive, onClick }) => {
