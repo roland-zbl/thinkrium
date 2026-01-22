@@ -43,6 +43,73 @@ const parser: Parser<CustomFeed, CustomItem> = new Parser({
 })
 
 /**
+ * 解析 RSS 圖示
+ * 策略：feed.image.url -> favicon.ico -> Google Favicon API
+ */
+export async function resolveIcon(
+  feedUrl: string,
+  feed: Parser.Output<CustomFeed>
+): Promise<string | undefined> {
+  // 1. 優先使用 feed 內定義的 image
+  if (feed.image?.url) {
+    return feed.image.url
+  }
+
+  // 取得 domain (feed.link or feedUrl)
+  let origin = ''
+  let domain = ''
+  try {
+    const targetUrl = feed.link || feedUrl
+    const urlObj = new URL(targetUrl)
+    origin = urlObj.origin
+    domain = urlObj.hostname
+  } catch (e) {
+    // URL 解析失敗，無法繼續
+    return undefined
+  }
+
+  // 2. 嘗試 /favicon.ico
+  // 這裡我們不實際發送請求去驗證是否存在 (因為可能會有 CORS 或 404)，
+  // 但為了更準確，我們可以簡單檢查一下，或者直接回傳讓前端處理。
+  // 不過為了與 Google API 區分，我們通常希望有一個確認。
+  // 但基於效能，我們這裡先檢查 Google API，或者直接用 Google API 比較穩？
+  // 需求順序：feed.image.url -> ${origin}/favicon.ico -> Google Favicon API
+  // 為了符合 "非阻塞" 需求，我們不該在這裡 await fetch。
+  // 但如果不 await，我們不知道哪個有效。
+  // 妥協方案：我們先回傳可能的 URL，或者在這裡做快速檢查 (head request)。
+  // 考慮到 Electron後端環境，我們可以做 HEAD request。
+
+  try {
+    const faviconUrl = `${origin}/favicon.ico`
+    // 簡單驗證 favicon 是否存在 (Timeout 2s)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 2000)
+
+    // 注意：這裡使用 fetch 需要 node 18+ 或 polyfill (Electron 應該有)
+    const response = await fetch(faviconUrl, {
+        method: 'HEAD',
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+    })
+    clearTimeout(timeoutId)
+
+    if (response.ok && response.headers.get('content-type')?.includes('image')) {
+      return faviconUrl
+    }
+  } catch (e) {
+    // Favicon fetch failed, proceed to next
+  }
+
+  // 3. Google Favicon API
+  // 這是 fallback，直接回傳 URL，讓前端或後續載入
+  // 但我們也希望確認它是否有效？Google API 通常都會回傳一張預設圖 (地球)，所以很難判斷失敗。
+  // 但需求說 "如果 Google API 請求失敗...直接顯示灰色預設圖示"。
+  // Google API 幾乎不會 HTTP 失敗，但會回傳預設圖。
+  // 這裡我們就直接回傳 Google API URL，當作最後手段。
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+}
+
+/**
  * 驗證 RSS 訂閱源是否有效
  */
 export async function validateFeed(
@@ -55,16 +122,7 @@ export async function validateFeed(
       `[RSS Service] Validation success: ${feed.title}, items: ${feed.items?.length || 0}`
     )
 
-    // 嘗試獲取 Icon
-    let icon = feed.image?.url
-    if (!icon && feed.link) {
-      try {
-        const urlObj = new URL(feed.link)
-        icon = `${urlObj.origin}/favicon.ico`
-      } catch (e) {
-        // Ignore URL parse error
-      }
-    }
+    const icon = await resolveIcon(url, feed)
 
     return {
       valid: true,
