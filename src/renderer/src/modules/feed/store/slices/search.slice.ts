@@ -3,7 +3,7 @@ import { FeedState, FeedItem, SearchSlice } from '../types'
 import { SearchOptions, SearchResult } from '@/types'
 import { useToastStore } from '@/stores/toast.store'
 import { invokeIPC } from '@/utils/ipc'
-import { stripHtml, extractFirstImage } from '../utils'
+import { parseFeedItem } from '@/utils/transform'
 
 export const createSearchSlice: StateCreator<FeedState, [], [], SearchSlice> = (set, get) => ({
   searchQuery: '',
@@ -54,34 +54,9 @@ export const createSearchSlice: StateCreator<FeedState, [], [], SearchSlice> = (
         showErrorToast: false
       })) as SearchResult[]
 
-      const feedItems: FeedItem[] = results.map((i: SearchResult) => {
-        const thumbnail = extractFirstImage(i.content || '')
-
-        // Use content_snippet for summary if available, otherwise title_snippet, otherwise fallback to content/title
-        // We trust the backend snippet to contain safe HTML (only <b> tags added by sqlite or us)
-        // Ideally we should sanitize but for now we assume trust.
-        let displaySummary = i.content_snippet
-        if (!displaySummary && i.content) {
-             displaySummary = stripHtml(i.content).substring(0, 150)
-        }
-
-        // Use title_snippet if available
-        const displayTitle = i.title_snippet || i.title
-
-        return {
-          id: i.id,
-          title: displayTitle,
-          source: get().subscriptions.find((s) => s.id === i.feed_id)?.name || 'Unknown',
-          date: i.published_at,
-          status: i.status,
-          summary: displaySummary || '',
-          content: i.content,
-          feed_id: i.feed_id,
-          link: i.url,
-          thumbnail,
-          quickNote: i.quick_note
-        }
-      })
+      const feedItems: FeedItem[] = results.map((i: SearchResult) =>
+        parseFeedItem(i, get().subscriptions.find((s) => s.id === i.feed_id)?.name)
+      )
 
       set({ searchResults: feedItems })
     } catch (error) {

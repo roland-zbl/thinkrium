@@ -1,8 +1,8 @@
 import { create } from 'zustand'
-import { format } from 'date-fns'
 import { Note, DbNote, SaveNoteInput } from '@/types'
 import { invokeIPC } from '@/utils/ipc'
 import { useToastStore } from '@/stores/toast.store'
+import { parseDbNote } from '@/utils/transform'
 
 
 interface LibraryState {
@@ -119,37 +119,7 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
     try {
       const rawNote = await invokeIPC(window.api.note.get(id), { showErrorToast: false })
       if (rawNote) {
-        const note: Note = {
-          id: rawNote.id,
-          title: rawNote.title,
-          date: (() => {
-            const d = rawNote.created_at || rawNote.date
-            try {
-              return d ? format(new Date(d), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
-            } catch {
-              return format(new Date(), 'yyyy-MM-dd')
-            }
-          })(),
-          type: rawNote.source_type || rawNote.type || 'note',
-          projects: rawNote.projects || [],
-          content: rawNote.content,
-          tags: (() => {
-            if (typeof rawNote.tags === 'string') {
-              try {
-                return JSON.parse(rawNote.tags) || []
-              } catch {
-                return []
-              }
-            }
-            return (rawNote.tags as string[]) || []
-          })(),
-          quick_note: (() => {
-            if (!rawNote.content) return undefined
-            const match = rawNote.content.match(/^quick_note:\s*"([^"]+)"/m)
-            return match ? match[1] : undefined
-          })()
-        }
-        set({ activeNote: note })
+        set({ activeNote: parseDbNote(rawNote) })
       }
     } catch (error) {
       console.error('Failed to fetch note details:', error)
@@ -161,31 +131,7 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
     try {
       const rawNotes = await invokeIPC(window.api.note.list(), { showErrorToast: false })
       // 轉換 API 返回的格式為 Note 介面格式
-      const notes: Note[] = rawNotes.map((n: DbNote) => ({
-        id: n.id,
-        title: n.title,
-        date: (() => {
-          const d = n.created_at || n.date
-          try {
-            return d ? format(new Date(d), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
-          } catch {
-            return format(new Date(), 'yyyy-MM-dd')
-          }
-        })(),
-        type: n.source_type || n.type || 'note',
-        projects: n.projects || [],
-        tags: (() => {
-          // 處理 tags 可能是 JSON 字串或陣列的情況
-          if (typeof n.tags === 'string') {
-            try {
-              return JSON.parse(n.tags) || []
-            } catch {
-              return []
-            }
-          }
-          return (n.tags as string[]) || []
-        })()
-      }))
+      const notes: Note[] = rawNotes.map(parseDbNote)
       set({ notes })
     } catch (error) {
       console.error('Failed to fetch notes:', error)

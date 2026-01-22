@@ -3,8 +3,8 @@ import { FeedState, FeedItem, ItemsSlice } from '../types'
 import { ItemFilter, FeedItem as DbFeedItem } from '@/types'
 import { useToastStore } from '@/stores/toast.store'
 import { invokeIPC } from '@/utils/ipc'
+import { parseFeedItem } from '@/utils/transform'
 
-import { stripHtml, extractFirstImage } from '../utils'
 
 export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (set, get) => ({
   items: [],
@@ -74,23 +74,9 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
       const items = await invokeIPC(window.api.feed.listItems(dbFilter), { showErrorToast: false })
 
       // 轉換 DB 格式到 Store 格式
-      const feedItems: FeedItem[] = items.map((i: DbFeedItem) => {
-        const cleanSummary = i.content ? stripHtml(i.content).substring(0, 150) : ''
-        const thumbnail = i.content ? extractFirstImage(i.content) : undefined
-        return {
-          id: i.id,
-          title: i.title,
-          source: get().subscriptions.find((s) => s.id === i.feed_id)?.name || 'Unknown',
-          date: i.published_at,
-          status: i.status as any,
-          summary: cleanSummary,
-          content: i.content, // Keep raw content
-          feed_id: i.feed_id,
-          link: i.url,
-          thumbnail,
-          quickNote: i.quick_note
-        }
-      })
+      const feedItems: FeedItem[] = items.map((i: DbFeedItem) =>
+        parseFeedItem(i, get().subscriptions.find((s) => s.id === i.feed_id)?.name)
+      )
 
       set({ items: feedItems })
     } catch (error) {
