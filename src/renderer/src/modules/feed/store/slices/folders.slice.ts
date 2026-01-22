@@ -9,69 +9,61 @@ export const createFoldersSlice: StateCreator<FeedState, [], [], FoldersSlice> =
 
   fetchFolders: async () => {
     try {
-      const folders = await invokeIPC(window.api.folder.list(), { showErrorToast: false })
+      // Fetch: silent=true
+      const folders = await invokeIPC(window.api.folder.list(), { silent: true })
       set({ folders })
-    } catch (error) {
-      console.error('Failed to fetch folders:', error)
+    } catch {
+      // Error handled by invokeIPC
     }
   },
 
   createFolder: async (name, parentId) => {
     try {
-      await invokeIPC(window.api.folder.create(name, parentId), { showErrorToast: false })
+      // invokeIPC handles Toast/Log
+      await invokeIPC(window.api.folder.create(name, parentId))
       await get().fetchFolders()
       useToastStore.getState().addToast({ type: 'success', title: 'Folder created' })
-    } catch (error) {
-      console.error(error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({ type: 'error', title: 'Failed to create folder', description: msg })
+    } catch {
+       // Error handled by invokeIPC
     }
   },
 
   renameFolder: async (id, name) => {
     try {
-      await invokeIPC(window.api.folder.rename(id, name), { showErrorToast: false })
+      await invokeIPC(window.api.folder.rename(id, name))
       await get().fetchFolders()
       useToastStore.getState().addToast({ type: 'success', title: 'Folder renamed' })
-    } catch (error) {
-      console.error(error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({ type: 'error', title: 'Failed to rename folder', description: msg })
+    } catch {
+       // Error handled by invokeIPC
     }
   },
 
   deleteFolder: async (id) => {
     try {
-      await invokeIPC(window.api.folder.delete(id), { showErrorToast: false })
+      await invokeIPC(window.api.folder.delete(id))
       await get().fetchFolders()
       await get().fetchSubscriptions() // Feeds are moved to root
       useToastStore.getState().addToast({ type: 'success', title: 'Folder deleted' })
-    } catch (error) {
-      console.error(error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({ type: 'error', title: 'Failed to delete folder', description: msg })
+    } catch {
+       // Error handled by invokeIPC
     }
   },
 
   moveFolder: async (id, newParentId) => {
     try {
-      await invokeIPC(window.api.folder.move(id, newParentId), { showErrorToast: false })
+      await invokeIPC(window.api.folder.move(id, newParentId))
       await get().fetchFolders()
-    } catch (error) {
-      console.error(error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({ type: 'error', title: 'Failed to move folder', description: msg })
+    } catch {
+       // Error handled by invokeIPC
     }
   },
 
   moveFeedToFolder: async (feedId, folderId) => {
     try {
-      await invokeIPC(window.api.feed.moveFeedToFolder(feedId, folderId), { showErrorToast: false })
+      await invokeIPC(window.api.feed.moveFeedToFolder(feedId, folderId))
       await get().fetchSubscriptions()
-    } catch (error) {
-      console.error(error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({ type: 'error', title: 'Failed to move feed', description: msg })
+    } catch {
+       // Error handled by invokeIPC
     }
   },
 

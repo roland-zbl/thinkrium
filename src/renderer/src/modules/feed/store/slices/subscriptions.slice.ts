@@ -12,8 +12,8 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
     try {
       // Use silent IPC for fetches to avoid spamming toast on initial load failures
       // But log the error.
-      const feeds = await invokeIPC(window.api.feed.listFeeds(), { showErrorToast: false })
-      const folders = await invokeIPC(window.api.folder.list(), { showErrorToast: false })
+      const feeds = await invokeIPC(window.api.feed.listFeeds(), { silent: true })
+      const folders = await invokeIPC(window.api.folder.list(), { silent: true })
 
       console.log('[Store] Fetched feeds:', feeds)
       console.log('[Store] Fetched folders:', folders)
@@ -29,27 +29,32 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
         folder_id: f.folder_id
       }))
       set({ subscriptions, folders })
-    } catch (error) {
-      console.error('Failed to fetch subscriptions:', error)
-      // Silent error for fetch
+    } catch {
+       // Error handled by invokeIPC
     }
   },
 
   addFeed: async (url, name, category) => {
     try {
       set({ loading: true })
-      // 1. 驗證 (silent IPC, handle toast manually)
-      const validation = await invokeIPC(window.api.feed.validateFeed(url), { showErrorToast: false })
+      // 1. Validation
+      // Use silent: false because validation failure (IPC error) IS a user operation failure.
+      // If validation returns { success: true, valid: false }, invokeIPC doesn't throw, we handle it.
+      // If validation returns { success: false }, invokeIPC throws and Toasts.
+      const validation = await invokeIPC(window.api.feed.validateFeed(url))
+
       if (!validation.valid) {
+        // Logic error (valid RSS but rejected by parser, or not RSS)
         throw new Error(validation.error || '無效的 RSS 源')
       }
 
-      // 2. 新增
+      // 2. Add Feed
       const id = crypto.randomUUID()
       // Fix: validation.icon property access
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const iconUrl = 'icon' in validation ? (validation as any).icon : null
 
+      // invokeIPC handles Toast/Log on error
       await invokeIPC(window.api.feed.addFeed({
         id,
         url,
@@ -59,12 +64,13 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
         category: category || '未分類',
         last_fetched: null,
         fetch_interval: 30
-      }), { showErrorToast: false })
+      }))
 
-      // 3. 立即抓取
-      await invokeIPC(window.api.feed.fetchFeed(id), { showErrorToast: false })
+      // 3. Fetch immediately
+      // invokeIPC handles Toast/Log on error
+      await invokeIPC(window.api.feed.fetchFeed(id))
 
-      // 4. 更新列表
+      // 4. Update lists
       await get().fetchSubscriptions()
       await get().fetchItems()
       useToastStore.getState().addToast({
@@ -73,13 +79,21 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
         description: name || validation.title || url
       })
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to add feed',
-        description: msg
-      })
-      console.error('Failed to add feed:', error)
+      // Logic errors (thrown manually above) need to be toasted.
+      // AppErrors (thrown by invokeIPC) are already toasted/logged.
+
+      // Check if it's AppError by name property (since we can't easily instanceof without importing class)
+      if ((error as any).name !== 'AppError') {
+         const msg = error instanceof Error ? error.message : String(error)
+         useToastStore.getState().addToast({
+            type: 'error',
+            title: 'Failed to add feed',
+            description: msg
+         })
+         // Log manual errors
+         console.error('Failed to add feed:', error)
+      }
+
       throw error
     } finally {
       set({ loading: false })
@@ -88,7 +102,7 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
 
   removeFeed: async (id) => {
     try {
-      await invokeIPC(window.api.feed.removeFeed(id), { showErrorToast: false })
+      await invokeIPC(window.api.feed.removeFeed(id))
       set((state) => ({
         subscriptions: state.subscriptions.filter((s) => s.id !== id),
         items: state.items.filter((i) => i.feed_id !== id),
@@ -98,34 +112,22 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
         type: 'success',
         title: 'Feed removed'
       })
-    } catch (error) {
-      console.error('Failed to remove feed:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to remove feed',
-        description: msg
-      })
+    } catch {
+       // Error handled by invokeIPC
     }
   },
 
   updateSubscription: async (id, updates) => {
     try {
-      await invokeIPC(window.api.feed.updateFeed(id, updates), { showErrorToast: false })
+      await invokeIPC(window.api.feed.updateFeed(id, updates))
       await get().fetchSubscriptions()
       useToastStore.getState().addToast({
         type: 'success',
         title: 'Feed updated'
       })
     } catch (error) {
-      console.error('Failed to update feed:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to update feed',
-        description: msg
-      })
-      throw error
+      // invokeIPC handled toast/log
+      throw error // Re-throw if needed by caller
     }
   },
 
@@ -147,9 +149,8 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
   importOpml: async (filePath) => {
     set({ loading: true })
     try {
-      const result = await invokeIPC(window.api.feed.importOpml(filePath), {
-        showErrorToast: false
-      })
+      const result = await invokeIPC(window.api.feed.importOpml(filePath))
+
       if (result.added > 0) {
         useToastStore.getState().addToast({
           type: 'success',
@@ -173,13 +174,7 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
       }
       return result
     } catch (error) {
-      console.error('Failed to import OPML:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to import OPML',
-        description: msg
-      })
+      // invokeIPC handled logs/toasts.
       throw error
     } finally {
       set({ loading: false })
@@ -188,21 +183,15 @@ export const createSubscriptionsSlice: StateCreator<FeedState, [], [], Subscript
 
   exportOpml: async () => {
     try {
-      const success = await invokeIPC(window.api.feed.exportOpml(), { showErrorToast: false })
+      const success = await invokeIPC(window.api.feed.exportOpml())
       if (success) {
         useToastStore.getState().addToast({
           type: 'success',
           title: 'OPML Exported Successfully'
         })
       }
-    } catch (error) {
-      console.error('Failed to export OPML:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to export OPML',
-        description: msg
-      })
+    } catch {
+       // Error handled by invokeIPC
     }
   }
 })

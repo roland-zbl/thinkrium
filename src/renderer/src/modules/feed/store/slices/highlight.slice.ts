@@ -1,7 +1,6 @@
 import { StateCreator } from 'zustand'
 import { FeedState, HighlightSlice } from '../types'
 import { Highlight } from '@/types'
-import { useToastStore } from '@/stores/toast.store'
 import { invokeIPC } from '@/utils/ipc'
 
 export const createHighlightSlice: StateCreator<FeedState, [], [], HighlightSlice> = (set, get) => ({
@@ -9,14 +8,15 @@ export const createHighlightSlice: StateCreator<FeedState, [], [], HighlightSlic
 
   fetchHighlights: async (itemId) => {
     try {
-      const result = await invokeIPC(window.api.highlight.listByItem(itemId), { showErrorToast: false })
+      // Fetch: silent=true
+      const result = await invokeIPC(window.api.highlight.listByItem(itemId), { silent: true })
       set((state) => {
         const newMap = new Map(state.highlights)
         newMap.set(itemId, result)
         return { highlights: newMap }
       })
-    } catch (error) {
-      console.error('Failed to fetch highlights:', error)
+    } catch {
+       // Error handled by invokeIPC
     }
   },
 
@@ -42,6 +42,7 @@ export const createHighlightSlice: StateCreator<FeedState, [], [], HighlightSlic
     })
 
     try {
+      // invokeIPC handles Toast/Log
       await invokeIPC(window.api.highlight.create({
         id,
         feed_item_id: itemId,
@@ -49,11 +50,8 @@ export const createHighlightSlice: StateCreator<FeedState, [], [], HighlightSlic
         color,
         start_offset: start,
         end_offset: end
-      }), { showErrorToast: false })
-    } catch (error) {
-      console.error('Failed to create highlight:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({ type: 'error', title: 'Failed to create highlight', description: msg })
+      }))
+    } catch {
       // Revert optimism
       set((state) => {
         const newMap = new Map(state.highlights)
@@ -90,11 +88,8 @@ export const createHighlightSlice: StateCreator<FeedState, [], [], HighlightSlic
     })
 
     try {
-      await invokeIPC(window.api.highlight.update({ id, note, color }), { showErrorToast: false })
-    } catch (error) {
-      console.error('Failed to update highlight:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({ type: 'error', title: 'Failed to update highlight', description: msg })
+      await invokeIPC(window.api.highlight.update({ id, note, color }))
+    } catch {
       // Revert
       set((state) => {
         const newMap = new Map(state.highlights)
@@ -119,11 +114,8 @@ export const createHighlightSlice: StateCreator<FeedState, [], [], HighlightSlic
      })
 
      try {
-       await invokeIPC(window.api.highlight.delete(id), { showErrorToast: false })
-     } catch (error) {
-       console.error('Failed to delete highlight:', error)
-       const msg = error instanceof Error ? error.message : String(error)
-       useToastStore.getState().addToast({ type: 'error', title: 'Failed to delete highlight', description: msg })
+       await invokeIPC(window.api.highlight.delete(id))
+     } catch {
        // Revert
        if (highlight) {
           set((state) => {

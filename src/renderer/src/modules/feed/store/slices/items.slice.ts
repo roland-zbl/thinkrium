@@ -71,7 +71,8 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
         dbFilter.status = 'saved'
       }
 
-      const items = await invokeIPC(window.api.feed.listItems(dbFilter), { showErrorToast: false })
+      // Fetch items: silent=true (no toast), logs handled by invokeIPC
+      const items = await invokeIPC(window.api.feed.listItems(dbFilter), { silent: true })
 
       // 轉換 DB 格式到 Store 格式
       const feedItems: FeedItem[] = items.map((i: DbFeedItem) =>
@@ -79,9 +80,8 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
       )
 
       set({ items: feedItems })
-    } catch (error) {
-      console.error('Failed to fetch items:', error)
-      // Silent error for fetch
+    } catch {
+      // Error handled by invokeIPC
     } finally {
       set({ loading: false })
     }
@@ -107,7 +107,8 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
       const item = get().items.find((i) => i.id === id)
       if (!item || item.status !== 'unread') return // 已讀或不存在則跳過
 
-      await invokeIPC(window.api.feed.markAsRead(id), { showErrorToast: false })
+      // invokeIPC handles Toast/Log on error.
+      await invokeIPC(window.api.feed.markAsRead(id))
       set((state) => {
         const recentlyReadIds = new Set(state.recentlyReadIds)
         if (!state.autoHideRead) {
@@ -124,17 +125,8 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
           )
         }
       })
-    } catch (error) {
-      console.error('Failed to mark as read:', error)
-      // Silent error for auto-action, or keep user-facing error?
-      // "User Operations -> Toast". This is often user-triggered but also auto-scroll.
-      // Keeping toast as per requirement, but verify description.
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to mark as read',
-        description: msg
-      })
+    } catch {
+       // Error handled by invokeIPC
     }
   },
 
@@ -150,6 +142,7 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
          contentToSave = item.content
       }
 
+      // invokeIPC handles Toast/Log on error.
       const note = await invokeIPC(window.api.note.save({
         title: item.title,
         content: contentToSave, // Pass raw content (HTML or MD) to backend
@@ -158,13 +151,14 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
         sourceItemId: item.id,
         tags: ['rss'],
         personalNote: personalNote || item.quickNote
-      }), { showErrorToast: false })
+      }))
 
       set((state) => ({
         items: state.items.map((i) => (i.id === id ? { ...i, status: 'saved' } : i))
       }))
 
-      await invokeIPC(window.api.feed.markAsSaved(id), { showErrorToast: false })
+      // invokeIPC handles Toast/Log on error.
+      await invokeIPC(window.api.feed.markAsSaved(id))
 
       useToastStore.getState().addToast({
         type: 'success',
@@ -173,21 +167,16 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
       })
 
       return note.id
-    } catch (error) {
-      console.error('Failed to save item:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to save item',
-        description: msg
-      })
+    } catch {
+      // Error handled by invokeIPC
       return undefined
     }
   },
 
   unsaveItem: async (id) => {
     try {
-      await invokeIPC(window.api.feed.markAsUnsaved(id), { showErrorToast: false })
+      // invokeIPC handles Toast/Log on error.
+      await invokeIPC(window.api.feed.markAsUnsaved(id))
       set((state) => ({
         items: state.items.map((i) => (i.id === id ? { ...i, status: 'read' } : i))
       }))
@@ -195,14 +184,8 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
         type: 'success',
         title: 'Item unsaved'
       })
-    } catch (error) {
-      console.error('Failed to unsave item:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to unsave item',
-        description: msg
-      })
+    } catch {
+       // Error handled by invokeIPC
     }
   },
 
@@ -212,18 +195,13 @@ export const createItemsSlice: StateCreator<FeedState, [], [], ItemsSlice> = (se
 
   saveQuickNote: async (itemId, note) => {
     try {
-      await invokeIPC(window.api.feed.saveQuickNote(itemId, note), { showErrorToast: false })
+      // invokeIPC handles Toast/Log on error.
+      await invokeIPC(window.api.feed.saveQuickNote(itemId, note))
       set((state) => ({
         items: state.items.map((i) => (i.id === itemId ? { ...i, quickNote: note } : i))
       }))
-    } catch (error) {
-      console.error('Failed to save quick note:', error)
-      const msg = error instanceof Error ? error.message : String(error)
-      useToastStore.getState().addToast({
-        type: 'error',
-        title: 'Failed to save quick note',
-        description: msg
-      })
+    } catch {
+       // Error handled by invokeIPC
     }
   }
 })
