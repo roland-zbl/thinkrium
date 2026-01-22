@@ -84,3 +84,9 @@ export interface UpdateHighlightDTO {
   note?: string
   color?: HighlightColor
 }
+
+export interface UpdateFeedDTO {
+  title?: string
+  url?: string
+  folder_id?: string | null
+}
