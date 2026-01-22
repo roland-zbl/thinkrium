@@ -2,11 +2,13 @@ import React, { useRef, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useFeedStore } from '../store/feed.store'
 import { FeedItemCard } from './FeedItemCard'
+import { FeedItemSkeleton } from './FeedItemSkeleton'
 import { FilterTabs } from './FilterTabs'
 
 export const FeedItemList: React.FC = () => {
   const {
     items,
+    loading,
     activeSubscriptionId,
     filter,
     selectedItemId,
@@ -59,7 +61,14 @@ export const FeedItemList: React.FC = () => {
       <FilterTabs />
 
       <div ref={parentRef} className="flex-1 overflow-auto scrollbar-hide relative">
-        {filteredItems.length > 0 ? (
+        {loading && items.length === 0 ? (
+          // Loading State - Show 5 skeletons
+          <div className="flex flex-col">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <FeedItemSkeleton key={i} />
+            ))}
+          </div>
+        ) : filteredItems.length > 0 ? (
           <div
             style={{
               height: `${virtualizer.getTotalSize()}px`,

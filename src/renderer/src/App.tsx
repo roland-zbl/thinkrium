@@ -2,6 +2,7 @@ import React from 'react'
 import { AppShell } from './components/layout/AppShell'
 import { SetupDialog } from './components/SetupDialog'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { SplashScreen } from './components/SplashScreen'
 import { GlobalLoadingIndicator } from './modules/feed/components/GlobalLoadingIndicator'
 import { useFeedStore } from './modules/feed/store/feed.store'
 import { Toaster } from '@/components/ui/Toast'
@@ -27,15 +28,7 @@ const App: React.FC = () => {
   }, [])
 
   if (isSetupComplete === null) {
-    // 顯示 Loading 指示器而非空白
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-zinc-900 text-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-sm text-zinc-400">正在載入...</p>
-        </div>
-      </div>
-    )
+    return <SplashScreen />
   }
 
   if (isSetupComplete === false) {
