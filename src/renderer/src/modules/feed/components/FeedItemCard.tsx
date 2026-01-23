@@ -43,9 +43,17 @@ export const FeedItemCard: React.FC<Props> = ({ item, isActive, onClick }) => {
       {...listeners}
       {...attributes}
       onClick={handleCardClick}
+      tabIndex={0}
+      role="button"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleCardClick()
+        }
+      }}
       className={cn(
-        'group flex gap-4 p-4 border-b cursor-pointer transition-all relative overflow-hidden border-border',
-        isActive ? 'bg-primary/10' : 'hover:bg-accent/30 dark:hover:bg-white/[0.03]',
+        'group flex gap-4 p-4 border-b cursor-pointer transition-colors duration-150 relative overflow-hidden border-border',
+        isActive ? 'bg-primary/10' : 'hover:bg-muted/50',
         isRecentlyRead && 'opacity-60 bg-muted/20'
       )}
     >

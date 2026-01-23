@@ -90,11 +90,19 @@ export const FolderNode: React.FC<FolderNodeProps> = ({
   return (
     <div className="select-none">
       <div
+        tabIndex={0}
+        role="button"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handleSelect(e as any)
+          }
+        }}
         className={cn(
-          'flex items-center justify-between px-2 py-1.5 text-sm transition-colors cursor-pointer group rounded-sm mx-2',
+          'flex items-center justify-between px-2 py-1.5 text-sm transition-colors duration-150 cursor-pointer group rounded-sm mx-2',
           isActive
             ? 'bg-primary/10 text-primary font-medium'
-            : 'text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'
+            : 'text-foreground/80 hover:bg-muted/50 hover:text-foreground'
         )}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
         onClick={handleSelect}
@@ -102,7 +110,7 @@ export const FolderNode: React.FC<FolderNodeProps> = ({
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <button
             onClick={handleToggle}
-            className="p-0.5 hover:bg-black/10 dark:hover:bg-white/10 rounded transition-colors"
+            className="p-0.5 hover:bg-muted rounded transition-colors"
           >
             {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </button>
@@ -198,11 +206,20 @@ export const FolderNode: React.FC<FolderNodeProps> = ({
           {childSubscriptions.map((sub) => (
             <div
               key={sub.id}
+              tabIndex={0}
+              role="button"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setActiveSubscription(sub.id)
+                }
+              }}
               className={cn(
-                'flex items-center justify-between px-2 py-1.5 text-sm transition-colors cursor-pointer group rounded-sm mx-2',
+                'flex items-center justify-between px-2 py-1.5 text-sm transition-colors duration-150 cursor-pointer group rounded-sm mx-2',
                 activeSubscriptionId === sub.id
                   ? 'bg-primary/10 text-primary font-medium'
-                  : 'text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'
+                  : 'text-foreground/80 hover:bg-muted/50 hover:text-foreground'
               )}
               style={{ paddingLeft: `${(depth + 1) * 12 + 24}px` }}
               onClick={(e) => {
