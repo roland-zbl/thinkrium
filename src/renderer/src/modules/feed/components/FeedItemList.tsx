@@ -1,6 +1,7 @@
-import React, { useRef, useMemo } from 'react'
+import React, { useRef, useMemo, useState, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useFeedStore } from '../store/feed.store'
+import { cn } from '@/lib/utils'
 import { FeedItemCard } from './FeedItemCard'
 import { FeedItemSkeleton } from './FeedItemSkeleton'
 import { FilterTabs } from './FilterTabs'
@@ -22,6 +23,15 @@ export const FeedItemList: React.FC = () => {
     clearSearch
   } = useFeedStore()
   const parentRef = useRef<HTMLDivElement>(null)
+
+  // 動畫控制：僅在初始加載或過濾器變更時觸發
+  const [isInitial, setIsInitial] = useState(true)
+
+  useEffect(() => {
+    setIsInitial(true)
+    const timer = setTimeout(() => setIsInitial(false), 1000)
+    return () => clearTimeout(timer)
+  }, [activeSubscriptionId, filter, searchQuery, items.length])
 
   // 根據訂閱源和狀態過濾列表
   // 使用 feed_id 直接比對，避免名稱比對的不穩定性
@@ -83,17 +93,25 @@ export const FeedItemList: React.FC = () => {
           >
             {virtualizer.getVirtualItems().map((virtualItem) => {
               const item = filteredItems[virtualItem.index]
+              const shouldAnimate = isInitial && virtualItem.index < 15
+
               return (
                 <div
                   key={item.id}
                   data-index={virtualItem.index}
                   ref={virtualizer.measureElement}
+                  className={cn(
+                    shouldAnimate &&
+                      'animate-in fade-in slide-in-from-bottom-2 duration-300 ease-micro'
+                  )}
                   style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     width: '100%',
-                    transform: `translateY(${virtualItem.start}px)`
+                    transform: `translateY(${virtualItem.start}px)`,
+                    animationDelay: shouldAnimate ? `${virtualItem.index * 30}ms` : undefined,
+                    animationFillMode: shouldAnimate ? 'backwards' : undefined
                   }}
                 >
                   <FeedItemCard

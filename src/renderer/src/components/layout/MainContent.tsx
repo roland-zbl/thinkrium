@@ -17,17 +17,43 @@ export const MainContent: React.FC = () => {
     <main className="flex-1 relative overflow-hidden bg-background">
       {/* 導航視圖：使用 display: none 保持狀態 */}
       <div
-        className={cn('absolute inset-0', (isTabView || currentView !== 'dashboard') && 'hidden')}
+        className={cn(
+          'absolute inset-0 bg-background',
+          isTabView || currentView !== 'dashboard'
+            ? 'hidden'
+            : 'animate-in fade-in duration-200 ease-micro'
+        )}
       >
         <DashboardView />
       </div>
-      <div className={cn('absolute inset-0', (isTabView || currentView !== 'feed') && 'hidden')}>
+      <div
+        className={cn(
+          'absolute inset-0 bg-background',
+          isTabView || currentView !== 'feed'
+            ? 'hidden'
+            : 'animate-in fade-in duration-200 ease-micro'
+        )}
+      >
         <FeedView />
       </div>
-      <div className={cn('absolute inset-0', (isTabView || currentView !== 'library') && 'hidden')}>
+      <div
+        className={cn(
+          'absolute inset-0 bg-background',
+          isTabView || currentView !== 'library'
+            ? 'hidden'
+            : 'animate-in fade-in duration-200 ease-micro'
+        )}
+      >
         <LibraryView />
       </div>
-      <div className={cn('absolute inset-0', (isTabView || currentView !== 'project') && 'hidden')}>
+      <div
+        className={cn(
+          'absolute inset-0 bg-background',
+          isTabView || currentView !== 'project'
+            ? 'hidden'
+            : 'animate-in fade-in duration-200 ease-micro'
+        )}
+      >
         <ProjectListView />
       </div>
 
@@ -35,7 +61,10 @@ export const MainContent: React.FC = () => {
       {tabs.map((tab) => (
         <div
           key={tab.id}
-          className={cn('absolute inset-0 bg-background', activeTabId !== tab.id && 'hidden')}
+          className={cn(
+            'absolute inset-0 bg-background',
+            activeTabId !== tab.id ? 'hidden' : 'animate-in fade-in duration-200 ease-micro'
+          )}
         >
           {tab.type === 'editor' ? (
             <NoteEditor noteId={tab.data.noteId || tab.id} />
