@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react'
+import React, { useRef, useMemo, useState, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useLibraryStore } from '../store/library.store'
 import { useAppStore } from '@/stores/app.store'
@@ -11,6 +11,15 @@ export const NoteTable: React.FC = () => {
   const { notes, filters, selectedNoteId, selectNote, resetFilters } = useLibraryStore()
   const { addTab, setView } = useAppStore()
   const parentRef = useRef<HTMLDivElement>(null)
+
+  // 動畫控制
+  const [isInitial, setIsInitial] = useState(true)
+
+  useEffect(() => {
+    setIsInitial(true)
+    const timer = setTimeout(() => setIsInitial(false), 1000)
+    return () => clearTimeout(timer)
+  }, [filters, notes.length])
 
   const filteredNotes = useMemo(() => {
     return notes.filter((n) => {
@@ -93,6 +102,7 @@ export const NoteTable: React.FC = () => {
             {virtualizer.getVirtualItems().map((virtualItem) => {
               const note = filteredNotes[virtualItem.index]
               const isActive = selectedNoteId === note.id
+              const shouldAnimate = isInitial && virtualItem.index < 15
 
               return (
                 <div
@@ -103,10 +113,14 @@ export const NoteTable: React.FC = () => {
                     'absolute top-0 left-0 w-full flex items-center px-6 h-[44px] border-b cursor-pointer transition-colors group text-sm border-border',
                     isActive
                       ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-foreground hover:bg-black/5 dark:hover:bg-white/[0.04] hover:text-foreground'
+                      : 'text-foreground hover:bg-black/5 dark:hover:bg-white/[0.04] hover:text-foreground',
+                    shouldAnimate &&
+                      'animate-in fade-in slide-in-from-bottom-2 duration-300 ease-micro'
                   )}
                   style={{
-                    transform: `translateY(${virtualItem.start}px)`
+                    transform: `translateY(${virtualItem.start}px)`,
+                    animationDelay: shouldAnimate ? `${virtualItem.index * 30}ms` : undefined,
+                    animationFillMode: shouldAnimate ? 'backwards' : undefined
                   }}
                 >
                   <div className="w-24 px-2 flex items-center gap-2 text-muted-foreground text-xs">
