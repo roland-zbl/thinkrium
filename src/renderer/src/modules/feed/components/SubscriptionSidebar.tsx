@@ -51,6 +51,13 @@ export const SubscriptionSidebar: React.FC = () => {
     fetchSubscriptions() // this also fetches folders currently in store implementation but safe to call
   }, [])
 
+  // Listen for external add subscription requests
+  useEffect(() => {
+    const handleOpenAddDialog = () => setIsAddDialogOpen(true)
+    window.addEventListener('open-add-subscription-dialog', handleOpenAddDialog)
+    return () => window.removeEventListener('open-add-subscription-dialog', handleOpenAddDialog)
+  }, [])
+
   // Root folders (parent_id is null)
   const rootFolders = folders
     .filter((f) => !f.parent_id)

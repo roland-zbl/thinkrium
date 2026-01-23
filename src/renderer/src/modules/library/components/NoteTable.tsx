@@ -8,8 +8,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Note } from '@/types'
 
 export const NoteTable: React.FC = () => {
-  const { notes, filters, selectedNoteId, selectNote } = useLibraryStore()
-  const { addTab } = useAppStore()
+  const { notes, filters, selectedNoteId, selectNote, resetFilters } = useLibraryStore()
+  const { addTab, setView } = useAppStore()
   const parentRef = useRef<HTMLDivElement>(null)
 
   const filteredNotes = useMemo(() => {
@@ -145,16 +145,27 @@ export const NoteTable: React.FC = () => {
           </div>
         ) : (
           <div className="h-full flex items-center justify-center">
-            <EmptyState
-              icon={FileText}
-              title="沒有符合的筆記"
-              description="目前的篩選條件下找不到任何筆記，或是您的資料庫目前是空的。"
-              action={{
-                label: '建立新筆記',
-                onClick: () =>
-                  addTab({ id: 'new-note', type: 'editor', title: '未命名筆記', data: {} })
-              }}
-            />
+            {notes.length === 0 ? (
+              <EmptyState
+                icon={FileText}
+                title="尚無筆記"
+                description="您可以從閱讀器中保存精彩文章，它們將出現在這裡。或者您也可以直接建立一則新筆記。"
+                action={{
+                  label: '前往閱讀器',
+                  onClick: () => setView('feed')
+                }}
+              />
+            ) : (
+              <EmptyState
+                icon={FileText}
+                title="沒有符合的筆記"
+                description="目前的篩選條件下找不到任何筆記。"
+                action={{
+                  label: '清除篩選',
+                  onClick: () => resetFilters()
+                }}
+              />
+            )}
           </div>
         )}
       </div>

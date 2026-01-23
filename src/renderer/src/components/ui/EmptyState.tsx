@@ -1,6 +1,7 @@
 import React from 'react'
 import { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Button } from './button'
 
 interface EmptyStateProps {
   icon: LucideIcon
@@ -28,9 +29,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         className
       )}
     >
-      <div
-        className="p-4 rounded-full mb-4 bg-accent shadow-sm"
-      >
+      <div className="p-4 rounded-full mb-4 bg-accent shadow-sm">
         <Icon size={48} className="text-muted-foreground/50" />
       </div>
 
@@ -41,16 +40,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       </p>
 
       {action && (
-        <button
+        <Button
           onClick={action.onClick}
-          className={cn(
-            'px-6 py-2 rounded-lg font-medium text-sm transition-all shadow-sm',
-            'bg-primary text-primary-foreground hover:bg-primary/90',
-            'active:scale-95'
-          )}
+          className="shadow-sm active:scale-95 transition-all"
         >
           {action.label}
-        </button>
+        </Button>
       )}
     </div>
   )

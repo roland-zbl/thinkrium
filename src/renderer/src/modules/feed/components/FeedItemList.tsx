@@ -4,6 +4,8 @@ import { useFeedStore } from '../store/feed.store'
 import { FeedItemCard } from './FeedItemCard'
 import { FeedItemSkeleton } from './FeedItemSkeleton'
 import { FilterTabs } from './FilterTabs'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Rss, Search, Inbox, CheckCircle, Bookmark } from 'lucide-react'
 
 export const FeedItemList: React.FC = () => {
   const {
@@ -14,7 +16,10 @@ export const FeedItemList: React.FC = () => {
     selectedItemId,
     selectItem,
     recentlyReadIds,
-    autoHideRead
+    autoHideRead,
+    subscriptions,
+    searchQuery,
+    clearSearch
   } = useFeedStore()
   const parentRef = useRef<HTMLDivElement>(null)
 
@@ -101,8 +106,64 @@ export const FeedItemList: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="h-full flex items-center justify-center text-white/20 text-sm italic">
-            目前沒有符合條件的項目
+          <div className="h-full flex items-center justify-center">
+            {(() => {
+              if (subscriptions.length === 0) {
+                return (
+                  <EmptyState
+                    icon={Rss}
+                    title="尚無訂閱源"
+                    description="新增您的第一個訂閱源以開始閱讀來自世界各地的精彩內容。"
+                    action={{
+                      label: '新增訂閱',
+                      onClick: () => window.dispatchEvent(new Event('open-add-subscription-dialog'))
+                    }}
+                  />
+                )
+              }
+
+              if (searchQuery) {
+                return (
+                  <EmptyState
+                    icon={Search}
+                    title="無搜尋結果"
+                    description={`找不到與 "${searchQuery}" 相符的文章。請嘗試調整關鍵字。`}
+                    action={{
+                      label: '清除搜尋',
+                      onClick: () => clearSearch()
+                    }}
+                  />
+                )
+              }
+
+              if (filter === 'saved') {
+                return (
+                  <EmptyState
+                    icon={Bookmark}
+                    title="尚無保存的文章"
+                    description="您可以在閱讀文章時點擊書籤圖示將其保存至此。"
+                  />
+                )
+              }
+
+              if (filter === 'unread') {
+                return (
+                  <EmptyState
+                    icon={CheckCircle}
+                    title="太棒了！"
+                    description="您已讀完所有未讀文章。"
+                  />
+                )
+              }
+
+              return (
+                <EmptyState
+                  icon={Inbox}
+                  title="目前沒有文章"
+                  description="該分類下暫無文章。"
+                />
+              )
+            })()}
           </div>
         )}
       </div>
